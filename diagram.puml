@@ -1,0 +1,23 @@
+@startuml Starbet-Live
+entity User {
+    +id: int
+    +name: string
+}
+
+entity Bet {
+    +id: int
+    +amount: float
+    +user_id: int
+}
+
+entity Match {
+    +id: int
+    +team1: string
+    +team2: string
+    +score1: int
+    +score2: int
+    +date: datetime
+}
+
+User "1" --> "0..*" Bet
+@enduml
