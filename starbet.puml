@@ -1,0 +1,43 @@
+@startuml starbet
+
+entity User {
+    +id: uuid
+    +username: string
+    +email: string
+    +password: string
+    +salt: string
+    +balance: int
+    +createdAt: date
+}
+
+entity Match {
+    +name_a: string
+    +name_b: string
+    +start_datetime: date
+    +end_datetime: date
+}
+
+enum Game {
+    CSGO
+    LOL
+    DOTA2
+    OVERWATCH
+}
+
+entity Bet {
+    +amount: float
+    +timestamp: date
+}
+
+entity Odds {
+    +timestamp: date
+    +odds_a: float
+    +odds_b: float
+}
+
+Match ||--|| Game
+Match ||--|{ Bet
+Match ||--|{ Odds
+User ||--|{ Bet
+
+@enduml
