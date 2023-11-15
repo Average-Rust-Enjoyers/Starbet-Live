@@ -4,7 +4,7 @@ name: Rustfmt & Clippy
 
 jobs:
   cargofmt:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
       - uses: dtolnay/rust-toolchain@master
@@ -17,13 +17,13 @@ jobs:
           toolchain: nightly
           flags: --all
   check:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: olix0r/cargo-action-fmt/setup@v2
       - uses: actions/checkout@v2
       - run: cargo check -q --message-format=json | cargo-action-fmt
   clippy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: olix0r/cargo-action-fmt/setup@v2
       - uses: actions/checkout@v2
