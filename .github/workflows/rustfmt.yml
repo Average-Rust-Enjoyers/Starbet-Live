@@ -4,7 +4,7 @@ name: Rustfmt & Clippy
 
 jobs:
   cargofmt:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: dtolnay/rust-toolchain@master
@@ -16,10 +16,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           toolchain: nightly
           flags: --all
-          args: --config-path=path/to/rustfmt.toml --check
-          working-directory: my_crate
   check:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: olix0r/cargo-action-fmt/setup@v2
       - uses: actions/checkout@v2
