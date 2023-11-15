@@ -1,31 +1,55 @@
-@startuml starbet
+@startuml starbet-live
 
 entity User {
-    +id: uuid
-    +username: string
-    +email: string
-    +password: string
-    +salt: string
-    +balance: int
-    +createdAt: date
-    +deletedAt: date
-}
-
-entity Transaction {
-    +id: uuid
-    +changeAmount: int
-    +createdAt: date
-    +deletedAt: date
+    * id: <<uuid>>
+    ---
+    * username: text
+    * email: text
+    * name: text
+    * surname: text
+    * profile_picture: <<url>>
+    * password_hash: text
+    * password_salt: text
+    * balance: int
+    * created_at: <<date>>
+    * edited_at: <<date>>
+    deleted_at: <<date>>
 }
 
 entity Match {
-    +id: uuid
-    +name_a: string
-    +name_b: string
-    +start_datetime: date
-    +end_datetime: date
-    +createdAt: date
-    +deletedAt: date
+    * id: <<uuid>>
+    ---
+    * name_a: text
+    * name_b: text
+    * starts_at: <<date>>
+    * ends_at: <<date>>
+    * status: MatchStatus
+    * game: Game
+    * odds: Odds
+    * created_at: <<date>>
+    * edited_at: <<date>>
+    deleted_at: <<date>>
+}
+
+enum MatchStatus {
+    PENDING
+    LIVE
+    FINISHED
+    CANCELED
+}
+
+entity Game {
+    * id: <<uuid>>
+    ---
+    * type: GameType
+    * name: text
+    * description: text
+    * logo: <<url>>
+    * genre: text
+    * created_at: <<date>>
+    * edited_at: <<date>>
+    deleted_at: <<date>>
+
 }
 
 enum GameType {
@@ -35,32 +59,55 @@ enum GameType {
     OVERWATCH
 }
 
-entity Game {
-    name: GameType
-}
-
 entity Bet {
-    +id: uuid
-    +amount: float
-    'timestamp
-    +createdAt: date
-    'expiration
-    +deletedAt: date
+    * id: <<uuid>>
+    ---
+    * user: User
+    * match: Match
+    * amount: int
+    * created_at: <<date>>
+    * edited_at: <<date>>
+    deleted_at: <<date>>
 }
 
 entity Odds {
-    ' not sure
-    +id: uuid 
+    * id: <<uuid>>
+    ---
+    * match: Match
+    * timestamp: <<date>>
+    * odds_a: float
+    * odds_b: float
+    * created_at: <<date>>
+    * edited_at: <<date>>
+    deleted_at: <<date>>
+}
 
-    +timestamp: date
-    +odds_a: float
-    +odds_b: float
+entity MoneyTransaction {
+    * id: <<uuid>>
+    ---
+    * user: User
+    * amount_tokens: int
+    * amount_currency: float
+    * currency: Currency
+    * deposit: bool
+    * created_at: <<date>>
+    * edited_at: <<date>>
+    deleted_at: <<date>>
+}
+
+enum Currency {
+    CZK
+    EUR
+    USD
 }
 
 Match }o--|| Game
 Match ||--o{ Bet
 Match ||--o{ Odds
 User ||--o{ Bet
-User ||--o{ Transaction
+User ||--o{ MoneyTransaction
+Match -- MatchStatus
+Game -- GameType
+MoneyTransaction -- Currency
 
 @enduml
