@@ -1,4 +1,6 @@
-use actix_web::{web, App, HttpResponse, HttpServer};
+use actix_web::{web,
+     App, HttpResponse,
+      HttpServer};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
