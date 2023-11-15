@@ -1,0 +1,30 @@
+on: push
+
+name: Rustfmt & Clippy
+
+jobs:
+  cargofmt:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly
+          components: rustfmt
+      - uses: LoliGothick/rustfmt-check@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          toolchain: nightly
+          flags: --all
+  check:
+    runs-on: self-hosted
+    steps:
+      - uses: olix0r/cargo-action-fmt/setup@v2
+      - uses: actions/checkout@v2
+      - run: cargo check -q --message-format=json | cargo-action-fmt
+  clippy:
+    runs-on: self-hosted
+    steps:
+      - uses: olix0r/cargo-action-fmt/setup@v2
+      - uses: actions/checkout@v2
+      - run: cargo clippy -q --message-format=json -- -D warnings| cargo-action-fmt
