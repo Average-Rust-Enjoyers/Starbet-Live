@@ -8,36 +8,59 @@ entity User {
     +salt: string
     +balance: int
     +createdAt: date
+    +deletedAt: date
+}
+
+entity Transaction {
+    +id: uuid
+    +changeAmount: int
+    +createdAt: date
+    +deletedAt: date
 }
 
 entity Match {
+    +id: uuid
     +name_a: string
     +name_b: string
     +start_datetime: date
     +end_datetime: date
+    +createdAt: date
+    +deletedAt: date
 }
 
-enum Game {
+enum GameType {
     CSGO
     LOL
     DOTA2
     OVERWATCH
 }
 
+entity Game {
+    name: GameType
+}
+
 entity Bet {
+    +id: uuid
     +amount: float
-    +timestamp: date
+    'timestamp
+    +createdAt: date
+    'expiration
+    +deletedAt: date
 }
 
 entity Odds {
+    ' not sure
+    +id: uuid 
+
     +timestamp: date
     +odds_a: float
     +odds_b: float
 }
 
-Match ||--|| Game
-Match ||--|{ Bet
-Match ||--|{ Odds
-User ||--|{ Bet
+Match }o--|| Game
+Match ||--o{ Bet
+Match ||--o{ Odds
+User ||--o{ Bet
+User ||--o{ Transaction
 
 @enduml
