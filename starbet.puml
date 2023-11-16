@@ -45,18 +45,11 @@ entity Game {
     * name: text
     * description: text
     * logo: <<url>>
-    * genre: text
+    * genre: Genre
     * created_at: <<date>>
     * edited_at: <<date>>
     deleted_at: <<date>>
 
-}
-
-enum GameType {
-    CSGO
-    LOL
-    DOTA2
-    OVERWATCH
 }
 
 entity Bet {
@@ -74,7 +67,6 @@ entity Odds {
     * id: <<uuid>>
     ---
     * match: Match
-    * timestamp: <<date>>
     * odds_a: float
     * odds_b: float
     * created_at: <<date>>
@@ -101,13 +93,18 @@ enum Currency {
     USD
 }
 
+enum Genre {
+    MOBA
+    FPS
+}
+
 Match }o--|| Game
 Match ||--o{ Bet
 Match ||--o{ Odds
 User ||--o{ Bet
 User ||--o{ MoneyTransaction
 Match -- MatchStatus
-Game -- GameType
+Game -- Genre
 MoneyTransaction -- Currency
 
 @enduml
