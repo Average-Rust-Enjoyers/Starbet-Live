@@ -1,3 +1,1 @@
--- Add down migration script here
--- TODO:
-DROP TABLE IF EXISTS User
+DROP TABLE IF EXISTS AppUser
