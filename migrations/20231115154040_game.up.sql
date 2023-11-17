@@ -1,19 +1,17 @@
-CREATE TYPE IF NOT EXISTS MatchStatus AS ENUM ('PENDING', 'LIVE', 'FINISHED', 'CANCELED');
+-- Add up migration script here
+CREATE TYPE GameGenre AS ENUM (
+    'MOBA',
+    'FPS (First Person Shooter)'
+);
 
-CREATE TABLE IF NOT EXISTS Match (
+CREATE TABLE IF NOT EXISTS Game (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    ---------------------------------------------
-    name_a text NOT NULL,
-    name_b text NOT NULL,
-    starts_at timestamptz NOT NULL,
-    ends_at timestamptz NOT NULL,
-    status MatchStatus NOT NULL DEFAULT 'PENDING',
-    game_id uuid NOT NULL,
-    odds_id uuid NOT NULL,
+    -----------------------------------------
+    name text NOT NULL,
+    description text NOT NULL,
+    logo text NOT NULL,
+    genre GameGenre NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now(),
     edited_at timestamptz NOT NULL DEFAULT now(),
-    deleted_at timestamptz,
-    ----------------------------------------------
-    FOREIGN KEY (game_id) REFERENCES Game(id),
-    FOREIGN KEY (odds_id) REFERENCES Odds(id)
+    deleted_at timestamptz
 )
