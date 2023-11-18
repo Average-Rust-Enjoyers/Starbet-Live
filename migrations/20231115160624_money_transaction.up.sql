@@ -1,6 +1,6 @@
 CREATE TYPE currency AS ENUM ('CZK', 'EUR', 'USD');
 
-CREATE TABLE IF NOT EXISTS money_transaction (
+CREATE TABLE IF NOT EXISTS MoneyTransaction (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     -------------------------------------------
     user_id uuid NOT NULL,
