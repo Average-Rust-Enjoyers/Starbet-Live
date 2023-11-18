@@ -8,6 +8,6 @@ CREATE TABLE IF NOT EXISTS Bet (
     edited_at timestamptz NOT NULL DEFAULT now(),
     deleted_at timestamptz,
     ----------------------------------------------
-    FOREIGN KEY (user_id) REFERENCES User (id),
+    FOREIGN KEY (user_id) REFERENCES AppUser (id),
     FOREIGN KEY (match_id) REFERENCES Match (id)
 )
