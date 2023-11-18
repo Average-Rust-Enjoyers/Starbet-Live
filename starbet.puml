@@ -1,6 +1,6 @@
 @startuml starbet-live
 
-entity User {
+entity AppUser {
     * id: <<uuid>>
     ---
     * username: text
@@ -25,7 +25,6 @@ entity Match {
     * ends_at: <<date>>
     * status: MatchStatus
     * game: Game
-    * odds: Odds
     * created_at: <<date>>
     * edited_at: <<date>>
     deleted_at: <<date>>
@@ -45,24 +44,17 @@ entity Game {
     * name: text
     * description: text
     * logo: <<url>>
-    * genre: text
+    * genre: Genre
     * created_at: <<date>>
     * edited_at: <<date>>
     deleted_at: <<date>>
 
 }
 
-enum GameType {
-    CSGO
-    LOL
-    DOTA2
-    OVERWATCH
-}
-
 entity Bet {
     * id: <<uuid>>
     ---
-    * user: User
+    * user: AppUser
     * match: Match
     * amount: int
     * created_at: <<date>>
@@ -74,7 +66,6 @@ entity Odds {
     * id: <<uuid>>
     ---
     * match: Match
-    * timestamp: <<date>>
     * odds_a: float
     * odds_b: float
     * created_at: <<date>>
@@ -85,7 +76,7 @@ entity Odds {
 entity MoneyTransaction {
     * id: <<uuid>>
     ---
-    * user: User
+    * user: AppUser
     * amount_tokens: int
     * amount_currency: float
     * currency: Currency
@@ -101,13 +92,18 @@ enum Currency {
     USD
 }
 
+enum Genre {
+    MOBA
+    FPS
+}
+
 Match }o--|| Game
 Match ||--o{ Bet
 Match ||--o{ Odds
-User ||--o{ Bet
-User ||--o{ MoneyTransaction
+AppUser ||--o{ Bet
+AppUser ||--o{ MoneyTransaction
 Match -- MatchStatus
-Game -- GameType
+Game -- Genre
 MoneyTransaction -- Currency
 
 @enduml
