@@ -1,6 +1,6 @@
 -- Add up migration script here
 CREATE TYPE GameGenre AS ENUM (
-    'MOBA',
+    'MOBA (MultiPlayer Online Battle Arena)',
     'FPS (First Person Shooter)'
 );
 
