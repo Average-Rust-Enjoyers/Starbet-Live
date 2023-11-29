@@ -35,8 +35,6 @@ pub struct UserCreate {
 
 impl UserCreate {
     #[must_use]
-    #[inline]
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         username: &str,
         email: &str,
@@ -67,7 +65,6 @@ pub struct UserLogin {
 
 impl UserLogin {
     #[must_use]
-    #[inline]
     pub fn new(email: &str, password_hash: &str) -> Self {
         Self {
             email: email.to_owned(),
@@ -92,8 +89,6 @@ pub struct UserUpdate {
 
 impl UserUpdate {
     #[must_use]
-    #[inline]
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: &Uuid,
         username: Option<&str>,
@@ -140,7 +135,6 @@ pub struct UserDelete {
 
 impl UserDelete {
     #[must_use]
-    #[inline]
     pub const fn new(id: &Uuid) -> Self {
         Self { id: *id }
     }
@@ -155,7 +149,6 @@ pub struct UserGetById {
 
 impl UserGetById {
     #[must_use]
-    #[inline]
     pub const fn new(id: &Uuid) -> Self {
         Self { id: *id }
     }
