@@ -1,3 +1,3 @@
--- Add down migration script here
--- TODO:
-DROP TABLE IF EXISTS MoneyTransaction
+DROP TABLE IF EXISTS MoneyTransaction;
+
+DROP TYPE IF EXISTS currency;

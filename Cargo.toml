@@ -16,3 +16,8 @@ sqlx = { version = "0.7.3", features = [
 ] }
 tokio = { version = "1.33.0", features = ["full"] }
 dotenvy = "0.15.7"
+anyhow = "1.0.75"
+async-trait = "0.1.74"
+chrono = "0.4.31"
+serde = "1.0.193"
+uuid = "1.6.1"
