@@ -1,7 +1,7 @@
 use axum::{http, routing::get, Router};
 use dotenvy::dotenv;
 use sqlx::postgres::PgPoolOptions;
-use std::{arch::x86_64::_mm_dpbf16_ps, env};
+use std::env;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
