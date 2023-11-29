@@ -1,8 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 
 use BusinessLogicErrorKind::{
-    PostDeleted, PostDoesNotExist, UserDeleted, UserDoesNotExist, UserNotCreatorOfPost,
-    UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
+    UserDeleted, UserDoesNotExist, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
 };
 
 #[derive(Debug)]
@@ -11,15 +10,6 @@ pub enum BusinessLogicErrorKind {
     UserDoesNotExist,
     UserDeleted,
     UserPasswordDoesNotMatch,
-    // --------------------------
-    // Post errors
-    PostDoesNotExist,
-    PostDeleted,
-    UserNotCreatorOfPost,
-
-    // --------------------------
-    // Comment errors
-
     // --------------------------
     // Generic errors
     UserUpdateParametersEmpty,
@@ -37,14 +27,6 @@ impl Display for BusinessLogicErrorKind {
                 write!(
                     f,
                     "The provided email and password combination is incorrect."
-                )
-            }
-            PostDoesNotExist => f.write_str(does_not_exist("post").as_str()),
-            PostDeleted => f.write_str(deleted("post").as_str()),
-            UserNotCreatorOfPost => {
-                write!(
-                    f,
-                    "The specified user cannot change the post, as they did not create it!"
                 )
             }
             UserUpdateParametersEmpty => {
