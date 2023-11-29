@@ -29,11 +29,11 @@ pub struct GameCreate {
 }
 
 impl GameCreate {
-    pub fn new(name: String, description: String, logo: String, genre: GameGenre) -> Self {
+    pub fn new(name: &str, description: &str, logo: &str, genre: GameGenre) -> Self {
         Self {
-            name,
-            description,
-            logo,
+            name: name.to_owned(),
+            description: description.to_owned(),
+            logo: logo.to_owned(),
             genre,
         }
     }
@@ -41,6 +41,7 @@ impl GameCreate {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct GameUpdate {
+    pub id: Uuid,
     pub name: Option<String>,
     pub description: Option<String>,
     pub logo: Option<String>,
@@ -49,15 +50,18 @@ pub struct GameUpdate {
 
 impl GameUpdate {
     pub fn new(
-        name: Option<String>,
-        description: Option<String>,
-        logo: Option<String>,
+        id: &Uuid,
+        name: Option<&str>,
+        description: Option<&str>,
+        logo: Option<&str>,
         genre: Option<GameGenre>,
     ) -> Self {
+        let change_to_owned = |value: &str| Some(value.to_owned());
         Self {
-            name,
-            description,
-            logo,
+            id: *id,
+            name: name.and_then(change_to_owned),
+            description: description.and_then(change_to_owned),
+            logo: logo.and_then(change_to_owned),
             genre,
         }
     }
@@ -69,7 +73,34 @@ pub struct GameDelete {
 }
 
 impl GameDelete {
-    pub fn new(id: Uuid) -> Self {
-        Self { id }
+    pub fn new(id: &Uuid) -> Self {
+        Self { id: *id }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct GameGetById {
+    pub id: Uuid,
+}
+
+impl GameGetById {
+    pub fn new(id: &Uuid) -> Self {
+        Self { id: *id }
+    }
+}
+
+impl From<&GameDelete> for GameGetById {
+    fn from(game_delete: &GameDelete) -> Self {
+        Self {
+            id: game_delete.id,
+        }
+    }
+}
+
+impl From<&GameUpdate> for GameGetById {
+    fn from(game_update: &GameUpdate) -> Self {
+        Self {
+            id: game_update.id,
+        }
     }
 }
