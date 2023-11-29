@@ -1,8 +1,6 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
-use super::{PostCreate, PostDelete, PostUpdate};
-
 /// User structure which is serialized from the database, containing full information
 /// about the user. Only obtainable when you have the right email and the right password hash
 /// (auth is not the scope of this iteration, this would be done way differently if it was).
@@ -117,7 +115,7 @@ impl UserUpdate {
             profile_picture: profile_picture.and_then(change_to_owned),
             password_hash: password_hash.and_then(change_to_owned),
             password_salt: password_salt.and_then(change_to_owned),
-            balance: balance.and_then(change_to_owned),
+            balance,
         }
     }
 
@@ -172,29 +170,5 @@ impl From<&UserDelete> for UserGetById {
 impl From<&UserUpdate> for UserGetById {
     fn from(user_update: &UserUpdate) -> Self {
         Self { id: user_update.id }
-    }
-}
-
-impl From<&PostCreate> for UserGetById {
-    fn from(post_create: &PostCreate) -> Self {
-        Self {
-            id: post_create.creator_id,
-        }
-    }
-}
-
-impl From<&PostDelete> for UserGetById {
-    fn from(post_delete: &PostDelete) -> Self {
-        Self {
-            id: post_delete.creator_id,
-        }
-    }
-}
-
-impl From<&PostUpdate> for UserGetById {
-    fn from(post_update: &PostUpdate) -> Self {
-        Self {
-            id: post_update.creator_id,
-        }
     }
 }
