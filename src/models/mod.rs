@@ -1,1 +1,1 @@
-mod Game;
+mod game;
