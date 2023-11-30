@@ -21,7 +21,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     sqlx::migrate!("./migrations").run(&pool).await?;
 
     let app = Router::new().route("/", get(ok)).with_state(pool);
-    dbg!(addr.as_str());
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 
