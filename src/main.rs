@@ -1,32 +1,79 @@
-use axum::{http, routing::get, Router};
+use axum::{
+    extract::{FromRef, State},
+    http,
+    routing::get,
+    Router,
+};
+
+use bb8_redis::RedisConnectionManager;
+
 use dotenvy::dotenv;
+use redis::AsyncCommands;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 
+#[derive(FromRef, Clone)]
+pub struct AppState {
+    postgres_pool: sqlx::PgPool,
+    redis_pool: bb8::Pool<RedisConnectionManager>,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // run this only in debug mode, docker with release mode has .env variables already set
+    #[cfg(debug_assertions)]
     dotenv().expect(".env file not found");
 
     let pool_connections = 5;
     let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
     let addr = format!("0.0.0.0:{}", port);
 
-    let database_url = env::var("DATABASE_URL").expect("missing DATABASE_URL env");
-
-    let pool = PgPoolOptions::new()
+    let database_url = env::var("DATABASE_URL").expect("missing DATABASE_URL env variable");
+    let postgres_pool = PgPoolOptions::new()
         .max_connections(pool_connections)
         .connect(&database_url)
         .await?;
 
-    sqlx::migrate!("./migrations").run(&pool).await?;
+    sqlx::migrate!("./migrations").run(&postgres_pool).await?;
 
-    let app = Router::new().route("/", get(ok)).with_state(pool);
+    let redis_url = env::var("REDIS_URL").expect("missing REDIS_URL env variable");
+    let manager = RedisConnectionManager::new(redis_url.clone())?;
+    let redis_pool = bb8::Pool::builder().build(manager).await?;
+
+    redis::Client::open(redis_url)
+        .expect("Invalid connection URL")
+        .get_connection()
+        .expect("failed to connect to Redis");
+
+    let app_state: AppState = AppState {
+        postgres_pool,
+        redis_pool,
+    };
+
+    println!("Starting server. Listening on http://{}", addr);
+
+    let app = Router::new()
+        .route("/", get(ok))
+        .route("/redis", get(redis_ok))
+        .with_state(app_state);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
-
     Ok(())
 }
 
 pub async fn ok() -> http::StatusCode {
+    http::StatusCode::OK
+}
+
+pub async fn redis_ok(
+    State(redis_pool): State<bb8::Pool<RedisConnectionManager>>,
+) -> http::StatusCode {
+    let mut conn = redis_pool.get().await.unwrap();
+    let value = 42;
+    let my_key = "my_key";
+
+    let _: () = conn.set(my_key, value).await.unwrap();
+    let return_value: i64 = conn.get(my_key).await.unwrap();
+    assert_eq!(value, return_value);
     http::StatusCode::OK
 }
