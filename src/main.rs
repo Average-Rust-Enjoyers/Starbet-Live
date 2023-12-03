@@ -7,7 +7,9 @@ use axum::{
 
 use bb8_redis::RedisConnectionManager;
 
+#[cfg(debug_assertions)]
 use dotenvy::dotenv;
+
 use redis::AsyncCommands;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
@@ -25,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().expect(".env file not found");
 
     let pool_connections = 5;
-    let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
+    let port = std::env::var("STARBET_PORT").unwrap_or_else(|_| "6969".to_string());
     let addr = format!("0.0.0.0:{}", port);
 
     let database_url = env::var("DATABASE_URL").expect("missing DATABASE_URL env variable");
