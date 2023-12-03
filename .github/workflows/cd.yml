@@ -1,0 +1,28 @@
+on:
+  workflow_run:
+    workflows: CI
+    branches: main
+    types: completed
+
+name: Deploy
+
+env:
+  SQLX_OFFLINE: true
+
+jobs:
+  production:
+    runs-on:
+      - self-hosted
+      - baremetal
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Deploy
+        run: docker compose up --detach --build --wait --wait-timeout 30
+        env:
+          DATABASE_URL: ${{ vars.DATABASE_URL }}
+          REDIS_URL: ${{ vars.REDIS_URL }}
+          STARBET_PORT: ${{ vars.STARBET_PORT }}
+          POSTGRES_USER: ${{ vars.POSTGRES_USER }}
+          POSTGRES_DB: ${{ vars.POSTGRES_DB }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
