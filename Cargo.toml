@@ -1,12 +1,12 @@
 [package]
-name = "project"
-version = "0.1.0"
+name = "starbet-live"
+version = "0.1.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = "0.7.1"
+axum = { version = "0.7.0", features = ["macros"] }
 sqlx = { version = "0.7.3", features = [
     "runtime-tokio",
     "tls-native-tls",
@@ -21,3 +21,6 @@ async-trait = "0.1.74"
 chrono = "0.4.31"
 serde = "1.0.193"
 uuid = "1.6.1"
+redis = { version = "0.23.3", features = ["tokio-native-tls-comp"] }
+bb8 = "0.8.1"
+bb8-redis = "0.13.1"
