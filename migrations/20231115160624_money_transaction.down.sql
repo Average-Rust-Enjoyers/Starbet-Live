@@ -1,3 +1,3 @@
 DROP TABLE IF EXISTS MoneyTransaction;
 
-DROP TYPE IF EXISTS currency;
+DROP TYPE IF EXISTS Currency;
