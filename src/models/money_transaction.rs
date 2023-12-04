@@ -11,12 +11,20 @@ pub enum Currency {
     USD,
 }
 
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum MoneyTransactionStatus {
+    Pending,
+    Completed,
+    Cancelled,
+}
+
 #[derive(sqlx::FromRow, Debug, PartialEq, Clone)]
 pub struct MoneyTransaction {
     pub id: Uuid,
     // ----------
     pub app_user_id: Uuid,
     // ----------
+    pub status: MoneyTransactionStatus,
     pub amout_tokens: i32,
     pub amount_currency: f32,
     pub currency: Currency,
@@ -48,6 +56,19 @@ impl MoneyTransactionCreate {
             amount_currency,
             currency,
         }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct MoneyTransactionUpdateStatus {
+    pub id: Uuid,
+    pub status: MoneyTransactionStatus,
+}
+
+impl MoneyTransactionUpdateStatus {
+    pub fn new(id: &Uuid, status: MoneyTransactionStatus) -> Self {
+        let change_to_owned = |value: &str| Some(value.to_owned());
+        Self { id: *id, status }
     }
 }
 
