@@ -26,6 +26,7 @@ entity GameMatch {
     * starts_at: <<date>>
     * ends_at: <<date>>
     * status: GameMatchStatus
+    outcome: GameMatchOutcome
     * created_at: <<date>>
     * edited_at: <<date>>
     deleted_at: <<date>>
@@ -38,19 +39,29 @@ enum GameMatchStatus {
     CANCELED
 }
 
+enum BetStatus {
+    PENDING
+    WON
+    LOST
+    CANCELED
+}
+
+enum GameMatchOutcome {
+    WIN_A
+    WIN_B
+    DRAW
+}
+
 entity Game {
     * id: <<uuid>>
     ---
-    ' not yet defined
-    ' * type: GameType
     * name: text
     * description: text
     * logo: <<url>>
-    * genre: GameGenre
+    * genre: Genre
     * created_at: <<date>>
     * edited_at: <<date>>
     deleted_at: <<date>>
-
 }
 
 entity Bet {
@@ -60,6 +71,8 @@ entity Bet {
     * game_match_id: <<FK: GameMatch>>
     ---
     * amount: int
+    * status: BetStatus
+    * expected_outcome: GameMatchOutcome
     * created_at: <<date>>
     * edited_at: <<date>>
     deleted_at: <<date>>
@@ -82,7 +95,6 @@ entity MoneyTransaction {
     ---
     * app_user_id: <<FK: AppUser>>
     ---
-    * status: MoneyTransactionStatus
     * amount_tokens: int
     * amount_currency: float
     * currency: Currency
@@ -91,19 +103,13 @@ entity MoneyTransaction {
     deleted_at: <<date>>
 }
 
-enum MoneyTransactionStatus {
-    PENDING
-    COMPLETED
-    CANCELED
-}
-
 enum Currency {
     CZK
     EUR
     USD
 }
 
-enum GameGenre {
+enum Genre {
     MOBA
     FPS
 }
@@ -114,7 +120,10 @@ GameMatch ||--o{ Odds
 AppUser ||--o{ Bet
 AppUser ||--o{ MoneyTransaction
 GameMatch -- GameMatchStatus
-Game -- GameGenre
+Game -- Genre
 MoneyTransaction -- Currency
+Bet -- BetStatus
+Bet -- GameMatchOutcome
+GameMatch -- GameMatchOutcome
 
 @enduml
