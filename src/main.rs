@@ -28,7 +28,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let pool_connections = 5;
     let port = std::env::var("STARBET_PORT").unwrap_or_else(|_| "6969".to_string());
-    let addr = format!("0.0.0.0:{}", port);
+    let addr = format!("0.0.0.0:{port}");
 
     let database_url = env::var("DATABASE_URL").expect("missing DATABASE_URL env variable");
     let postgres_pool = PgPoolOptions::new()
@@ -52,7 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         redis_pool,
     };
 
-    println!("Starting server. Listening on http://{}", addr);
+    println!("Starting server. Listening on http://{addr}");
 
     let app = Router::new()
         .route("/", get(ok))
@@ -67,6 +67,7 @@ pub async fn ok() -> http::StatusCode {
     http::StatusCode::OK
 }
 
+/// # Panics
 pub async fn redis_ok(
     State(redis_pool): State<bb8::Pool<RedisConnectionManager>>,
 ) -> http::StatusCode {

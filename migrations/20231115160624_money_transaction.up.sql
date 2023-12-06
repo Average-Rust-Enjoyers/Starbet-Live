@@ -1,10 +1,12 @@
 CREATE TYPE Currency AS ENUM ('CZK', 'EUR', 'USD');
+CREATE TYPE MoneyTransactionStatus AS ENUM ('PENDING', 'COMPLETED', 'CANCELED');
 
 CREATE TABLE IF NOT EXISTS MoneyTransaction (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     -------------------------------------------
     app_user_id uuid NOT NULL,
     -------------------------------------------
+    status MoneyTransactionStatus NOT NULL DEFAULT 'PENDING',
     amount_tokens int NOT NULL,
     amount_currency float NOT NULL,
     currency Currency NOT NULL,
