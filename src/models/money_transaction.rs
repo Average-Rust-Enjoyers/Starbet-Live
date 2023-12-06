@@ -67,7 +67,6 @@ pub struct MoneyTransactionUpdateStatus {
 
 impl MoneyTransactionUpdateStatus {
     pub fn new(id: &Uuid, status: MoneyTransactionStatus) -> Self {
-        let change_to_owned = |value: &str| Some(value.to_owned());
         Self { id: *id, status }
     }
 }
