@@ -16,21 +16,22 @@ entity AppUser {
     deleted_at: <<date>>
 }
 
-entity Match {
+entity GameMatch {
     * id: <<uuid>>
+    ---
+    * game_id: <<FK: Game>>
     ---
     * name_a: text
     * name_b: text
     * starts_at: <<date>>
     * ends_at: <<date>>
-    * status: MatchStatus
-    * game: Game
+    * status: GameMatchStatus
     * created_at: <<date>>
     * edited_at: <<date>>
     deleted_at: <<date>>
 }
 
-enum MatchStatus {
+enum GameMatchStatus {
     PENDING
     LIVE
     FINISHED
@@ -40,11 +41,12 @@ enum MatchStatus {
 entity Game {
     * id: <<uuid>>
     ---
-    * type: GameType
+    ' not yet defined
+    ' * type: GameType
     * name: text
     * description: text
     * logo: <<url>>
-    * genre: Genre
+    * genre: GameGenre
     * created_at: <<date>>
     * edited_at: <<date>>
     deleted_at: <<date>>
@@ -54,8 +56,9 @@ entity Game {
 entity Bet {
     * id: <<uuid>>
     ---
-    * user: AppUser
-    * match: Match
+    * app_user_id: <<FK: AppUser>>
+    * game_match_id: <<FK: GameMatch>>
+    ---
     * amount: int
     * created_at: <<date>>
     * edited_at: <<date>>
@@ -65,7 +68,8 @@ entity Bet {
 entity Odds {
     * id: <<uuid>>
     ---
-    * match: Match
+    * game_match_id: <<FK: GameMatch>>
+    ---
     * odds_a: float
     * odds_b: float
     * created_at: <<date>>
@@ -76,13 +80,13 @@ entity Odds {
 entity MoneyTransaction {
     * id: <<uuid>>
     ---
-    * user: AppUser
+    * app_user_id: <<FK: AppUser>>
+    ---
     * amount_tokens: int
     * amount_currency: float
     * currency: Currency
     * deposit: bool
     * created_at: <<date>>
-    * edited_at: <<date>>
     deleted_at: <<date>>
 }
 
@@ -92,18 +96,18 @@ enum Currency {
     USD
 }
 
-enum Genre {
+enum GameGenre {
     MOBA
     FPS
 }
 
-Match }o--|| Game
-Match ||--o{ Bet
-Match ||--o{ Odds
+GameMatch }o--|| Game
+GameMatch ||--o{ Bet
+GameMatch ||--o{ Odds
 AppUser ||--o{ Bet
 AppUser ||--o{ MoneyTransaction
-Match -- MatchStatus
-Game -- Genre
+GameMatch -- GameMatchStatus
+Game -- GameGenre
 MoneyTransaction -- Currency
 
 @enduml
