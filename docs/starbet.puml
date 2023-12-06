@@ -16,40 +16,9 @@ entity AppUser {
     deleted_at: <<date>>
 }
 
-entity GameMatch {
-    * id: <<uuid>>
-    ---
-    * game_id: <<FK: Game>>
-    ---
-    * name_a: text
-    * name_b: text
-    * starts_at: <<date>>
-    * ends_at: <<date>>
-    * status: GameMatchStatus
-    outcome: GameMatchOutcome
-    * created_at: <<date>>
-    * edited_at: <<date>>
-    deleted_at: <<date>>
-}
-
-enum GameMatchStatus {
-    PENDING
-    LIVE
-    FINISHED
-    CANCELED
-}
-
-enum BetStatus {
-    PENDING
-    WON
-    LOST
-    CANCELED
-}
-
-enum GameMatchOutcome {
-    WIN_A
-    WIN_B
-    DRAW
+enum GameGenre {
+    MOBA
+    FPS
 }
 
 entity Game {
@@ -64,15 +33,30 @@ entity Game {
     deleted_at: <<date>>
 }
 
-entity Bet {
+enum GameMatchStatus {
+    PENDING
+    LIVE
+    FINISHED
+    CANCELED
+}
+
+enum GameMatchOutcome {
+    WIN_A
+    WIN_B
+    DRAW
+}
+
+entity GameMatch {
     * id: <<uuid>>
     ---
-    * app_user_id: <<FK: AppUser>>
-    * game_match_id: <<FK: GameMatch>>
+    * game_id: <<FK: Game>>
     ---
-    * amount: int
-    * status: BetStatus
-    * expected_outcome: GameMatchOutcome
+    * name_a: text
+    * name_b: text
+    * starts_at: <<date>>
+    * ends_at: <<date>>
+    * status: GameMatchStatus
+    outcome: GameMatchOutcome
     * created_at: <<date>>
     * edited_at: <<date>>
     deleted_at: <<date>>
@@ -90,16 +74,24 @@ entity Odds {
     deleted_at: <<date>>
 }
 
-entity MoneyTransaction {
+enum BetStatus {
+    PENDING
+    WON
+    LOST
+    CANCELED
+}
+
+entity Bet {
     * id: <<uuid>>
     ---
     * app_user_id: <<FK: AppUser>>
+    * game_match_id: <<FK: GameMatch>>
     ---
-    * amount_tokens: int
-    * amount_currency: float
-    * currency: Currency
-    * deposit: bool
+    * amount: int
+    * status: BetStatus
+    * expected_outcome: GameMatchOutcome
     * created_at: <<date>>
+    * edited_at: <<date>>
     deleted_at: <<date>>
 }
 
@@ -109,21 +101,37 @@ enum Currency {
     USD
 }
 
-enum Genre {
-    MOBA
-    FPS
+enum MoneyTransactionStatus {
+    PENDING
+    COMPLETED
+    CANCELED
+}
+
+entity MoneyTransaction {
+    * id: <<uuid>>
+    ---
+    * app_user_id: <<FK: AppUser>>
+    ---
+    * status: MoneyTransactionStatus
+    * amount_tokens: int
+    * amount_currency: float
+    * currency: Currency
+    * deposit: bool
+    * created_at: <<date>>
+    deleted_at: <<date>>
 }
 
 GameMatch }o--|| Game
 GameMatch ||--o{ Bet
 GameMatch ||--o{ Odds
+GameMatch -- GameMatchStatus
+GameMatch -- GameMatchOutcome
 AppUser ||--o{ Bet
 AppUser ||--o{ MoneyTransaction
-GameMatch -- GameMatchStatus
-Game -- Genre
+Game -- GameGenre
 MoneyTransaction -- Currency
+MoneyTransaction -- MoneyTransactionStatus 
 Bet -- BetStatus
 Bet -- GameMatchOutcome
-GameMatch -- GameMatchOutcome
 
 @enduml
