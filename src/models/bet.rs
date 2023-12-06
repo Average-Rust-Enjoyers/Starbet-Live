@@ -3,6 +3,8 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
+use super::game_match_outcome::GameMatchOutcome;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum BetStatus {
     Pending,
@@ -19,6 +21,7 @@ pub struct Bet {
     pub game_match_id: Uuid,
     // ----------
     pub amount: i32,
+    pub expected_outcome: GameMatchOutcome,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
@@ -31,15 +34,23 @@ pub struct BetCreate {
     pub app_user_id: Uuid,
     pub game_match_id: Uuid,
     pub amount: i32,
+    pub expected_outcome: GameMatchOutcome,
 }
 
 impl BetCreate {
-    pub fn new(id: &Uuid, app_user_id: &Uuid, game_match_id: &Uuid, amount: i32) -> Self {
+    pub fn new(
+        id: &Uuid,
+        app_user_id: &Uuid,
+        game_match_id: &Uuid,
+        amount: i32,
+        expected_outcome: GameMatchOutcome,
+    ) -> Self {
         Self {
             id: id.to_owned(),
             app_user_id: app_user_id.to_owned(),
             game_match_id: game_match_id.to_owned(),
             amount,
+            expected_outcome,
         }
     }
 }

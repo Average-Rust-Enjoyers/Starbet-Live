@@ -3,6 +3,8 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
+use super::game_match_outcome::GameMatchOutcome;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum GameMatchStatus {
     Pending,
@@ -21,6 +23,7 @@ pub struct GameMatch {
     pub name_b: String,
     pub starts_at: DateTime<Utc>,
     pub ends_at: DateTime<Utc>,
+    pub outcome: GameMatchOutcome,
     pub status: GameMatchStatus,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
@@ -115,6 +118,21 @@ pub struct GameMatchGetById {
 impl GameMatchGetById {
     pub fn new(id: &Uuid) -> Self {
         Self { id: *id }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct GameMatchSetOutcome {
+    pub id: Uuid,
+    pub outcome: GameMatchOutcome,
+}
+
+impl GameMatchSetOutcome {
+    pub fn new(id: &Uuid, outcome: GameMatchOutcome) -> Self {
+        Self {
+            id: id.to_owned(),
+            outcome,
+        }
     }
 }
 
