@@ -21,15 +21,13 @@ pub enum BusinessLogicErrorKind {
     BetDoesNotExist,
     BetDeleted,
     BetAmountTooLow,
-    BetAmountTooHigh,
-    // BetAmountNotAllowedMultiple, // TODO: consult this
-    // BetAmountNotAllowedZero,
-    // BetAmountNotAllowedNegative,
+    BetAmountNotAllowed,
+    InsufficientFunds,
     // MoneyTransaction errors
     MoneyTransactionDoesNotExist,
     MoneyTransactionDeleted,
     MoneyTransactionAmountTooLow,
-    MoneyTransactionAmountTooHigh,
+    MoneyTransactionAmountNotAllowed,
     // Odds errors
     OddsDoesNotExist,
     OddsDeleted,
@@ -43,8 +41,9 @@ impl Display for BusinessLogicErrorKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let does_not_exist = |name: &str| format!("The specified {name} does not exist!");
         let deleted = |name: &str| format!("The specified {name} has been deleted!");
-        let ammount_too_low = |name: &str| format!("The specified {name} ammount is too low!");
-        let ammount_too_high = |name: &str| format!("The specified {name} ammount is too high!");
+        let amount_too_low = |name: &str| format!("The specified {name} ammount is too low!");
+        let amount_not_allowed =
+            |name: &str| format!("The specified {name} ammount is not allowed!");
 
         let error_string = match self {
             BusinessLogicErrorKind::UserDoesNotExist => does_not_exist("user"),
@@ -72,20 +71,20 @@ impl Display for BusinessLogicErrorKind {
             }
             BusinessLogicErrorKind::BetDoesNotExist => does_not_exist("bet"),
             BusinessLogicErrorKind::BetDeleted => deleted("bet"),
-            BusinessLogicErrorKind::BetAmountTooLow => ammount_too_low("bet"),
-            BusinessLogicErrorKind::BetAmountTooHigh => ammount_too_high("bet"),
-            // BusinessLogicErrorKind::BetAmountNotAllowedMultiple => todo!(),
-            // BusinessLogicErrorKind::BetAmountNotAllowedZero => todo!(),
-            // BusinessLogicErrorKind::BetAmountNotAllowedNegative => todo!(),
+            BusinessLogicErrorKind::BetAmountTooLow => amount_too_low("bet"),
+            BusinessLogicErrorKind::BetAmountNotAllowed => amount_not_allowed("bet"),
+            BusinessLogicErrorKind::InsufficientFunds => {
+                "The user has insufficient funds to place the bet!".to_string()
+            }
             BusinessLogicErrorKind::MoneyTransactionDoesNotExist => {
                 does_not_exist("money transaction")
             }
             BusinessLogicErrorKind::MoneyTransactionDeleted => deleted("money transaction"),
             BusinessLogicErrorKind::MoneyTransactionAmountTooLow => {
-                ammount_too_low("money transaction")
+                amount_too_low("money transaction")
             }
-            BusinessLogicErrorKind::MoneyTransactionAmountTooHigh => {
-                ammount_too_high("money transaction")
+            BusinessLogicErrorKind::MoneyTransactionAmountNotAllowed => {
+                amount_not_allowed("money transaction")
             }
             BusinessLogicErrorKind::OddsDoesNotExist => does_not_exist("odds"),
             BusinessLogicErrorKind::OddsDeleted => deleted("odds"),
