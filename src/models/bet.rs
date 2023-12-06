@@ -3,6 +3,14 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum BetStatus {
+    Pending,
+    Won,
+    Lost,
+    Cancelled,
+}
+
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
 pub struct Bet {
     pub id: Uuid,
@@ -14,6 +22,7 @@ pub struct Bet {
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
+    pub status: BetStatus,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -38,14 +47,14 @@ impl BetCreate {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct BetUpdate {
     pub id: Uuid,
-    pub amount: Option<i32>,
+    pub status: BetStatus,
 }
 
 impl BetUpdate {
-    pub fn new(id: &Uuid, amount: Option<i32>) -> Self {
+    pub fn new(id: &Uuid, status: BetStatus) -> Self {
         Self {
             id: id.to_owned(),
-            amount,
+            status,
         }
     }
 }
