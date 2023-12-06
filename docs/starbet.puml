@@ -46,7 +46,7 @@ entity Game {
     * name: text
     * description: text
     * logo: <<url>>
-    * genre: Genre
+    * genre: GameGenre
     * created_at: <<date>>
     * edited_at: <<date>>
     deleted_at: <<date>>
@@ -82,6 +82,7 @@ entity MoneyTransaction {
     ---
     * app_user_id: <<FK: AppUser>>
     ---
+    * status: MoneyTransactionStatus
     * amount_tokens: int
     * amount_currency: float
     * currency: Currency
@@ -90,13 +91,19 @@ entity MoneyTransaction {
     deleted_at: <<date>>
 }
 
+enum MoneyTransactionStatus {
+    PENDING
+    COMPLETED
+    CANCELED
+}
+
 enum Currency {
     CZK
     EUR
     USD
 }
 
-enum Genre {
+enum GameGenre {
     MOBA
     FPS
 }
@@ -107,7 +114,7 @@ GameMatch ||--o{ Odds
 AppUser ||--o{ Bet
 AppUser ||--o{ MoneyTransaction
 GameMatch -- GameMatchStatus
-Game -- Genre
+Game -- GameGenre
 MoneyTransaction -- Currency
 
 @enduml
