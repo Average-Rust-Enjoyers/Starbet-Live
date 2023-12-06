@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS GameMatch (
     name_b text NOT NULL,
     starts_at timestamptz NOT NULL,
     ends_at timestamptz NOT NULL,
-    status MatchStatus NOT NULL DEFAULT 'PENDING',
+    status GameMatchStatus NOT NULL DEFAULT 'PENDING',
     created_at timestamptz NOT NULL DEFAULT now(),
     edited_at timestamptz NOT NULL DEFAULT now(),
     deleted_at timestamptz,
