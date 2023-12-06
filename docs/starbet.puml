@@ -82,12 +82,19 @@ entity MoneyTransaction {
     ---
     * app_user_id: <<FK: AppUser>>
     ---
+    * status: MoneyTransactionStatus
     * amount_tokens: int
     * amount_currency: float
     * currency: Currency
     * deposit: bool
     * created_at: <<date>>
     deleted_at: <<date>>
+}
+
+enum MoneyTransactionStatus {
+    PENDING
+    COMPLETED
+    CANCELED
 }
 
 enum Currency {
