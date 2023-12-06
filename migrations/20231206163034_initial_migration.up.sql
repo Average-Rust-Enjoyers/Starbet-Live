@@ -1,4 +1,6 @@
-/* User table */
+-- Section AppUser --
+
+/* AppUser table */
 CREATE TABLE IF NOT EXISTS AppUser (
     id              uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
     ---------------------------------------------------------------
@@ -14,6 +16,9 @@ CREATE TABLE IF NOT EXISTS AppUser (
     edited_at       timestamptz NOT NULL DEFAULT now(),
     deleted_at      timestamptz
 );
+
+
+-- Section Game --
 
 /* GameGenre enum */
 CREATE TYPE IF NOT EXISTS GameGenre AS ENUM (
@@ -33,6 +38,9 @@ CREATE TABLE IF NOT EXISTS Game (
     edited_at   timestamptz NOT NULL DEFAULT now(),
     deleted_at  timestamptz
 )
+
+
+-- Section GameMatch --
 
 /* GameMatchStatus enum */
 CREATE TYPE IF NOT EXISTS GameMatchStatus AS ENUM (
@@ -68,6 +76,13 @@ CREATE TABLE IF NOT EXISTS GameMatch (
     FOREIGN KEY (game_id) REFERENCES Game (id)
 );
 
+/* GameMatch indexes */
+CREATE INDEX IF NOT EXISTS GameMatchGameId ON GameMatch (game_id);
+CREATE INDEX IF NOT EXISTS GameMatchRange  ON GameMatch (starts_at, ends_at);
+
+
+-- Section Odds --
+
 /* Odds table */
 CREATE TABLE IF NOT EXISTS Odds (
     id            uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
@@ -82,6 +97,12 @@ CREATE TABLE IF NOT EXISTS Odds (
     -------------------------------------------------------------
     FOREIGN KEY (game_match_id) REFERENCES GameMatch (id)
 );
+
+/* Odds indexes */
+CREATE INDEX IF NOT EXISTS OddsGameMatchId ON Odds (game_match_id);
+
+
+-- Section Bet --
 
 /* BetStatus enum */
 CREATE TYPE IF NOT EXISTS BetStatus AS ENUM (
@@ -108,6 +129,14 @@ CREATE TABLE IF NOT EXISTS Bet (
     FOREIGN KEY (app_user_id)   REFERENCES AppUser   (id),
     FOREIGN KEY (game_match_id) REFERENCES GameMatch (id)
 )
+
+/* Bet indexes */
+CREATE INDEX IF NOT EXISTS BetAppUserId        ON Bet (app_user_id);
+CREATE INDEX IF NOT EXISTS BetGameMatchId      ON Bet (game_match_id);
+CREATE INDEX IF NOT EXISTS BetCreatedDeletedAt ON Bet (created_at DESC, deleted_at NULLS LAST);
+
+
+-- Section MoneyTransaction --
 
 /* Currency enum */
 CREATE TYPE IF NOT EXISTS Currency AS ENUM (
@@ -140,3 +169,7 @@ CREATE TABLE IF NOT EXISTS MoneyTransaction (
     --------------------------------------------------------------------------
     FOREIGN KEY (app_user_id) REFERENCES AppUser (id)
 );
+
+/* MoneyTransaction indexes */
+CREATE INDEX IF NOT EXISTS MoneyTransactionAppUserId        ON MoneyTransaction (app_user_id);
+CREATE INDEX IF NOT EXISTS MoneyTransactionCreatedDeletedAt ON MoneyTransaction (created_at DESC, deleted_at NULLS LAST);
