@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS AppUser (
 -- Section Game --
 
 /* GameGenre enum */
-CREATE TYPE IF NOT EXISTS GameGenre AS ENUM (
+CREATE TYPE GameGenre AS ENUM (
     'MOBA (MultiPlayer Online Battle Arena)',
     'FPS (First Person Shooter)'
 );
@@ -37,13 +37,13 @@ CREATE TABLE IF NOT EXISTS Game (
     created_at  timestamptz NOT NULL DEFAULT now(),
     edited_at   timestamptz NOT NULL DEFAULT now(),
     deleted_at  timestamptz
-)
+);
 
 
 -- Section GameMatch --
 
 /* GameMatchStatus enum */
-CREATE TYPE IF NOT EXISTS GameMatchStatus AS ENUM (
+CREATE TYPE GameMatchStatus AS ENUM (
     'PENDING',
     'LIVE',
     'FINISHED',
@@ -51,7 +51,7 @@ CREATE TYPE IF NOT EXISTS GameMatchStatus AS ENUM (
 );
 
 /* GameMatchOutcome enum */
-CREATE TYPE IF NOT EXISTS GameMatchOutcome AS ENUM (
+CREATE TYPE GameMatchOutcome AS ENUM (
     'WIN_A',
     'WIN_B',
     'DRAW'
@@ -105,7 +105,7 @@ CREATE INDEX IF NOT EXISTS OddsGameMatchId ON Odds (game_match_id);
 -- Section Bet --
 
 /* BetStatus enum */
-CREATE TYPE IF NOT EXISTS BetStatus AS ENUM (
+CREATE TYPE BetStatus AS ENUM (
     'PENDING',
     'WON',
     'LOST',
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS Bet (
     ---------------------------------------------------------------------
     FOREIGN KEY (app_user_id)   REFERENCES AppUser   (id),
     FOREIGN KEY (game_match_id) REFERENCES GameMatch (id)
-)
+);
 
 /* Bet indexes */
 CREATE INDEX IF NOT EXISTS BetAppUserId        ON Bet (app_user_id);
@@ -139,14 +139,14 @@ CREATE INDEX IF NOT EXISTS BetCreatedDeletedAt ON Bet (created_at DESC, deleted_
 -- Section MoneyTransaction --
 
 /* Currency enum */
-CREATE TYPE IF NOT EXISTS Currency AS ENUM (
+CREATE TYPE Currency AS ENUM (
     'CZK',
     'EUR',
     'USD'
 );
 
 /* MoneyTransactionStatus enum */
-CREATE TYPE IF NOT EXISTS MoneyTransactionStatus AS ENUM (
+CREATE TYPE MoneyTransactionStatus AS ENUM (
     'PENDING',
     'COMPLETED',
     'CANCELED'
