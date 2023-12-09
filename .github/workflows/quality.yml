@@ -8,7 +8,9 @@ env:
 jobs:
   format:
     name: Cargo fmt suggestions
-    runs-on: self-hosted
+    runs-on:
+      - self-hosted
+      - docker
     permissions:
       pull-requests: write
       contents: read
@@ -27,7 +29,9 @@ jobs:
           commit-message: "Format code with rustfmt"
   clippy:
     name: Clippy warnings
-    runs-on: self-hosted
+    runs-on:
+      - self-hosted
+      - docker
     steps:
       - uses: actions/checkout@v4
       - name: Setup Rust
