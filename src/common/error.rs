@@ -1,8 +1,6 @@
-use std::fmt::{Debug, Display, Formatter};
+#![allow(dead_code)]
 
-use BusinessLogicErrorKind::{
-    UserDeleted, UserDoesNotExist, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
-};
+use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Debug)]
 pub enum BusinessLogicErrorKind {
@@ -10,6 +8,30 @@ pub enum BusinessLogicErrorKind {
     UserDoesNotExist,
     UserDeleted,
     UserPasswordDoesNotMatch,
+    // Game errors
+    GameDoesNotExist,
+    GameDeleted,
+    // GameMatch errors
+    GameMatchDoesNotExist,
+    GameMatchDeleted,
+    GameMatchAlreadyStarted,
+    GameMatchAlreadyFinished,
+    GameMatchStartsAfterEnds,
+    // Bet errors
+    BetDoesNotExist,
+    BetDeleted,
+    BetAmountTooLow,
+    BetAmountNotAllowed,
+    InsufficientFunds,
+    // MoneyTransaction errors
+    MoneyTransactionDoesNotExist,
+    MoneyTransactionDeleted,
+    MoneyTransactionAmountTooLow,
+    MoneyTransactionAmountNotAllowed,
+    // Odds errors
+    OddsDoesNotExist,
+    OddsDeleted,
+
     // --------------------------
     // Generic errors
     UserUpdateParametersEmpty,
@@ -19,26 +41,55 @@ impl Display for BusinessLogicErrorKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let does_not_exist = |name: &str| format!("The specified {name} does not exist!");
         let deleted = |name: &str| format!("The specified {name} has been deleted!");
+        let amount_too_low = |name: &str| format!("The specified {name} ammount is too low!");
+        let amount_not_allowed =
+            |name: &str| format!("The specified {name} ammount is not allowed!");
 
-        match self {
-            UserDoesNotExist => f.write_str(does_not_exist("user").as_str()),
-            UserDeleted => f.write_str(deleted("user").as_str()),
-            UserPasswordDoesNotMatch => {
-                write!(
-                    f,
-                    "The provided email and password combination is incorrect."
-                )
+        let error_string = match self {
+            BusinessLogicErrorKind::UserDoesNotExist => does_not_exist("user"),
+            BusinessLogicErrorKind::UserDeleted => deleted("user"),
+            BusinessLogicErrorKind::UserPasswordDoesNotMatch => {
+                "The provided email and password combination is incorrect.".to_string()
             }
-            UserUpdateParametersEmpty => {
-                write!(
-                    f,
-                    concat!(
-                        "The provided parameters for User update query are incorrect",
-                        " (no User field would be changed)."
-                    )
-                )
+            BusinessLogicErrorKind::UserUpdateParametersEmpty => concat!(
+                "The provided parameters for User update query are incorrect",
+                " (no User field would be changed)."
+            )
+            .to_string(),
+            BusinessLogicErrorKind::GameDoesNotExist => does_not_exist("game"),
+            BusinessLogicErrorKind::GameDeleted => deleted("game"),
+            BusinessLogicErrorKind::GameMatchDoesNotExist => does_not_exist("game match"),
+            BusinessLogicErrorKind::GameMatchDeleted => deleted("game match"),
+            BusinessLogicErrorKind::GameMatchAlreadyStarted => {
+                "The game match has already started!".to_string()
             }
-        }
+            BusinessLogicErrorKind::GameMatchAlreadyFinished => {
+                "The game match has already finished!".to_string()
+            }
+            BusinessLogicErrorKind::GameMatchStartsAfterEnds => {
+                "The game match starting time is later than the ending time!".to_string()
+            }
+            BusinessLogicErrorKind::BetDoesNotExist => does_not_exist("bet"),
+            BusinessLogicErrorKind::BetDeleted => deleted("bet"),
+            BusinessLogicErrorKind::BetAmountTooLow => amount_too_low("bet"),
+            BusinessLogicErrorKind::BetAmountNotAllowed => amount_not_allowed("bet"),
+            BusinessLogicErrorKind::InsufficientFunds => {
+                "The user has insufficient funds to place the bet!".to_string()
+            }
+            BusinessLogicErrorKind::MoneyTransactionDoesNotExist => {
+                does_not_exist("money transaction")
+            }
+            BusinessLogicErrorKind::MoneyTransactionDeleted => deleted("money transaction"),
+            BusinessLogicErrorKind::MoneyTransactionAmountTooLow => {
+                amount_too_low("money transaction")
+            }
+            BusinessLogicErrorKind::MoneyTransactionAmountNotAllowed => {
+                amount_not_allowed("money transaction")
+            }
+            BusinessLogicErrorKind::OddsDoesNotExist => does_not_exist("odds"),
+            BusinessLogicErrorKind::OddsDeleted => deleted("odds"),
+        };
+        f.write_str(error_string.as_str())
     }
 }
 

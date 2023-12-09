@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
@@ -89,6 +91,7 @@ pub struct UserUpdate {
 
 impl UserUpdate {
     #[must_use]
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: &Uuid,
         username: Option<&str>,

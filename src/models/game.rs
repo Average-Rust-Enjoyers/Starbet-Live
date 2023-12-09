@@ -1,10 +1,12 @@
+#![allow(dead_code)]
+
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum GameGenre {
-    MOBA,
-    FPS,
+    Moba,
+    Fps,
 }
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
@@ -91,16 +93,12 @@ impl GameGetById {
 
 impl From<&GameDelete> for GameGetById {
     fn from(game_delete: &GameDelete) -> Self {
-        Self {
-            id: game_delete.id,
-        }
+        Self { id: game_delete.id }
     }
 }
 
 impl From<&GameUpdate> for GameGetById {
     fn from(game_update: &GameUpdate) -> Self {
-        Self {
-            id: game_update.id,
-        }
+        Self { id: game_update.id }
     }
 }

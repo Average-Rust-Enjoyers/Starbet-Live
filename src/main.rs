@@ -14,6 +14,10 @@ use redis::AsyncCommands;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 
+mod common;
+mod models;
+mod repositories;
+
 #[derive(FromRef, Clone)]
 pub struct AppState {
     postgres_pool: sqlx::PgPool,
