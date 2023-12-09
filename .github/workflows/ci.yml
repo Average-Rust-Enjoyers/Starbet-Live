@@ -12,7 +12,9 @@ env:
 jobs:
   build:
     name: Build
-    runs-on: self-hosted
+    runs-on:
+      - self-hosted
+      - docker
     steps:
       - uses: actions/checkout@v4
       - name: Setup Rust
@@ -23,7 +25,9 @@ jobs:
         run: cargo build --verbose
   test:
     name: Test
-    runs-on: self-hosted
+    runs-on:
+      - self-hosted
+      - docker
     steps:
       - uses: actions/checkout@v4
       - name: Setup Rust
