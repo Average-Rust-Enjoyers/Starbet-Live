@@ -59,17 +59,12 @@ impl MoneyTransactionRepository {
     /// - `Ok(post)`: when the transaction exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
     pub(crate) fn is_transaction_correct(
-        transaction: Option<MoneyTransaction>,
+        tx: Option<MoneyTransaction>,
     ) -> DbResultSingle<MoneyTransaction> {
-        let Some(transaction) = transaction else {
-            return Err(DbError::from(BusinessLogicError::new(MoneyTransactionDoesNotExist)))
-        };
-
-        if let Some(_) = transaction.deleted_at {
-            return Err(BusinessLogicError::new(MoneyTransactionDoesNotExist).into())
+        match tx {
+            Some(tx) => Ok(tx),
+            None => Err(BusinessLogicError::new(MoneyTransactionDoesNotExist).into())
         }
-
-        Ok(transaction)
     }
 }
 
@@ -100,8 +95,7 @@ impl DbCreate<MoneyTransactionCreate, MoneyTransaction> for MoneyTransactionRepo
                     currency AS "currency: _",
                     deposit,
                     created_at,
-                    edited_at,
-                    deleted_at
+                    edited_at
             "#,
             data.app_user_id,
             data.amount_tokens,
