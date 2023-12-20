@@ -1,11 +1,12 @@
 #![allow(dead_code)]
-use crate::common::error::BusinessLogicErrorKind;
+use crate::common::error::{BusinessLogicErrorKind, DbResultMultiple};
 use crate::common::error::{BusinessLogicError, DbError, DbResultSingle};
-use crate::common::repository::{DbCreate, DbReadOne, PoolHandler};
+use crate::common::repository::{DbCreate, DbReadOne, PoolHandler, DbRepository, DbUpdate, DbPoolHandler};
 use crate::repositories::money_transaction::BusinessLogicErrorKind::MoneyTransactionDoesNotExist;
 use crate::models::money_transaction::{
-    MoneyTransaction, MoneyTransactionCreate, MoneyTransactionGetById,
+    MoneyTransaction, MoneyTransactionCreate, MoneyTransactionGetById, MoneyTransactionUpdateStatus,
 };
+
 use async_trait::async_trait;
 use sqlx::{Acquire, Postgres, Transaction};
 
@@ -66,6 +67,19 @@ impl MoneyTransactionRepository {
 }
 
 #[async_trait]
+impl DbRepository for MoneyTransactionRepository {
+    #[inline]
+    fn new(pool_handler: PoolHandler) -> Self {
+        Self { pool_handler }
+    }
+
+    #[inline]
+    async fn disconnect(&mut self) -> () {
+        self.pool_handler.disconnect().await;
+    }
+}
+
+#[async_trait]
 impl DbCreate<MoneyTransactionCreate, MoneyTransaction> for MoneyTransactionRepository {
     async fn create(&mut self, data: &MoneyTransactionCreate) -> DbResultSingle<MoneyTransaction> {
         let mut tx = self.pool_handler.pool.begin().await?;
@@ -116,5 +130,51 @@ impl DbReadOne<MoneyTransactionGetById, MoneyTransaction> for MoneyTransactionRe
         MoneyTransactionRepository::is_correct(
             MoneyTransactionRepository::get_money_transaction(params.clone(), &mut tx).await?,
         )
+    }
+}
+
+#[async_trait]
+impl DbUpdate<MoneyTransactionUpdateStatus, MoneyTransaction> for MoneyTransactionRepository {
+    async fn update(
+        &mut self,
+        params: &MoneyTransactionUpdateStatus,
+    ) -> DbResultMultiple<MoneyTransaction> {
+        let mut tx = self.pool_handler.pool.begin().await?;
+
+        MoneyTransactionRepository::is_correct(
+            MoneyTransactionRepository::get_money_transaction(
+                MoneyTransactionGetById::new(&params.id),
+                &mut tx,
+            )
+            .await?,
+        )?;
+
+        let money_transaction = sqlx::query_as!(
+            MoneyTransaction,
+            r#"
+                UPDATE MoneyTransaction
+                SET edited_at = now(),
+                    status = $1
+                WHERE id = $2
+                RETURNING 
+                    id,
+                    app_user_id,
+                    status AS "status: _",
+                    amount_tokens,
+                    amount_currency,
+                    currency AS "currency: _",
+                    deposit,
+                    created_at,
+                    edited_at
+            "#,
+            params.status as _,
+            params.id
+        )
+        .fetch_all(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(money_transaction)
     }
 }
