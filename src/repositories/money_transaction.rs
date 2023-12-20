@@ -2,6 +2,7 @@
 use crate::common::error::BusinessLogicErrorKind;
 use crate::common::error::{BusinessLogicError, DbError, DbResultSingle};
 use crate::common::repository::{DbCreate, DbReadOne, PoolHandler};
+use crate::repositories::money_transaction::BusinessLogicErrorKind::MoneyTransactionDoesNotExist;
 use crate::models::money_transaction::{
     MoneyTransaction, MoneyTransactionCreate, MoneyTransactionGetById,
 };
@@ -61,15 +62,11 @@ impl MoneyTransactionRepository {
         transaction: Option<MoneyTransaction>,
     ) -> DbResultSingle<MoneyTransaction> {
         let Some(transaction) = transaction else {
-            return Err(DbError::from(BusinessLogicError {
-                error: BusinessLogicErrorKind::MoneyTransactionDoesNotExist,
-            }));
+            return Err(DbError::from(BusinessLogicError::new(MoneyTransactionDoesNotExist)))
         };
 
-        if transaction.deleted_at.is_some() {
-            return Err(DbError::from(BusinessLogicError {
-                error: BusinessLogicErrorKind::MoneyTransactionDoesNotExist,
-            }));
+        if let Some(_) = transaction.deleted_at {
+            return Err(BusinessLogicError::new(MoneyTransactionDoesNotExist).into())
         }
 
         Ok(transaction)
