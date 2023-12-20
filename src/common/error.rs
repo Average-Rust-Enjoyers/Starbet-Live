@@ -96,7 +96,7 @@ impl Display for BusinessLogicErrorKind {
 /// Error type representing a Business Logic Error in the database layer ->
 /// usually a problem with missing records, insufficient rights for operation, and so on.
 pub struct BusinessLogicError {
-    error: BusinessLogicErrorKind,
+    pub error: BusinessLogicErrorKind,
 }
 
 impl BusinessLogicError {
