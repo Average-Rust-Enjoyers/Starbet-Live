@@ -4,14 +4,14 @@ use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, sqlx::Type)]
 pub enum Currency {
     CZK,
     EUR,
     USD,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, sqlx::Type)]
 pub enum MoneyTransactionStatus {
     Pending,
     Completed,
@@ -25,10 +25,12 @@ pub struct MoneyTransaction {
     pub app_user_id: Uuid,
     // ----------
     pub status: MoneyTransactionStatus,
-    pub amout_tokens: i32,
-    pub amount_currency: f32,
+    pub amount_tokens: i32,
+    pub amount_currency: f64,
     pub currency: Currency,
+    pub deposit: bool,
     pub created_at: DateTime<Utc>,
+    pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
