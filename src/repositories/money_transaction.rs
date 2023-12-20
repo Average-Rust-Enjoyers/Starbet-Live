@@ -39,8 +39,7 @@ impl MoneyTransactionRepository {
                         currency AS "currency: _",
                         deposit,
                         created_at,
-                        edited_at,
-                        deleted_at
+                        edited_at
                     FROM MoneyTransaction
                     WHERE id = $1
                 "#,
@@ -58,12 +57,10 @@ impl MoneyTransactionRepository {
     /// # Returns
     /// - `Ok(post)`: when the transaction exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
-    pub(crate) fn is_transaction_correct(
-        tx: Option<MoneyTransaction>,
-    ) -> DbResultSingle<MoneyTransaction> {
+    pub(crate) fn is_correct(tx: Option<MoneyTransaction>) -> DbResultSingle<MoneyTransaction> {
         match tx {
             Some(tx) => Ok(tx),
-            None => Err(BusinessLogicError::new(MoneyTransactionDoesNotExist).into())
+            None => Err(BusinessLogicError::new(MoneyTransactionDoesNotExist).into()),
         }
     }
 }
@@ -116,7 +113,7 @@ impl DbReadOne<MoneyTransactionGetById, MoneyTransaction> for MoneyTransactionRe
         let mut tx = self.pool_handler.pool.begin().await?;
 
         // TODO: check if user (transaction owner) exists and is not deleted
-        MoneyTransactionRepository::is_transaction_correct(
+        MoneyTransactionRepository::is_correct(
             MoneyTransactionRepository::get_money_transaction(params.clone(), &mut tx).await?,
         )
     }

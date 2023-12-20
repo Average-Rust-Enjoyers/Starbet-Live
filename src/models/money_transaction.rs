@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
@@ -31,7 +29,6 @@ pub struct MoneyTransaction {
     pub deposit: bool,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
-    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -43,6 +40,7 @@ pub struct MoneyTransactionCreate {
 }
 
 impl MoneyTransactionCreate {
+    #[allow(dead_code)]
     pub fn new(
         app_user_id: &Uuid,
         amount_tokens: i32,
@@ -65,6 +63,7 @@ pub struct MoneyTransactionUpdateStatus {
 }
 
 impl MoneyTransactionUpdateStatus {
+    #[allow(dead_code)]
     pub fn new(id: &Uuid, status: MoneyTransactionStatus) -> Self {
         Self { id: *id, status }
     }
@@ -73,12 +72,6 @@ impl MoneyTransactionUpdateStatus {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct MoneyTransactionDelete {
     pub id: Uuid,
-}
-
-impl MoneyTransactionDelete {
-    pub fn new(id: &Uuid) -> Self {
-        Self { id: *id }
-    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
