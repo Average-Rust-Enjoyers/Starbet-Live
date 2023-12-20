@@ -36,23 +36,20 @@ pub struct MoneyTransaction {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct MoneyTransactionCreate {
-    pub name: String,
     pub app_user_id: Uuid,
     pub amount_tokens: i32,
-    pub amount_currency: f32,
+    pub amount_currency: f64,
     pub currency: Currency,
 }
 
 impl MoneyTransactionCreate {
     pub fn new(
-        name: &str,
         app_user_id: &Uuid,
         amount_tokens: i32,
-        amount_currency: f32,
+        amount_currency: f64,
         currency: Currency,
     ) -> Self {
         Self {
-            name: name.to_owned(),
             app_user_id: app_user_id.to_owned(),
             amount_tokens,
             amount_currency,
