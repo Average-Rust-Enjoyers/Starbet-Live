@@ -2,11 +2,12 @@
 use crate::common::error::{BusinessLogicError, DbResultSingle};
 use crate::common::error::{BusinessLogicErrorKind, DbResultMultiple};
 use crate::common::repository::{
-    DbCreate, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
+    DbCreate, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler, DbReadMany,
 };
 use crate::models::money_transaction::{
     MoneyTransaction, MoneyTransactionCreate, MoneyTransactionGetById, MoneyTransactionUpdateStatus,
 };
+use crate::models::user::UserGetById;
 use crate::repositories::money_transaction::BusinessLogicErrorKind::MoneyTransactionDoesNotExist;
 
 use async_trait::async_trait;
@@ -132,6 +133,39 @@ impl DbReadOne<MoneyTransactionGetById, MoneyTransaction> for MoneyTransactionRe
         MoneyTransactionRepository::is_correct(
             MoneyTransactionRepository::get_money_transaction(params.clone(), &mut tx).await?,
         )
+    }
+}
+
+#[async_trait]
+impl DbReadMany<UserGetById, MoneyTransaction> for MoneyTransactionRepository {
+    async fn read_many(
+        &mut self,
+        params: &UserGetById,
+    ) -> DbResultMultiple<MoneyTransaction> {
+        let mut tx = self.pool_handler.pool.begin().await?;
+
+        // TODO: check if user (transaction owner) exists and is not deleted
+
+        Ok(sqlx::query_as!(
+            MoneyTransaction,
+            r#"
+                    SELECT 
+                        id,
+                        app_user_id,
+                        status AS "status: _",
+                        amount_tokens,
+                        amount_currency,
+                        currency AS "currency: _",
+                        deposit,
+                        created_at,
+                        edited_at
+                    FROM MoneyTransaction
+                    WHERE app_user_id = $1
+                "#,
+            params.id
+        )
+        .fetch_all(&mut *tx)
+        .await?)
     }
 }
 
