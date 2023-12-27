@@ -2,7 +2,7 @@
 use crate::common::error::{BusinessLogicError, DbResultSingle};
 use crate::common::error::{BusinessLogicErrorKind, DbResultMultiple};
 use crate::common::repository::{
-    DbCreate, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler, DbReadMany,
+    DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
 };
 use crate::models::money_transaction::{
     MoneyTransaction, MoneyTransactionCreate, MoneyTransactionGetById, MoneyTransactionUpdateStatus,
@@ -138,10 +138,7 @@ impl DbReadOne<MoneyTransactionGetById, MoneyTransaction> for MoneyTransactionRe
 
 #[async_trait]
 impl DbReadMany<UserGetById, MoneyTransaction> for MoneyTransactionRepository {
-    async fn read_many(
-        &mut self,
-        params: &UserGetById,
-    ) -> DbResultMultiple<MoneyTransaction> {
+    async fn read_many(&mut self, params: &UserGetById) -> DbResultMultiple<MoneyTransaction> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
         // TODO: check if user (transaction owner) exists and is not deleted
