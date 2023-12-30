@@ -70,6 +70,12 @@ impl GameUpdate {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
+pub struct GameFilter {
+    pub name: Option<String>,
+    pub genre: Option<GameGenre>,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct GameDelete {
     pub id: Uuid,
 }
