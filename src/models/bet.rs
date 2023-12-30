@@ -1,11 +1,10 @@
-#![allow(dead_code)]
-
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 use super::game_match_outcome::GameMatchOutcome;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, sqlx::Type)]
+#[sqlx(rename_all = "UPPERCASE")]
 pub enum BetStatus {
     Pending,
     Won,
@@ -21,11 +20,11 @@ pub struct Bet {
     pub game_match_id: Uuid,
     // ----------
     pub amount: i32,
+    pub status: BetStatus,
     pub expected_outcome: GameMatchOutcome,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
-    pub status: BetStatus,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -89,6 +88,19 @@ pub struct BetGetById {
 impl BetGetById {
     pub fn new(id: &Uuid) -> Self {
         Self { id: *id }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct BetGetByUserId {
+    pub user_id: Uuid,
+}
+
+impl BetGetByUserId {
+    pub fn new(user_id: &Uuid) -> Self {
+        Self {
+            user_id: *user_id,
+        }
     }
 }
 
