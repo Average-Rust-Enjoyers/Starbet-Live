@@ -98,9 +98,7 @@ pub struct BetGetByUserId {
 
 impl BetGetByUserId {
     pub fn new(user_id: &Uuid) -> Self {
-        Self {
-            user_id: *user_id,
-        }
+        Self { user_id: *user_id }
     }
 }
 
