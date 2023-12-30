@@ -37,6 +37,7 @@ pub struct BetCreate {
 }
 
 impl BetCreate {
+    #[allow(dead_code)]
     pub fn new(
         id: &Uuid,
         app_user_id: &Uuid,
@@ -61,6 +62,7 @@ pub struct BetUpdate {
 }
 
 impl BetUpdate {
+    #[allow(dead_code)]
     pub fn new(id: &Uuid, status: BetStatus) -> Self {
         Self {
             id: id.to_owned(),
@@ -75,6 +77,7 @@ pub struct BetDelete {
 }
 
 impl BetDelete {
+    #[allow(dead_code)]
     pub fn new(id: &Uuid) -> Self {
         Self { id: *id }
     }
@@ -86,6 +89,7 @@ pub struct BetGetById {
 }
 
 impl BetGetById {
+    #[allow(dead_code)]
     pub fn new(id: &Uuid) -> Self {
         Self { id: *id }
     }
@@ -97,10 +101,9 @@ pub struct BetGetByUserId {
 }
 
 impl BetGetByUserId {
+    #[allow(dead_code)]
     pub fn new(user_id: &Uuid) -> Self {
-        Self {
-            user_id: *user_id,
-        }
+        Self { user_id: *user_id }
     }
 }
 
