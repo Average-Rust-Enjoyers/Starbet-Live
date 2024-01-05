@@ -109,8 +109,7 @@ impl DbCreate<UserCreate, User> for UserRepository {
 
 #[async_trait]
 impl DbReadOne<UserLogin, User> for UserRepository {
-    /// Login the user with provided parameters, if the user does not exist, is deleted or the
-    /// passwords don't match, return the error about combination of email/password not working
+    /// Login the user with provided parameters,
     async fn read_one(&mut self, params: &UserLogin) -> DbResultSingle<User> {
         let user = sqlx::query_as!(
             User,
@@ -123,11 +122,7 @@ impl DbReadOne<UserLogin, User> for UserRepository {
         )
         .fetch_optional(self.pool_handler.pool.as_ref())
         .await?;
-
-        let user = match Self::user_is_correct(user) {
-            Ok(user) => user,
-            Err(_) => return Err(BusinessLogicError::new(UserPasswordDoesNotMatch).into()),
-        };
+        let user = Self::user_is_correct(user)?;
 
         if user.password_hash != params.password_hash {
             return Err(BusinessLogicError::new(UserPasswordDoesNotMatch).into());
@@ -147,9 +142,7 @@ impl DbUpdate<UserUpdate, User> for UserRepository {
         }
 
         let mut tx = self.pool_handler.pool.begin().await?;
-
-        let user = Self::get_user(params.into(), &mut tx).await?;
-        Self::user_is_correct(user)?;
+        Self::user_is_correct(Self::get_user(params.into(), &mut tx).await?)?;
 
         let user = sqlx::query_as!(
             User,
@@ -191,9 +184,7 @@ impl DbDelete<UserDelete, User> for UserRepository {
     /// Delete the user if we know their id (we're logged in as that user)
     async fn delete(&mut self, params: &UserDelete) -> DbResultMultiple<User> {
         let mut tx = self.pool_handler.pool.begin().await?;
-
-        let user = Self::get_user(params.into(), &mut tx).await?;
-        Self::user_is_correct(user)?;
+        Self::user_is_correct(Self::get_user(params.into(), &mut tx).await?)?;
 
         let user = sqlx::query_as!(
             User,
