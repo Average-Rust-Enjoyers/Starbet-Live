@@ -10,7 +10,9 @@ use crate::{
             },
             DbResultMultiple, DbResultSingle,
         },
-        DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
+        repository::{
+            DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
+        },
     },
     models::user::{User, UserCreate, UserDelete, UserGetById, UserLogin, UserUpdate},
 };
