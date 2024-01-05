@@ -4,8 +4,9 @@ use sqlx::{Postgres, Transaction};
 use crate::{
     common::{
         error::{
-            BusinessLogicError, BusinessLogicErrorKind::GameMatchDoesNotExist, DbResultMultiple,
-            DbResultSingle,
+            BusinessLogicError,
+            BusinessLogicErrorKind::{GameMatchDeleted, GameMatchDoesNotExist},
+            DbResultMultiple, DbResultSingle,
         },
         DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
     },
@@ -48,7 +49,10 @@ impl GameMatchRepository {
 
     pub fn is_correct(game_match: Option<GameMatch>) -> DbResultSingle<GameMatch> {
         match game_match {
-            Some(game_match) => Ok(game_match),
+            Some(game_match) => match game_match.deleted_at {
+                Some(_) => Err(BusinessLogicError::new(GameMatchDeleted).into()),
+                None => Ok(game_match),
+            },
             None => Err(BusinessLogicError::new(GameMatchDoesNotExist).into()),
         }
     }
