@@ -12,7 +12,6 @@ pub struct Odds {
     pub odds_a: f64,
     pub odds_b: f64,
     pub created_at: DateTime<Utc>,
-    pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
