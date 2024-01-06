@@ -25,7 +25,6 @@ pub enum BusinessLogicErrorKind {
     InsufficientFunds,
     // MoneyTransaction errors
     MoneyTransactionDoesNotExist,
-    MoneyTransactionDeleted,
     MoneyTransactionAmountTooLow,
     MoneyTransactionAmountNotAllowed,
     // Odds errors
@@ -79,7 +78,6 @@ impl Display for BusinessLogicErrorKind {
             BusinessLogicErrorKind::MoneyTransactionDoesNotExist => {
                 does_not_exist("money transaction")
             }
-            BusinessLogicErrorKind::MoneyTransactionDeleted => deleted("money transaction"),
             BusinessLogicErrorKind::MoneyTransactionAmountTooLow => {
                 amount_too_low("money transaction")
             }
@@ -96,7 +94,7 @@ impl Display for BusinessLogicErrorKind {
 /// Error type representing a Business Logic Error in the database layer ->
 /// usually a problem with missing records, insufficient rights for operation, and so on.
 pub struct BusinessLogicError {
-    error: BusinessLogicErrorKind,
+    pub error: BusinessLogicErrorKind,
 }
 
 impl BusinessLogicError {

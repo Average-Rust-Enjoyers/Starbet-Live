@@ -118,7 +118,6 @@ entity MoneyTransaction {
     * currency: Currency
     * deposit: bool
     * created_at: <<date>>
-    deleted_at: <<date>>
 }
 
 GameMatch }o--|| Game
