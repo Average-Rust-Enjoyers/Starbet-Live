@@ -143,9 +143,8 @@ impl DbReadOne<MoneyTransactionGetById, MoneyTransaction> for MoneyTransactionRe
     ) -> DbResultSingle<MoneyTransaction> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
-        let money_transaction = Self::is_correct(
-            Self::get_money_transaction(params.clone(), &mut tx).await?,
-        )?;
+        let money_transaction =
+            Self::is_correct(Self::get_money_transaction(params.clone(), &mut tx).await?)?;
 
         UserRepository::is_correct(
             UserRepository::get_user(
@@ -200,11 +199,7 @@ impl DbUpdate<MoneyTransactionUpdateStatus, MoneyTransaction> for MoneyTransacti
         let mut tx = self.pool_handler.pool.begin().await?;
 
         Self::is_correct(
-            Self::get_money_transaction(
-                MoneyTransactionGetById::new(&params.id),
-                &mut tx,
-            )
-            .await?,
+            Self::get_money_transaction(MoneyTransactionGetById::new(&params.id), &mut tx).await?,
         )?;
 
         let money_transaction = sqlx::query_as!(
