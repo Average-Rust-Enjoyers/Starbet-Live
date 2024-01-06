@@ -9,6 +9,7 @@ use crate::models::money_transaction::{
 };
 use crate::models::user::UserGetById;
 use crate::repositories::money_transaction::BusinessLogicErrorKind::MoneyTransactionDoesNotExist;
+use crate::repositories::user::UserRepository;
 
 use async_trait::async_trait;
 use sqlx::{Acquire, Postgres, Transaction};
@@ -86,7 +87,16 @@ impl DbRepository for MoneyTransactionRepository {
 impl DbCreate<MoneyTransactionCreate, MoneyTransaction> for MoneyTransactionRepository {
     async fn create(&mut self, data: &MoneyTransactionCreate) -> DbResultSingle<MoneyTransaction> {
         let mut tx = self.pool_handler.pool.begin().await?;
-        // TODO: check if User exists and is not deleted
+
+        UserRepository::is_correct(
+            UserRepository::get_user(
+                UserGetById {
+                    id: data.app_user_id,
+                },
+                &mut tx,
+            )
+            .await?,
+        )?;
 
         let conn = tx.acquire().await?;
         Ok(sqlx::query_as!(
@@ -129,10 +139,21 @@ impl DbReadOne<MoneyTransactionGetById, MoneyTransaction> for MoneyTransactionRe
     ) -> DbResultSingle<MoneyTransaction> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
-        // TODO: check if user (transaction owner) exists and is not deleted
-        MoneyTransactionRepository::is_correct(
+        let money_transaction = MoneyTransactionRepository::is_correct(
             MoneyTransactionRepository::get_money_transaction(params.clone(), &mut tx).await?,
-        )
+        )?;
+
+        UserRepository::is_correct(
+            UserRepository::get_user(
+                UserGetById {
+                    id: money_transaction.app_user_id,
+                },
+                &mut tx,
+            )
+            .await?,
+        )?;
+
+        Ok(money_transaction)
     }
 }
 
@@ -141,7 +162,7 @@ impl DbReadMany<UserGetById, MoneyTransaction> for MoneyTransactionRepository {
     async fn read_many(&mut self, params: &UserGetById) -> DbResultMultiple<MoneyTransaction> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
-        // TODO: check if user (transaction owner) exists and is not deleted
+        UserRepository::is_correct(UserRepository::get_user(params.clone(), &mut tx).await?)?;
 
         Ok(sqlx::query_as!(
             MoneyTransaction,
