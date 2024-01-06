@@ -29,7 +29,7 @@ pub enum BusinessLogicErrorKind {
     MoneyTransactionAmountTooLow,
     MoneyTransactionAmountNotAllowed,
     // Odds errors
-    OddsDoesNotExist,
+    OddsDoNotExist,
     OddsDeleted,
 
     // --------------------------
@@ -86,7 +86,7 @@ impl Display for BusinessLogicErrorKind {
             BusinessLogicErrorKind::MoneyTransactionAmountNotAllowed => {
                 amount_not_allowed("money transaction")
             }
-            BusinessLogicErrorKind::OddsDoesNotExist => does_not_exist("odds"),
+            BusinessLogicErrorKind::OddsDoNotExist => does_not_exist("odds"),
             BusinessLogicErrorKind::OddsDeleted => deleted("odds"),
         };
         f.write_str(error_string.as_str())

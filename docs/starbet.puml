@@ -70,7 +70,6 @@ entity Odds {
     * odds_a: float
     * odds_b: float
     * created_at: <<date>>
-    * edited_at: <<date>>
     deleted_at: <<date>>
 }
 
