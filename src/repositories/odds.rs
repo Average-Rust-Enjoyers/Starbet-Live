@@ -8,10 +8,7 @@ use crate::{
             BusinessLogicErrorKind::{OddsDeleted, OddsDoNotExist},
             DbResultMultiple, DbResultSingle,
         },
-        repository::{
-            DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository,
-            PoolHandler,
-        },
+        repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
     },
     models::{
         game_match::GameMatchGetById,
@@ -31,8 +28,7 @@ impl OddsRepository {
         let bet = sqlx::query_as!(
             Odds,
             r#"
-                SELECT
-                    *
+                SELECT *
                 FROM odds
                 WHERE id = $1
             "#,
@@ -127,5 +123,4 @@ impl DbReadMany<GameMatchGetById, Odds> for OddsRepository {
     }
 }
 
-// TODO: odds update?
 // TODO: odds deletion?
