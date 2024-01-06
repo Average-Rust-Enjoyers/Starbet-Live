@@ -99,7 +99,7 @@ impl DbCreate<MoneyTransactionCreate, MoneyTransaction> for MoneyTransactionRepo
         )?;
 
         let conn = tx.acquire().await?;
-        Ok(sqlx::query_as!(
+        let money_transaction = sqlx::query_as!(
             MoneyTransaction,
             r#"
                 INSERT INTO MoneyTransaction
@@ -127,7 +127,11 @@ impl DbCreate<MoneyTransactionCreate, MoneyTransaction> for MoneyTransactionRepo
             data.currency as _
         )
         .fetch_one(conn)
-        .await?)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(money_transaction)
     }
 }
 
