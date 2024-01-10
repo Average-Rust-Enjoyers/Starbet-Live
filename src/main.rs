@@ -10,13 +10,16 @@ use bb8_redis::RedisConnectionManager;
 #[cfg(debug_assertions)]
 use dotenvy::dotenv;
 
+use handlers::index::index_handler;
 use redis::AsyncCommands;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 
 mod common;
+mod handlers;
 mod models;
 mod repositories;
+mod templates;
 
 #[derive(FromRef, Clone)]
 pub struct AppState {
@@ -59,16 +62,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Starting server. Listening on http://{addr}");
 
     let app = Router::new()
-        .route("/", get(ok))
+        .route("/", get(index_handler))
         .route("/redis", get(redis_ok))
         .with_state(app_state);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
     Ok(())
-}
-
-pub async fn ok() -> http::StatusCode {
-    http::StatusCode::OK
 }
 
 /// # Panics

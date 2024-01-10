@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use super::game_match_outcome::GameMatchOutcome;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, sqlx::Type)]
 pub enum GameMatchStatus {
     Pending,
     Live,
@@ -23,7 +23,7 @@ pub struct GameMatch {
     pub name_b: String,
     pub starts_at: DateTime<Utc>,
     pub ends_at: DateTime<Utc>,
-    pub outcome: GameMatchOutcome,
+    pub outcome: Option<GameMatchOutcome>,
     pub status: GameMatchStatus,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
@@ -32,7 +32,6 @@ pub struct GameMatch {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct GameMatchCreate {
-    pub name: String,
     pub game_id: Uuid,
     pub name_a: String,
     pub name_b: String,
@@ -42,7 +41,6 @@ pub struct GameMatchCreate {
 
 impl GameMatchCreate {
     pub fn new(
-        name: &str,
         game_id: &Uuid,
         name_a: &str,
         name_b: &str,
@@ -50,7 +48,6 @@ impl GameMatchCreate {
         ends_at: DateTime<Utc>,
     ) -> Self {
         Self {
-            name: name.to_owned(),
             game_id: game_id.to_owned(),
             name_a: name_a.to_owned(),
             name_b: name_b.to_owned(),
