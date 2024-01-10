@@ -97,6 +97,8 @@ impl DbCreate<OddsCreate, Odds> for OddsRepository {
         .fetch_one(self.pool_handler.pool.as_ref())
         .await?;
 
+        tx.commit().await?;
+
         Ok(odds)
     }
 }
