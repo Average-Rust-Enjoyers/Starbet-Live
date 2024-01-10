@@ -7,7 +7,7 @@ use crate::common::repository::{
 use crate::models::money_transaction::{
     MoneyTransaction, MoneyTransactionCreate, MoneyTransactionGetById, MoneyTransactionUpdateStatus,
 };
-use crate::models::user::UserGetById;
+use crate::models::user::GetByUserId;
 use crate::repositories::money_transaction::BusinessLogicErrorKind::MoneyTransactionDoesNotExist;
 use crate::repositories::user::UserRepository;
 
@@ -90,7 +90,7 @@ impl DbCreate<MoneyTransactionCreate, MoneyTransaction> for MoneyTransactionRepo
 
         UserRepository::is_correct(
             UserRepository::get_user(
-                UserGetById {
+                GetByUserId {
                     id: data.app_user_id,
                 },
                 &mut tx,
@@ -148,7 +148,7 @@ impl DbReadOne<MoneyTransactionGetById, MoneyTransaction> for MoneyTransactionRe
 
         UserRepository::is_correct(
             UserRepository::get_user(
-                UserGetById {
+                GetByUserId {
                     id: money_transaction.app_user_id,
                 },
                 &mut tx,
@@ -161,8 +161,8 @@ impl DbReadOne<MoneyTransactionGetById, MoneyTransaction> for MoneyTransactionRe
 }
 
 #[async_trait]
-impl DbReadMany<UserGetById, MoneyTransaction> for MoneyTransactionRepository {
-    async fn read_many(&mut self, params: &UserGetById) -> DbResultMultiple<MoneyTransaction> {
+impl DbReadMany<GetByUserId, MoneyTransaction> for MoneyTransactionRepository {
+    async fn read_many(&mut self, params: &GetByUserId) -> DbResultMultiple<MoneyTransaction> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
         UserRepository::is_correct(UserRepository::get_user(params.clone(), &mut tx).await?)?;

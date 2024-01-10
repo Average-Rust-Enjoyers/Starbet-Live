@@ -14,7 +14,7 @@ use crate::{
             DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
         },
     },
-    models::user::{User, UserCreate, UserDelete, UserGetById, UserLogin, UserUpdate},
+    models::user::{GetByUserId, User, UserCreate, UserDelete, UserLogin, UserUpdate},
 };
 
 pub struct UserRepository {
@@ -32,7 +32,7 @@ impl UserRepository {
     /// - `Ok(user)`: on successful connection and retrieval
     /// - `Err(_)`: otherwise
     pub async fn get_user<'a>(
-        params: UserGetById,
+        params: GetByUserId,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Option<User>> {
         let user = sqlx::query_as!(

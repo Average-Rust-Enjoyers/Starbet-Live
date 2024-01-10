@@ -146,24 +146,24 @@ impl UserDelete {
 /// Structure passed to the repository when trying to find a user (generic function) for
 /// transactions which check whether the specified user exists
 #[derive(Debug, Clone)]
-pub struct UserGetById {
+pub struct GetByUserId {
     pub id: Uuid,
 }
 
-impl UserGetById {
+impl GetByUserId {
     #[must_use]
     pub const fn new(id: &Uuid) -> Self {
         Self { id: *id }
     }
 }
 
-impl From<&UserDelete> for UserGetById {
+impl From<&UserDelete> for GetByUserId {
     fn from(user_delete: &UserDelete) -> Self {
         Self { id: user_delete.id }
     }
 }
 
-impl From<&UserUpdate> for UserGetById {
+impl From<&UserUpdate> for GetByUserId {
     fn from(user_update: &UserUpdate) -> Self {
         Self { id: user_update.id }
     }
