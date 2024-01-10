@@ -13,12 +13,13 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"
         integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
         crossorigin="anonymous"></script>
+    <!-- https://htmx.org/extensions/json-enc/ -->
+    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+
 </head>
 
-<body>
-    <div class="flex justify-center items-center text-5xl">
-        Starbet Live
-    </div>
+<body id="body">
+    {% include "landing_page.html" %}
 </body>
 
 </html>
