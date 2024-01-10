@@ -67,7 +67,6 @@ pub mod bet_tests {
             .await
             .expect("The repository call should succeed - select by user ID");
         
-        println!("{:?} {:?}", by_uid, vec![&lost_bet, &canceled_bet]);
         assert!(by_uid
             .iter()
             .eq(vec![&canceled_bet, &lost_bet]));
