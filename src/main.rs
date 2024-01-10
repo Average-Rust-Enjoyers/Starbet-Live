@@ -11,8 +11,8 @@ use bb8_redis::RedisConnectionManager;
 use dotenvy::dotenv;
 
 use handlers::{
-    dashboard::dashboard::dashboard_handler, game::game::game_handler, index::index_handler,
-    login::login_page::login_page_handler, register::register_page::register_page_handler,
+    dashboard::dashboard_handler, game::game_handler, index::index_handler,
+    login::login_page_handler, register::register_page_handler,
 };
 
 use redis::AsyncCommands;
