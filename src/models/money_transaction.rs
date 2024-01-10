@@ -10,10 +10,11 @@ pub enum Currency {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, sqlx::Type)]
+#[sqlx(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MoneyTransactionStatus {
     Pending,
     Completed,
-    Cancelled,
+    Canceled,
 }
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Clone)]
