@@ -141,7 +141,10 @@ impl DbReadMany<GameMatchGetById, Odds> for OddsRepository {
 #[async_trait]
 impl DbDelete<OddsGetById, Odds> for OddsRepository {
     async fn delete(&mut self, params: &OddsGetById) -> DbResultMultiple<Odds> {
-        let mut conn = self.pool_handler.pool.acquire().await?;
+        let mut tx = self.pool_handler.pool.begin().await?;
+
+        Self::is_correct(Self::get_odds(params.clone(), &mut tx).await?)?;
+
         let bets = sqlx::query_as!(
             Odds,
             r#"
@@ -152,8 +155,10 @@ impl DbDelete<OddsGetById, Odds> for OddsRepository {
             "#,
             params.id,
         )
-        .fetch_all(&mut *conn)
+        .fetch_all(&mut *tx)
         .await?;
+
+        tx.commit().await?;
 
         Ok(bets)
     }
