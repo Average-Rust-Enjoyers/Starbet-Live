@@ -5,8 +5,13 @@ pub mod bet_tests {
     use starbet_live::{
         common::repository::{DbReadMany, DbRepository, PoolHandler},
         error::DbResultSingle,
-        models::{game::{Game, GameFilter, GameGenre}, bet::{Bet, BetStatus, BetGetByUserId, BetGetById}, game_match_outcome::GameMatchOutcome},
-        DbPoolHandler, GameRepository, repositories::bet::BetRepository, DbReadOne,
+        models::{
+            bet::{Bet, BetGetById, BetGetByUserId, BetStatus},
+            game::{Game, GameFilter, GameGenre},
+            game_match_outcome::GameMatchOutcome,
+        },
+        repositories::bet::BetRepository,
+        DbPoolHandler, DbReadOne, GameRepository,
     };
     use std::sync::Arc;
     use uuid::Uuid;
@@ -25,8 +30,12 @@ pub mod bet_tests {
             amount: 1114i32,
             status: BetStatus::Canceled,
             expected_outcome: GameMatchOutcome::WinB,
-            created_at: DateTime::parse_from_rfc3339("2023-12-09 19:38:46.728083+00:00").unwrap().into(),
-            edited_at: DateTime::parse_from_rfc3339("2023-12-09 19:38:46.728083+00:00").unwrap().into(),
+            created_at: DateTime::parse_from_rfc3339("2023-12-09 19:38:46.728083+00:00")
+                .unwrap()
+                .into(),
+            edited_at: DateTime::parse_from_rfc3339("2023-12-09 19:38:46.728083+00:00")
+                .unwrap()
+                .into(),
             deleted_at: None,
         };
 
@@ -37,41 +46,47 @@ pub mod bet_tests {
             amount: 5770i32,
             status: BetStatus::Lost,
             expected_outcome: GameMatchOutcome::WinA,
-            created_at: DateTime::parse_from_rfc3339("2023-12-09 19:38:46.728083+00:00").unwrap().into(),
-            edited_at: DateTime::parse_from_rfc3339("2023-12-09 19:38:46.728083+00:00").unwrap().into(),
+            created_at: DateTime::parse_from_rfc3339("2023-12-09 19:38:46.728083+00:00")
+                .unwrap()
+                .into(),
+            edited_at: DateTime::parse_from_rfc3339("2023-12-09 19:38:46.728083+00:00")
+                .unwrap()
+                .into(),
             deleted_at: None,
         };
 
         let read_one = bet_repository
             .read_one(&BetGetById {
-                id: Uuid::parse_str("4b852c26-2bbf-421d-9194-cca0f670e3e3").unwrap()
-            }).await.expect("The repository call should succeed - read one bet");
+                id: Uuid::parse_str("4b852c26-2bbf-421d-9194-cca0f670e3e3").unwrap(),
+            })
+            .await
+            .expect("The repository call should succeed - read one bet");
 
         canceled_bet.created_at = read_one.created_at;
         canceled_bet.edited_at = read_one.edited_at;
 
         assert!(read_one.eq(&canceled_bet));
 
-
         let read_one = bet_repository
             .read_one(&BetGetById {
-                id: Uuid::parse_str("3cd44b3d-9b4d-4080-94d4-092811353396").unwrap()
-            }).await.expect("The repository call should succeed - read one bet");
+                id: Uuid::parse_str("3cd44b3d-9b4d-4080-94d4-092811353396").unwrap(),
+            })
+            .await
+            .expect("The repository call should succeed - read one bet");
 
         lost_bet.created_at = read_one.created_at;
         lost_bet.edited_at = read_one.edited_at;
         assert!(read_one.eq(&lost_bet));
 
         let by_uid = bet_repository
-            .read_many(&BetGetByUserId { user_id: app_user_id })
+            .read_many(&BetGetByUserId {
+                user_id: app_user_id,
+            })
             .await
             .expect("The repository call should succeed - select by user ID");
-        
-        assert!(by_uid
-            .iter()
-            .eq(vec![&canceled_bet, &lost_bet]));
 
-            
+        assert!(by_uid.iter().eq(vec![&canceled_bet, &lost_bet]));
+
         bet_repository.disconnect().await;
         Ok(())
     }
