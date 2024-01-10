@@ -18,6 +18,8 @@ use crate::{
     },
 };
 
+use super::game_match::GameMatchRepository;
+
 pub struct OddsRepository {
     pool_handler: PoolHandler,
 }
@@ -68,7 +70,17 @@ impl DbRepository for OddsRepository {
 impl DbCreate<OddsCreate, Odds> for OddsRepository {
     #[inline]
     async fn create(&mut self, data: &OddsCreate) -> DbResultSingle<Odds> {
-        // TODO: check game_match_id validity against GameMatch
+        let mut tx = self.pool_handler.pool.begin().await?;
+
+        GameMatchRepository::is_correct(
+            GameMatchRepository::get_game_match(
+                GameMatchGetById {
+                    id: data.game_match_id,
+                },
+                &mut tx,
+            )
+            .await?,
+        )?;
 
         let odds = sqlx::query_as!(
             Odds,
@@ -94,11 +106,9 @@ impl DbReadOne<OddsGetById, Odds> for OddsRepository {
     async fn read_one(&mut self, params: &OddsGetById) -> DbResultSingle<Odds> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
-        let odds = Self::is_correct(Self::get_odds(OddsGetById { id: params.id }, &mut tx).await?)?;
-
-        tx.commit().await?;
-
-        Ok(odds)
+        Ok(Self::is_correct(
+            Self::get_odds(params.clone(), &mut tx).await?,
+        )?)
     }
 }
 
@@ -106,7 +116,10 @@ impl DbReadOne<OddsGetById, Odds> for OddsRepository {
 impl DbReadMany<GameMatchGetById, Odds> for OddsRepository {
     async fn read_many(&mut self, data: &GameMatchGetById) -> DbResultMultiple<Odds> {
         let mut tx = self.pool_handler.pool.begin().await?;
-        // TODO: check GameMatch validity
+
+        GameMatchRepository::is_correct(
+            GameMatchRepository::get_game_match(data.clone(), &mut tx).await?,
+        )?;
 
         let bets = sqlx::query_as!(
             Odds,
