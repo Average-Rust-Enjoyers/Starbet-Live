@@ -7,11 +7,10 @@ pub mod bet_tests {
         error::DbResultSingle,
         models::{
             bet::{Bet, BetGetById, BetGetByUserId, BetStatus},
-            game::{Game, GameFilter, GameGenre},
             game_match_outcome::GameMatchOutcome,
         },
         repositories::bet::BetRepository,
-        DbPoolHandler, DbReadOne, GameRepository,
+        DbPoolHandler, DbReadOne,
     };
     use std::sync::Arc;
     use uuid::Uuid;
@@ -25,7 +24,7 @@ pub mod bet_tests {
 
         let mut canceled_bet = Bet {
             id: Uuid::parse_str("4b852c26-2bbf-421d-9194-cca0f670e3e3").unwrap(),
-            app_user_id: app_user_id.clone(),
+            app_user_id,
             game_match_id: Uuid::parse_str("8902ab54-61fd-40e3-808f-55ddfcd89e37").unwrap(),
             amount: 1114i32,
             status: BetStatus::Canceled,
@@ -41,7 +40,7 @@ pub mod bet_tests {
 
         let mut lost_bet = Bet {
             id: Uuid::parse_str("3cd44b3d-9b4d-4080-94d4-092811353396").unwrap(),
-            app_user_id: app_user_id.clone(),
+            app_user_id,
             game_match_id: Uuid::parse_str("cd2fce3e-7260-48be-9da1-b85df105e40a").unwrap(),
             amount: 5770i32,
             status: BetStatus::Lost,
