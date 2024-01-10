@@ -1,4 +1,4 @@
 pub use repository::*;
 
 pub mod error;
-mod repository;
+pub mod repository;
