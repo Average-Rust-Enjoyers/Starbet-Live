@@ -9,10 +9,9 @@ pub struct Odds {
     // ----------
     pub game_match_id: Uuid,
     // ----------
-    pub odds_a: f32,
-    pub odds_b: f32,
+    pub odds_a: f64,
+    pub odds_b: f64,
     pub created_at: DateTime<Utc>,
-    pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
@@ -20,12 +19,12 @@ pub struct Odds {
 pub struct OddsCreate {
     pub id: Uuid,
     pub game_match_id: Uuid,
-    pub odds_a: f32,
-    pub odds_b: f32,
+    pub odds_a: f64,
+    pub odds_b: f64,
 }
 
 impl OddsCreate {
-    pub fn new(id: &Uuid, game_match_id: &Uuid, odds_a: f32, odds_b: f32) -> Self {
+    pub fn new(id: &Uuid, game_match_id: &Uuid, odds_a: f64, odds_b: f64) -> Self {
         Self {
             id: id.to_owned(),
             game_match_id: game_match_id.to_owned(),
