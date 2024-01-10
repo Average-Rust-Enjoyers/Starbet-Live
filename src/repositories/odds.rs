@@ -8,7 +8,9 @@ use crate::{
             BusinessLogicErrorKind::{OddsDeleted, OddsDoNotExist},
             DbResultMultiple, DbResultSingle,
         },
-        repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
+        repository::{
+            DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler,
+        },
     },
     models::{
         game_match::GameMatchGetById,
@@ -123,4 +125,23 @@ impl DbReadMany<GameMatchGetById, Odds> for OddsRepository {
     }
 }
 
-// TODO: odds deletion?
+#[async_trait]
+impl DbDelete<OddsGetById, Odds> for OddsRepository {
+    async fn delete(&mut self, params: &OddsGetById) -> DbResultMultiple<Odds> {
+        let mut conn = self.pool_handler.pool.acquire().await?;
+        let bets = sqlx::query_as!(
+            Odds,
+            r#"
+                UPDATE Odds
+                SET deleted_at = now()
+                WHERE id = $1
+                RETURNING *
+            "#,
+            params.id,
+        )
+        .fetch_all(&mut *conn)
+        .await?;
+
+        Ok(bets)
+    }
+}
