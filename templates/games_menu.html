@@ -1,0 +1,11 @@
+<div class="flex flex-col">
+    <div class="text-3xl font-bold w-full flex items-center justify-center h-16">GAMES</div>
+    <div id="games" class="flex flex-col gap-1">
+        {% for item in items %}
+        <div hx-post="game" hx-trigger="click" hx-target="#game_board" hx-swap="innerHTML"
+            hx-vals='{"game_name": "{{ item }}"}' hx-ext='json-enc'
+            class="game-item bg-gray-500 text-white p-4 rounded cursor-pointer p-4 mx-4 hover:bg-gray-600">{{item}}
+        </div>
+        {% endfor %}
+    </div>
+</div>

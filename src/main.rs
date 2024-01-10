@@ -1,7 +1,7 @@
 use axum::{
     extract::{FromRef, State},
     http,
-    routing::get,
+    routing::{get, post},
     Router,
 };
 
@@ -10,7 +10,11 @@ use bb8_redis::RedisConnectionManager;
 #[cfg(debug_assertions)]
 use dotenvy::dotenv;
 
-use handlers::index::index_handler;
+use handlers::{
+    dashboard::dashboard_handler, game::game_handler, index::index_handler,
+    login::login_page_handler, register::register_page_handler,
+};
+
 use redis::AsyncCommands;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
@@ -63,7 +67,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app = Router::new()
         .route("/", get(index_handler))
+        .route("/login", get(login_page_handler))
+        .route("/register", get(register_page_handler))
+        .route("/dashboard", get(dashboard_handler))
         .route("/redis", get(redis_ok))
+        .route("/game", post(game_handler))
         .with_state(app_state);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
