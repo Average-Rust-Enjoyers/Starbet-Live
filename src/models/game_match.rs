@@ -10,7 +10,7 @@ pub enum GameMatchStatus {
     Pending,
     Live,
     Finished,
-    Cancelled,
+    Canceled,
 }
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]

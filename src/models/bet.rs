@@ -9,7 +9,7 @@ pub enum BetStatus {
     Pending,
     Won,
     Lost,
-    Cancelled,
+    Canceled,
 }
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
