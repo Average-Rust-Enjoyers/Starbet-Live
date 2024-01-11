@@ -5,12 +5,20 @@ use askama::Template;
 pub struct LandingPageTemplate {}
 
 #[derive(Template)]
-#[template(path = "login_page.html")]
+#[template(path = "login/page.html")]
 pub struct LoginPageTemplate {}
 
 #[derive(Template)]
-#[template(path = "register_page.html")]
+#[template(path = "login/form.html")]
+pub struct LoginFormTemplate {}
+
+#[derive(Template)]
+#[template(path = "register/page.html")]
 pub struct RegisterPageTemplate {}
+
+#[derive(Template)]
+#[template(path = "register/form.html")]
+pub struct RegisterFormTemplate {}
 
 pub struct UserSend {
     pub username: String,

@@ -1,4 +1,4 @@
-use crate::templates::LoginPageTemplate;
+use crate::templates::{LoginFormTemplate, LoginPageTemplate};
 use askama::Template;
 use axum::{
     extract::Request,
@@ -6,11 +6,11 @@ use axum::{
     response::{Html, IntoResponse},
 };
 
-pub async fn login_page_handler(req: Request) -> impl IntoResponse {
-    if !req.headers().contains_key("referer") {
-        return (StatusCode::FOUND, Html("Already logged in").into_response());
-    }
-    let template = LoginPageTemplate {};
-    let reply_html = template.render().unwrap();
+pub async fn login_handler(req: Request) -> impl IntoResponse {
+    let reply_html = if req.headers().contains_key("referer") {
+        (LoginFormTemplate {}).render().unwrap()
+    } else {
+        (LoginPageTemplate {}).render().unwrap()
+    };
     (StatusCode::OK, Html(reply_html).into_response())
 }
