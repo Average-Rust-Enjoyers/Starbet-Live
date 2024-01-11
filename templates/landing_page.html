@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}StarBet Live{% endblock %}
+
+{% block content %}
 <div class="flex flex-col justify-center items-center h-screen">
     <div class="m-4 font-bold text-lg">
         Starbet Live
@@ -7,7 +12,8 @@
             width="650px" height="650px" />
     </div>
     <div class="flex flex-row">
-        <button hx-get="login" hx-target="body" class="m-2 p-2 bg-gray-400 hover:bg-gray-600 rounded-md">
+        <button hx-get="login" hx-target="body" hx-push-url="true"
+            class="m-2 p-2 bg-gray-400 hover:bg-gray-600 rounded-md">
             LOGIN
         </button>
         <button hx-get="register" hx-target="body" class="m-2 p-2 bg-gray-400 hover:bg-gray-600 rounded-md">
@@ -15,3 +21,4 @@
         </button>
     </div>
 </div>
+{% endblock %}

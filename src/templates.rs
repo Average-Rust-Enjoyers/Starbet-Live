@@ -1,8 +1,8 @@
 use askama::Template;
 
 #[derive(Template)]
-#[template(path = "index.html")]
-pub struct IndexTemplate {}
+#[template(path = "landing_page.html")]
+pub struct LandingPageTemplate {}
 
 #[derive(Template)]
 #[template(path = "login_page.html")]
