@@ -1,21 +1,28 @@
-{% extends "base.html" %}
-
-{% block content %}
-<div class="flex flex-col justify-center items-center h-screen">
-    <div class="m-4 font-bold text-lg">
-        Starbet Live
-    </div>
-    <div class="m-4 text-center flex justify-center items-center flex-col">
-        <img src="https://st2.depositphotos.com/4211323/7822/v/950/depositphotos_78227312-stock-illustration-winged-penis-logo-phallus-with.jpg"
-            width="650px" height="650px" />
+{% extends "base.html" %} {% block content %}
+<div class="flex h-screen flex-col items-center justify-center">
+    <div class="m-4 text-lg font-bold">Starbet Live</div>
+    <div class="m-4 flex flex-col items-center justify-center text-center">
+        <img
+            src="https://st2.depositphotos.com/4211323/7822/v/950/depositphotos_78227312-stock-illustration-winged-penis-logo-phallus-with.jpg"
+            width="650px"
+            height="650px"
+        />
     </div>
     <div class="flex flex-row">
-        <button hx-get="login" hx-target="body" hx-push-url="true"
-            class="m-2 p-2 bg-gray-400 hover:bg-gray-600 rounded-md">
+        <button
+            hx-get="login"
+            hx-target="body"
+            hx-push-url="true"
+            class="m-2 rounded-md bg-gray-400 p-2 hover:bg-gray-600"
+        >
             LOGIN
         </button>
-        <button hx-get="register" hx-target="body" hx-push-url="true"
-            class="m-2 p-2 bg-gray-400 hover:bg-gray-600 rounded-md">
+        <button
+            hx-get="register"
+            hx-target="body"
+            hx-push-url="true"
+            class="m-2 rounded-md bg-gray-400 p-2 hover:bg-gray-600"
+        >
             REGISTER
         </button>
     </div>

@@ -1,25 +1,24 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Starbet Live</title>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Starbet Live</title>
+        <!-- TAILWIND -->
+        <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- TAILWIND -->
-    <script src="https://cdn.tailwindcss.com"></script>
+        <!-- HTMX -->
+        <script
+            src="https://unpkg.com/htmx.org@1.9.10"
+            integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
+            crossorigin="anonymous"
+        ></script>
+        <!-- https://htmx.org/extensions/json-enc/ -->
+        <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+    </head>
 
-    <!-- HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.9.10"
-        integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
-        crossorigin="anonymous"></script>
-    <!-- https://htmx.org/extensions/json-enc/ -->
-    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
-
-</head>
-
-<body id="body">
-    {% block content %}{% endblock %}
-</body>
-
+    <body id="body">
+        {% block content %}{% endblock %}
+    </body>
 </html>
