@@ -7,7 +7,7 @@ use axum::{
 };
 
 pub async fn login_handler(req: Request) -> impl IntoResponse {
-    // if the reqest came from HTMX, render only the form
+    // If the reqest came from HTMX, render only the form
     // and don't do a full page refresh
     let reply_html = if req.headers().contains_key("referer") {
         (LoginFormTemplate {}).render().unwrap()
