@@ -1,6 +1,9 @@
 FROM lukemathwalker/cargo-chef:latest-rust-1 AS chef
 WORKDIR /app
 
+# Required build argument for sqlx to successfully build project
+ARG DATABASE_URL=$DATABASE_URL
+
 FROM chef AS planner
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
