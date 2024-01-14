@@ -16,7 +16,7 @@
         name="{{ name }}"
         id="{{ name }}"
         placeholder="{{ name|replace_underscores|capitalize }}"
-        class="w-full rounded border {{ border_color }} p-2 focus:border-blue-500 focus:outline-none"
+        class="w-full rounded border {{ border_color }} p-2 focus:outline-none"
     />
     {% if error_message != "" %}
     <p class="text-xs italic text-red-500">{{ error_message }}</p>
