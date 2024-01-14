@@ -2,10 +2,13 @@
     <div class="w-96 rounded bg-white p-8 shadow-md">
         <h1 class="mb-4 text-2xl font-bold">REGISTER</h1>
         <form hx-get="dashboard" hx-target="body">
-            <div class="mb-4">
+            <div class="mb-4" id="username">
                 <input
+                    hx-post="validation/username"
+                    hx-trigger="keyup changed delay:500ms"
+                    hx-target="#username"
                     type="text"
-                    id="username"
+                    name="username"
                     placeholder="Username"
                     class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none"
                 />
