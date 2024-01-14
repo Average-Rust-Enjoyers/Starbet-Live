@@ -1,12 +1,22 @@
-<div class="mb-4" id="username">
+<!-- prettier-ignore -->
+{% let border_color %}
+{% if is_valid %}
+    {% let border_color = "border-gray-300" %}
+{% else %}
+    {% let border_color = "border-red-500" %}
+{% endif %}
+<div class="mb-4" id="{{ name }}">
     <input
-        hx-post="validation"
+        hx-post="validation/{{ name }}"
         hx-trigger="keyup changed delay:500ms"
-        hx-target="#username"
-        hx-vals='{ "test": "test" }'
+        hx-target="#{{ name }}"
         type="text"
-        name="username"
-        placeholder="Username"
-        class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none"
+        value="{{ value }}"
+        name="{{ name }}"
+        placeholder="{{ name|replace_underscores|capitalize }}"
+        class="w-full rounded border {{ border_color }} p-2 focus:border-blue-500 focus:outline-none"
     />
+    {% if !is_valid %}
+    <p class="text-xs italic text-red-500">{{ error_message }}</p>
+    {% endif %}
 </div>

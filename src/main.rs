@@ -20,6 +20,7 @@ use sqlx::postgres::PgPoolOptions;
 use std::env;
 
 mod common;
+mod filters;
 mod handlers;
 mod models;
 mod repositories;
