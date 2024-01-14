@@ -2,23 +2,33 @@ use askama::Template;
 
 #[derive(Template)]
 #[template(path = "index.html")]
-pub struct IndexTemplate {}
+pub struct Index {}
 
 #[derive(Template)]
 #[template(path = "login/page.html")]
-pub struct LoginPageTemplate {}
+pub struct LoginPage {}
 
 #[derive(Template)]
 #[template(path = "login/form.html")]
-pub struct LoginFormTemplate {}
+pub struct LoginForm {}
 
 #[derive(Template)]
 #[template(path = "register/page.html")]
-pub struct RegisterPageTemplate {}
+pub struct RegisterPage {}
 
 #[derive(Template)]
 #[template(path = "register/form.html")]
-pub struct RegisterFormTemplate {}
+pub struct RegisterForm {}
+
+#[derive(Template)]
+#[template(path = "components/textfield.html")]
+pub struct TextField<'a> {
+    pub name: &'a str,
+    pub value: &'a str,
+    pub placeholder: &'a str,
+    pub is_valid: bool,
+    pub error_message: &'a str,
+}
 
 pub struct UserSend {
     pub username: String,
@@ -31,14 +41,14 @@ pub struct UserSend {
 
 #[derive(Template)]
 #[template(path = "dashboard.html")]
-pub struct DashboardTemplate {
+pub struct Dashboard {
     pub items: Vec<String>,
     pub user: UserSend,
 }
 
 #[derive(Template)]
 #[template(path = "game.html")]
-pub struct GameTemplate {
+pub struct Game {
     pub matches: Vec<String>, // TODO: Change this to a struct
     pub game_name: String,
 }
