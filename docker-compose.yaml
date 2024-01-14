@@ -33,6 +33,8 @@ services:
 
   redis:
     image: redis
+    command: >
+          --requirepass ${REDIS_PASSWORD}
     restart: unless-stopped
     ports:
       - "6379:6379"
