@@ -36,7 +36,6 @@ pub struct RegisterForm<'a> {
 pub struct TextField<'a> {
     pub name: &'a str,
     pub value: &'a str,
-    pub is_valid: bool,
     pub error_message: &'a str,
 }
 
@@ -45,7 +44,6 @@ impl TextField<'_> {
         TextField {
             name,
             value: "",
-            is_valid: true,
             error_message: "",
         }
     }

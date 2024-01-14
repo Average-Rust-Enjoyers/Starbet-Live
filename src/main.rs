@@ -25,6 +25,7 @@ mod handlers;
 mod models;
 mod repositories;
 mod templates;
+mod validators;
 
 #[derive(FromRef, Clone)]
 pub struct AppState {
@@ -73,7 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/dashboard", get(dashboard_handler))
         .route("/redis", get(redis_ok))
         .route("/game", post(game_handler))
-        .route("/validation", post(username_handler))
+        .route("/validation/username", post(username_handler))
         .with_state(app_state);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
