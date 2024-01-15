@@ -22,7 +22,7 @@
         value="{{ value }}"
         name="{{ name }}"
         id="{{ name }}"
-        placeholder="{{ name|replace_hyphens|capitalize }}"
+        placeholder="{{ name|split_and_capitalize }}"
         class="w-full rounded border {{ border_color }} p-2 focus:outline-none"
     />
     {% if error_message != "" %}
