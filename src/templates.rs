@@ -28,7 +28,7 @@ pub struct RegisterForm<'a> {
     pub last_name: TextField<'a>,
     pub email: TextField<'a>,
     pub password: TextField<'a>,
-    pub password_confirm: TextField<'a>,
+    pub confirm_password: TextField<'a>,
 }
 
 #[derive(Template)]

@@ -10,8 +10,8 @@ pub struct RegisterFormData {
     pub last_name: String,
     pub email: String,
     pub password: String,
-    #[serde(rename = "password-confirm")]
-    pub password_confirm: String,
+    #[serde(rename = "confirm-password")]
+    pub confirm_password: String,
 }
 
 pub fn validate_username(username: String) -> (String, String) {

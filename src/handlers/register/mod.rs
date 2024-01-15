@@ -13,7 +13,7 @@ pub async fn register_handler(req: Request) -> impl IntoResponse {
         "last-name",
         "email",
         "password",
-        "password-confirm",
+        "confirm-password",
     ];
 
     let form = RegisterForm {
@@ -22,7 +22,7 @@ pub async fn register_handler(req: Request) -> impl IntoResponse {
         last_name: TextField::new(fields[2]),
         email: TextField::new(fields[3]),
         password: TextField::new(fields[4]),
-        password_confirm: TextField::new(fields[5]),
+        confirm_password: TextField::new(fields[5]),
     };
 
     // If the reqest came from HTMX, render only the form
