@@ -1,23 +1,6 @@
 use regex::Regex;
-use serde::Deserialize;
-
-#[derive(Deserialize)]
-pub struct RegisterFormData {
-    pub username: String,
-    #[serde(rename = "first-name")]
-    pub first_name: String,
-    #[serde(rename = "last-name")]
-    pub last_name: String,
-    pub email: String,
-    pub password: String,
-    #[serde(rename = "confirm-password")]
-    pub confirm_password: String,
-}
 
 pub fn validate_username(username: String) -> (String, String) {
-    if username.is_empty() {
-        return (username, "Username cannot be empty".to_string());
-    }
     if username.len() < 3 {
         return (
             username,
@@ -105,4 +88,12 @@ pub fn validate_password(password: String) -> (String, String) {
     }
 
     (password, String::new())
+}
+
+pub fn validate_confirm_password(password: &str, confirm_password: String) -> (String, String) {
+    if password != confirm_password {
+        return (confirm_password, "Passwords do not match".to_string());
+    }
+
+    (confirm_password, String::new())
 }

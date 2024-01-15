@@ -4,9 +4,12 @@ use axum::{
     extract::Request,
     http::StatusCode,
     response::{Html, IntoResponse},
+    Form,
 };
 
-pub async fn register_handler(req: Request) -> impl IntoResponse {
+use super::validation::RegisterFormData;
+
+pub async fn register_page_handler(req: Request) -> impl IntoResponse {
     let fields = [
         "username",
         "first-name",
@@ -33,4 +36,10 @@ pub async fn register_handler(req: Request) -> impl IntoResponse {
         RegisterPage { form }.render().unwrap()
     };
     (StatusCode::OK, Html(reply_html).into_response())
+}
+
+pub async fn register_submission_handler(
+    Form(_payload): Form<RegisterFormData>,
+) -> impl IntoResponse {
+    (StatusCode::OK, Html("Hi").into_response())
 }
