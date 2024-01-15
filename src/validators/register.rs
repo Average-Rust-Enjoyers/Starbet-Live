@@ -54,7 +54,10 @@ pub fn vlaidate_name(name: String) -> (String, String) {
 pub fn validate_email(email: String) -> (String, String) {
     let email_regex = Regex::new(r"(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$").unwrap();
     if !email_regex.is_match(&email) {
-        return (email, "Invalid email".to_string());
+        return (
+            email,
+            "Invalid email, please follow this template: user@example.com".to_string(),
+        );
     }
 
     (email, String::new())
