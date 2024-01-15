@@ -11,8 +11,14 @@ use bb8_redis::RedisConnectionManager;
 use dotenvy::dotenv;
 
 use crate::handlers::{
-    dashboard::dashboard_handler, game::game_handler, index::index_handler, login::login_handler,
-    register::register_handler, validation::username_handler,
+    dashboard::dashboard_handler,
+    game::game_handler,
+    index::index_handler,
+    login::login_handler,
+    register::register_handler,
+    validation::{
+        email_handler, first_name_handler, last_name_handler, password_handler, username_handler,
+    },
 };
 
 use redis::AsyncCommands;
@@ -74,7 +80,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/dashboard", get(dashboard_handler))
         .route("/redis", get(redis_ok))
         .route("/game", post(game_handler))
+        // validation
         .route("/validation/username", post(username_handler))
+        .route("/validation/first-name", post(first_name_handler))
+        .route("/validation/last-name", post(last_name_handler))
+        .route("/validation/email", post(email_handler))
+        .route("/validation/password", post(password_handler))
         .with_state(app_state);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();

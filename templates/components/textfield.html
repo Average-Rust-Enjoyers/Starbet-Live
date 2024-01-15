@@ -1,6 +1,12 @@
 <!-- prettier-ignore -->
-{% let border_color %}
+{% let input_type %}
+{% if name == "password" %}
+{% let input_type = "password" %}
+{% else %}
+{% let input_type = "text" %}
+{% endif %}
 
+{% let border_color %}
 {% if error_message == "" %}
     {% let border_color = "border-gray-300" %}
 {% else %}
@@ -10,12 +16,13 @@
     <input
         hx-post="validation/{{ name }}"
         hx-trigger="keyup changed delay:300ms"
+        hx-swap="outerHTML"
         hx-target="#{{ name }}-div"
-        type="text"
+        type="{{ input_type }}"
         value="{{ value }}"
         name="{{ name }}"
         id="{{ name }}"
-        placeholder="{{ name|replace_underscores|capitalize }}"
+        placeholder="{{ name|replace_hyphens|capitalize }}"
         class="w-full rounded border {{ border_color }} p-2 focus:outline-none"
     />
     {% if error_message != "" %}

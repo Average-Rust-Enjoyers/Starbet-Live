@@ -9,11 +9,11 @@ use axum::{
 pub async fn register_handler(req: Request) -> impl IntoResponse {
     let fields = [
         "username",
-        "first_name",
-        "last_name",
+        "first-name",
+        "last-name",
         "email",
         "password",
-        "password_confirm",
+        "password-confirm",
     ];
 
     let form = RegisterForm {
