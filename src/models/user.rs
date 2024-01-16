@@ -36,7 +36,6 @@ pub struct UserCreate {
 }
 
 impl UserCreate {
-    #[must_use]
     pub fn new(
         username: &str,
         email: &str,
@@ -66,7 +65,6 @@ pub struct UserLogin {
 }
 
 impl UserLogin {
-    #[must_use]
     pub fn new(email: &str, password_hash: &str) -> Self {
         Self {
             email: email.to_owned(),
@@ -90,7 +88,6 @@ pub struct UserUpdate {
 }
 
 impl UserUpdate {
-    #[must_use]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: &Uuid,
@@ -117,7 +114,6 @@ impl UserUpdate {
         }
     }
 
-    #[must_use]
     pub const fn update_fields_none(&self) -> bool {
         self.username.is_none()
             && self.email.is_none()
@@ -137,7 +133,6 @@ pub struct UserDelete {
 }
 
 impl UserDelete {
-    #[must_use]
     pub const fn new(id: &Uuid) -> Self {
         Self { id: *id }
     }
@@ -151,7 +146,6 @@ pub struct GetByUserId {
 }
 
 impl GetByUserId {
-    #[must_use]
     pub const fn new(id: &Uuid) -> Self {
         Self { id: *id }
     }

@@ -72,12 +72,10 @@ impl MoneyTransactionRepository {
 
 #[async_trait]
 impl DbRepository for MoneyTransactionRepository {
-    #[inline]
     fn new(pool_handler: PoolHandler) -> Self {
         Self { pool_handler }
     }
 
-    #[inline]
     async fn disconnect(&mut self) -> () {
         self.pool_handler.disconnect().await;
     }

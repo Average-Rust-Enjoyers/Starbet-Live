@@ -20,6 +20,8 @@ pub struct BetRepository {
 }
 
 impl BetRepository {
+    /// # Panics
+    /// # Errors
     pub async fn get_bet<'a>(
         params: BetGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
@@ -48,6 +50,7 @@ impl BetRepository {
         Ok(bet)
     }
 
+    /// # Errors
     pub fn is_correct(bet: Option<Bet>) -> DbResultSingle<Bet> {
         match bet {
             Some(bet) if bet.deleted_at.is_none() => Ok(bet),
@@ -59,12 +62,10 @@ impl BetRepository {
 
 #[async_trait]
 impl DbRepository for BetRepository {
-    #[inline]
     fn new(pool_handler: PoolHandler) -> Self {
         Self { pool_handler }
     }
 
-    #[inline]
     async fn disconnect(&mut self) -> () {
         self.pool_handler.disconnect().await;
     }
@@ -72,7 +73,6 @@ impl DbRepository for BetRepository {
 
 #[async_trait]
 impl DbCreate<BetCreate, Bet> for BetRepository {
-    #[inline]
     async fn create(&mut self, data: &BetCreate) -> DbResultSingle<Bet> {
         let bet = sqlx::query_as!(
             Bet,

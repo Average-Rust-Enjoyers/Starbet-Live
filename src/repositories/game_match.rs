@@ -20,6 +20,8 @@ pub struct GameMatchRepository {
 }
 
 impl GameMatchRepository {
+    /// # Panics
+    /// # Errors
     pub async fn get_game_match<'a>(
         params: GameMatchGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
@@ -47,6 +49,7 @@ impl GameMatchRepository {
         Ok(game_match)
     }
 
+    /// # Errors
     pub fn is_correct(game_match: Option<GameMatch>) -> DbResultSingle<GameMatch> {
         match game_match {
             Some(game_match) => match game_match.deleted_at {
@@ -60,12 +63,10 @@ impl GameMatchRepository {
 
 #[async_trait]
 impl DbRepository for GameMatchRepository {
-    #[inline]
     fn new(pool_handler: PoolHandler) -> Self {
         Self { pool_handler }
     }
 
-    #[inline]
     async fn disconnect(&mut self) -> () {
         self.pool_handler.disconnect().await;
     }
@@ -73,7 +74,6 @@ impl DbRepository for GameMatchRepository {
 
 #[async_trait]
 impl DbCreate<GameMatchCreate, GameMatch> for GameMatchRepository {
-    #[inline]
     async fn create(&mut self, data: &GameMatchCreate) -> DbResultSingle<GameMatch> {
         let game_match = sqlx::query_as!(
             GameMatch,

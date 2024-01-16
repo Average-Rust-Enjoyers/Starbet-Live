@@ -93,7 +93,6 @@ pub trait DbDelete<Delete, Data> {
 #[async_trait]
 pub trait DbPoolHandler {
     /// Pool handler constructor
-    #[must_use]
     fn new(pool: Arc<sqlx::PgPool>) -> Self;
 
     /// Method which allows the pool handler to disconnect from the pool
@@ -110,7 +109,6 @@ pub struct PoolHandler {
 #[async_trait]
 impl DbPoolHandler for PoolHandler {
     /// Database pool constructor
-    #[must_use]
     fn new(pool: Arc<sqlx::PgPool>) -> Self {
         Self { pool }
     }
@@ -126,7 +124,6 @@ impl DbPoolHandler for PoolHandler {
 #[async_trait]
 pub trait DbRepository {
     /// Database repository constructor
-    #[must_use]
     fn new(pool_handler: PoolHandler) -> Self;
 
     /// Method allowing the database repository to disconnect from the database pool gracefully

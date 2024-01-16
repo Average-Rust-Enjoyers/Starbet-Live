@@ -31,6 +31,9 @@ impl UserRepository {
     /// # Returns
     /// - `Ok(user)`: on successful connection and retrieval
     /// - `Err(_)`: otherwise
+    ///
+    /// # Panics
+    /// # Errors
     pub async fn get_user<'a>(
         params: GetByUserId,
         transaction_handle: &mut Transaction<'a, Postgres>,
@@ -58,6 +61,8 @@ impl UserRepository {
     /// # Returns
     /// - `Ok(user)`: when the user exists and is not deleted
     /// - `Err(DbError)`: with appropriate error description otherwise
+    ///
+    /// # Errors
     pub fn is_correct(user: Option<User>) -> DbResultSingle<User> {
         match user {
             Some(user) if user.deleted_at.is_some() => {
@@ -71,12 +76,10 @@ impl UserRepository {
 
 #[async_trait]
 impl DbRepository for UserRepository {
-    #[inline]
     fn new(pool_handler: PoolHandler) -> Self {
         Self { pool_handler }
     }
 
-    #[inline]
     async fn disconnect(&mut self) -> () {
         self.pool_handler.disconnect().await;
     }

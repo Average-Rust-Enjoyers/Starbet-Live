@@ -3,6 +3,7 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
+#[allow(clippy::struct_field_names)]
 #[derive(sqlx::FromRow, Debug, Clone)]
 pub struct Odds {
     pub id: Uuid,
