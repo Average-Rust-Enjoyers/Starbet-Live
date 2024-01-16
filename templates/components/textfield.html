@@ -1,9 +1,9 @@
 <!-- prettier-ignore -->
 {% let input_type %}
 {% if name == "password" || name == "confirm-password" %}
-{% let input_type = "password" %}
+    {% let input_type = "password" %}
 {% else %}
-{% let input_type = "text" %}
+    {% let input_type = "text" %}
 {% endif %}
 
 {% let border_color %}
