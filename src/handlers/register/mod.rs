@@ -43,7 +43,7 @@ pub async fn register_submission_handler(
 ) -> impl IntoResponse {
     let (all_valid, form_fields): (bool, Vec<TextField>) = FIELDS
         .iter()
-        .map(|field| validate_and_build(field, &payload)) // Call validate_and_render on each field
+        .map(|field| validate_and_build(field, &payload))
         .fold(
             (true, Vec::new()),
             |(valid_acc, mut fields_acc), (valid, field)| {
