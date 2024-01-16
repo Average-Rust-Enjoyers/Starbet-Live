@@ -11,8 +11,12 @@ use bb8_redis::RedisConnectionManager;
 use dotenvy::dotenv;
 
 use crate::handlers::{
-    dashboard::dashboard_handler, game::game_handler, index::index_handler, login::login_handler,
-    register::register_page_handler, validation::validation_handler,
+    dashboard::dashboard_handler,
+    game::game_handler,
+    index::index_handler,
+    login::login_handler,
+    register::{register_page_handler, register_submission_handler},
+    validation::validation_handler,
 };
 
 use redis::AsyncCommands;
@@ -71,6 +75,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/", get(index_handler))
         .route("/login", get(login_handler))
         .route("/register", get(register_page_handler))
+        .route("/register", post(register_submission_handler))
         .route("/dashboard", get(dashboard_handler))
         .route("/redis", get(redis_ok))
         .route("/game", post(game_handler))

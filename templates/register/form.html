@@ -1,7 +1,7 @@
 <div class="flex h-screen items-center justify-center">
     <div class="w-96 rounded bg-white p-8 shadow-md">
         <h1 class="mb-4 text-2xl font-bold">REGISTER</h1>
-        <form hx-get="dashboard" hx-target="body">
+        <form hx-post="register" hx-target="body">
             {{ username|safe }}
             <div class="flex flex-row gap-x-1">
                 <!-- prettier-ignore -->

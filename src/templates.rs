@@ -31,20 +31,20 @@ pub struct RegisterForm<'a> {
     pub confirm_password: TextField<'a>,
 }
 
-#[derive(Template)]
+#[derive(Template, Clone)]
 #[template(path = "components/textfield.html")]
 pub struct TextField<'a> {
     pub name: &'a str,
-    pub value: &'a str,
-    pub error_message: &'a str,
+    pub value: String,
+    pub error_message: String,
 }
 
 impl TextField<'_> {
     pub fn new(name: &str) -> TextField {
         TextField {
             name,
-            value: "",
-            error_message: "",
+            value: String::new(),
+            error_message: String::new(),
         }
     }
 }

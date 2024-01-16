@@ -37,11 +37,14 @@ pub async fn validation_handler(
     Path(Params { field }): Path<Params>,
     Form(payload): Form<RegisterFormData>,
 ) -> impl IntoResponse {
-    let html_reply = validate_and_render(&field, &payload);
-    (StatusCode::OK, Html(html_reply).into_response())
+    let (_, textfield) = validate_and_build(&field, &payload);
+    (
+        StatusCode::OK,
+        Html(textfield.render().unwrap()).into_response(),
+    )
 }
 
-fn validate_and_render(field: &str, payload: &RegisterFormData) -> String {
+pub fn validate_and_build<'a>(field: &'a str, payload: &RegisterFormData) -> (bool, TextField<'a>) {
     let (value, error_message) = match field {
         "username" => validate_username(payload.username.clone()),
         "first-name" => vlaidate_name(payload.first_name.clone()),
@@ -51,14 +54,15 @@ fn validate_and_render(field: &str, payload: &RegisterFormData) -> String {
         "confirm-password" => {
             validate_confirm_password(&payload.password, payload.confirm_password.clone())
         }
-        _ => (String::new(), String::new()),
+        _ => (String::new(), "Invalid field".to_string()),
     };
 
-    TextField {
-        name: field,
-        value: &value,
-        error_message: &error_message,
-    }
-    .render()
-    .unwrap()
+    (
+        error_message.is_empty(),
+        TextField {
+            name: field,
+            value,
+            error_message,
+        },
+    )
 }

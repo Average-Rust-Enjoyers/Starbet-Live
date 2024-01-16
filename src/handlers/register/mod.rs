@@ -7,25 +7,25 @@ use axum::{
     Form,
 };
 
-use super::validation::RegisterFormData;
+use super::validation::{validate_and_build, RegisterFormData};
+
+const FIELDS: [&str; 6] = [
+    "username",
+    "first-name",
+    "last-name",
+    "email",
+    "password",
+    "confirm-password",
+];
 
 pub async fn register_page_handler(req: Request) -> impl IntoResponse {
-    let fields = [
-        "username",
-        "first-name",
-        "last-name",
-        "email",
-        "password",
-        "confirm-password",
-    ];
-
     let form = RegisterForm {
-        username: TextField::new(fields[0]),
-        first_name: TextField::new(fields[1]),
-        last_name: TextField::new(fields[2]),
-        email: TextField::new(fields[3]),
-        password: TextField::new(fields[4]),
-        confirm_password: TextField::new(fields[5]),
+        username: TextField::new(FIELDS[0]),
+        first_name: TextField::new(FIELDS[1]),
+        last_name: TextField::new(FIELDS[2]),
+        email: TextField::new(FIELDS[3]),
+        password: TextField::new(FIELDS[4]),
+        confirm_password: TextField::new(FIELDS[5]),
     };
 
     // If the reqest came from HTMX, render only the form
@@ -39,7 +39,34 @@ pub async fn register_page_handler(req: Request) -> impl IntoResponse {
 }
 
 pub async fn register_submission_handler(
-    Form(_payload): Form<RegisterFormData>,
+    Form(payload): Form<RegisterFormData>,
 ) -> impl IntoResponse {
+    let (all_valid, form_fields): (bool, Vec<TextField>) = FIELDS
+        .iter()
+        .map(|field| validate_and_build(field, &payload)) // Call validate_and_render on each field
+        .fold(
+            (true, Vec::new()),
+            |(valid_acc, mut fields_acc), (valid, field)| {
+                // Perform logical AND on all bools and collect all TextFields
+                fields_acc.push(field);
+                (valid_acc && valid, fields_acc)
+            },
+        );
+
+    if !all_valid {
+        let form = RegisterForm {
+            username: form_fields[0].clone(),
+            first_name: form_fields[1].clone(),
+            last_name: form_fields[2].clone(),
+            email: form_fields[3].clone(),
+            password: form_fields[4].clone(),
+            confirm_password: form_fields[5].clone(),
+        }
+        .render()
+        .unwrap();
+        return (StatusCode::OK, Html(form).into_response());
+    }
+
+    // TODO: insert user into database
     (StatusCode::OK, Html("Hi").into_response())
 }
