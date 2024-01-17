@@ -99,8 +99,6 @@ pub struct BusinessLogicError {
 
 impl BusinessLogicError {
     /// Business Logic Error constructor
-    #[must_use]
-    #[inline]
     pub const fn new(error: BusinessLogicErrorKind) -> Self {
         Self { error }
     }
@@ -131,8 +129,6 @@ pub struct DbError {
 /// the database without the need of `anyhow` library.
 impl DbError {
     /// Database Error constructor
-    #[must_use]
-    #[inline]
     pub fn new(description: &str) -> Self {
         Self {
             description: description.to_owned(),

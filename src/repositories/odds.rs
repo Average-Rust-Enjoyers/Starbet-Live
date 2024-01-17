@@ -25,6 +25,8 @@ pub struct OddsRepository {
 }
 
 impl OddsRepository {
+    /// # Panics
+    /// # Errors
     pub async fn get_odds<'a>(
         params: OddsGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
@@ -44,6 +46,7 @@ impl OddsRepository {
         Ok(bet)
     }
 
+    /// # Errors
     pub fn is_correct(odds: Option<Odds>) -> DbResultSingle<Odds> {
         match odds {
             Some(odds) if odds.deleted_at.is_none() => Ok(odds),
@@ -55,12 +58,10 @@ impl OddsRepository {
 
 #[async_trait]
 impl DbRepository for OddsRepository {
-    #[inline]
     fn new(pool_handler: PoolHandler) -> Self {
         Self { pool_handler }
     }
 
-    #[inline]
     async fn disconnect(&mut self) -> () {
         self.pool_handler.disconnect().await;
     }
@@ -68,7 +69,6 @@ impl DbRepository for OddsRepository {
 
 #[async_trait]
 impl DbCreate<OddsCreate, Odds> for OddsRepository {
-    #[inline]
     async fn create(&mut self, data: &OddsCreate) -> DbResultSingle<Odds> {
         let mut tx = self.pool_handler.pool.begin().await?;
 

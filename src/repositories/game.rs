@@ -22,6 +22,8 @@ pub struct GameRepository {
 }
 
 impl GameRepository {
+    /// # Panics
+    /// # Errors
     pub async fn get_game<'a>(
         params: GameGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
@@ -48,6 +50,7 @@ impl GameRepository {
         Ok(game)
     }
 
+    /// # Errors
     pub fn is_correct(game: Option<Game>) -> DbResultSingle<Game> {
         match game {
             Some(game) if game.deleted_at.is_none() => Ok(game),
@@ -59,12 +62,10 @@ impl GameRepository {
 
 #[async_trait]
 impl DbRepository for GameRepository {
-    #[inline]
     fn new(pool_handler: PoolHandler) -> Self {
         Self { pool_handler }
     }
 
-    #[inline]
     async fn disconnect(&mut self) -> () {
         self.pool_handler.disconnect().await;
     }
@@ -72,7 +73,6 @@ impl DbRepository for GameRepository {
 
 #[async_trait]
 impl DbCreate<GameCreate, Game> for GameRepository {
-    #[inline]
     async fn create(&mut self, data: &GameCreate) -> DbResultSingle<Game> {
         let game = sqlx::query_as!(
             Game,
@@ -164,7 +164,7 @@ impl DbReadMany<GameFilter, Game> for GameRepository {
         let mut tx = self.pool_handler.pool.begin().await?;
 
         let mut query_builder = sqlx::QueryBuilder::new(
-            r#"
+            r"
                 SELECT id,
                     name,
                     description,
@@ -175,17 +175,17 @@ impl DbReadMany<GameFilter, Game> for GameRepository {
                     deleted_at
                 FROM Game
                 WHERE deleted_at IS NULL
-            "#,
+            ",
         );
 
         if let Some(name) = &filter.name {
-            query_builder.push(r#" AND name ILIKE concat('%', "#);
+            query_builder.push(r" AND name ILIKE concat('%', ");
             query_builder.push_bind(name);
-            query_builder.push(", '%')");
+            query_builder.push(r", '%')");
         }
 
         if let Some(genre) = &filter.genre {
-            query_builder.push(r#" AND genre = "#);
+            query_builder.push(r" AND genre = ");
             query_builder.push_bind(genre.clone() as GameGenre);
         }
 
