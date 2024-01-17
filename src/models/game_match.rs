@@ -6,6 +6,7 @@ use uuid::Uuid;
 use super::game_match_outcome::GameMatchOutcome;
 
 #[derive(Debug, PartialEq, Eq, Clone, sqlx::Type)]
+#[sqlx(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum GameMatchStatus {
     Pending,
     Live,

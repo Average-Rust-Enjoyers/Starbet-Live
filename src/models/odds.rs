@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use chrono::{DateTime, Utc};
+use float_cmp::approx_eq;
 use uuid::Uuid;
 
 #[derive(sqlx::FromRow, Debug, Clone)]
@@ -13,6 +14,17 @@ pub struct Odds {
     pub odds_b: f64,
     pub created_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
+}
+
+impl PartialEq for Odds {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+            && self.game_match_id == other.game_match_id
+            && self.created_at == other.created_at
+            && self.deleted_at == other.deleted_at
+            && approx_eq!(f64, self.odds_a, other.odds_a)
+            && approx_eq!(f64, self.odds_b, other.odds_b)
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
