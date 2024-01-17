@@ -9,7 +9,6 @@ entity AppUser {
     * surname: text
     * profile_picture: <<url>>
     * password_hash: text
-    * password_salt: text
     * balance: int
     * created_at: <<date>>
     * edited_at: <<date>>

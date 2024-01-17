@@ -68,5 +68,6 @@ pub async fn register_submission_handler(
     }
 
     // TODO: insert user into database
+
     (StatusCode::OK, Html("Hi").into_response())
 }

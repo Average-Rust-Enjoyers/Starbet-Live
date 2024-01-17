@@ -16,7 +16,6 @@ pub struct User {
     pub surname: String,
     pub profile_picture: String,
     pub password_hash: String,
-    pub password_salt: String,
     pub balance: i32,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
@@ -32,7 +31,6 @@ pub struct UserCreate {
     pub surname: String,
     pub profile_picture: String,
     pub password_hash: String,
-    pub password_salt: String,
 }
 
 impl UserCreate {
@@ -43,7 +41,6 @@ impl UserCreate {
         surname: &str,
         profile_picture: &str,
         password_hash: &str,
-        password_salt: &str,
     ) -> Self {
         Self {
             username: username.to_owned(),
@@ -52,7 +49,6 @@ impl UserCreate {
             surname: surname.to_owned(),
             profile_picture: profile_picture.to_owned(),
             password_hash: password_hash.to_owned(),
-            password_salt: password_salt.to_owned(),
         }
     }
 }
@@ -83,7 +79,6 @@ pub struct UserUpdate {
     pub surname: Option<String>,
     pub profile_picture: Option<String>,
     pub password_hash: Option<String>,
-    pub password_salt: Option<String>,
     pub balance: Option<i32>,
 }
 
@@ -97,7 +92,6 @@ impl UserUpdate {
         surname: Option<&str>,
         profile_picture: Option<&str>,
         password_hash: Option<&str>,
-        password_salt: Option<&str>,
         balance: Option<i32>,
     ) -> Self {
         let change_to_owned = |value: &str| Some(value.to_owned());
@@ -109,7 +103,6 @@ impl UserUpdate {
             surname: surname.and_then(change_to_owned),
             profile_picture: profile_picture.and_then(change_to_owned),
             password_hash: password_hash.and_then(change_to_owned),
-            password_salt: password_salt.and_then(change_to_owned),
             balance,
         }
     }
@@ -121,7 +114,6 @@ impl UserUpdate {
             && self.surname.is_none()
             && self.profile_picture.is_none()
             && self.password_hash.is_none()
-            && self.password_salt.is_none()
             && self.balance.is_none()
     }
 }
