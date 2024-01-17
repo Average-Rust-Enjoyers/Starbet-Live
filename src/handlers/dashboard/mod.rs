@@ -1,4 +1,4 @@
-use crate::templates::{DashboardTemplate, UserSend};
+use crate::templates::{Dashboard, UserSend};
 use askama::Template;
 use axum::{
     http::StatusCode,
@@ -23,7 +23,7 @@ pub async fn dashboard_handler() -> impl IntoResponse {
         balance: 69420,
     };
 
-    let template = DashboardTemplate {
+    let template = Dashboard {
         items: menu_items,
         user,
     };

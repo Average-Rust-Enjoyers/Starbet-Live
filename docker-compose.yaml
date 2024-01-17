@@ -4,6 +4,10 @@ services:
   web:
     build:
       context: "."
+      dockerfile: Dockerfile
+      # SQLX will complain without DATABASE_URL in build args
+      args:
+        - DATABASE_URL=${DATABASE_URL}
     depends_on:
       - postgres-db
       - redis
@@ -29,6 +33,8 @@ services:
 
   redis:
     image: redis
+    command: >
+          --requirepass ${REDIS_PASSWORD}
     restart: unless-stopped
     ports:
       - "6379:6379"
