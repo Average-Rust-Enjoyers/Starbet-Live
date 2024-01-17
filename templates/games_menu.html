@@ -4,7 +4,7 @@
         {% for item in items %}
         <div hx-post="game" hx-trigger="click" hx-target="#game_board" hx-swap="innerHTML"
             hx-vals='{"game_name": "{{ item }}"}' hx-ext='json-enc'
-            class="game-item bg-gray-500 text-white p-4 rounded cursor-pointer p-4 mx-4 hover:bg-gray-600">{{item}}
+            class="game-item bg-menu-button text-menu-button-text p-4 rounded cursor-pointer p-4 mx-4 hover:bg-menu-button-hover">{{item}}
         </div>
         {% endfor %}
     </div>
