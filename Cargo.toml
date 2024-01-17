@@ -25,3 +25,4 @@ redis = { version = "0.23.3", features = ["tokio-native-tls-comp"] }
 bb8 = "0.8.1"
 bb8-redis = "0.13.1"
 askama = "0.12.1"
+regex = "1.5.4"

@@ -1,25 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
+<!-- prettier-ignore -->
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Starbet Live</title>
-
-    <!-- TAILWIND -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.9.10"
-        integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
-        crossorigin="anonymous"></script>
-    <!-- https://htmx.org/extensions/json-enc/ -->
-    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
-
-</head>
-
-<body id="body">
-    {% include "landing_page.html" %}
-</body>
-
-</html>
+{% block content %}
+<div class="flex h-screen flex-col items-center justify-center">
+    <div class="m-4 text-lg font-bold">Starbet Live</div>
+    <div class="m-4 flex flex-col items-center justify-center text-center">
+        <img
+            src="https://st2.depositphotos.com/4211323/7822/v/950/depositphotos_78227312-stock-illustration-winged-penis-logo-phallus-with.jpg"
+            width="650px"
+            height="650px"
+        />
+    </div>
+    <div class="flex flex-row">
+        <button
+            hx-get="login"
+            hx-target="body"
+            hx-push-url="true"
+            class="m-2 rounded-md bg-gray-400 p-2 hover:bg-gray-600"
+        >
+            LOGIN
+        </button>
+        <button
+            hx-get="register"
+            hx-target="body"
+            hx-push-url="true"
+            class="m-2 rounded-md bg-gray-400 p-2 hover:bg-gray-600"
+        >
+            REGISTER
+        </button>
+    </div>
+</div>
+{% endblock %}

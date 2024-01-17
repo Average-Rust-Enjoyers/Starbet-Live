@@ -1,0 +1,31 @@
+<!-- prettier-ignore -->
+{% let input_type %}
+{% if name == "password" || name == "confirm-password" %}
+    {% let input_type = "password" %}
+{% else %}
+    {% let input_type = "text" %}
+{% endif %}
+
+{% let border_color %}
+{% if error_message == "" %}
+    {% let border_color = "border-gray-300" %}
+{% else %}
+    {% let border_color = "border-red-500" %}
+{% endif %}
+<div class="mb-4" id="{{ name }}-div">
+    <input
+        hx-post="validation/{{ name }}"
+        hx-trigger="keyup changed delay:300ms"
+        hx-swap="outerHTML"
+        hx-target="#{{ name }}-div"
+        type="{{ input_type }}"
+        value="{{ value }}"
+        name="{{ name }}"
+        id="{{ name }}"
+        placeholder="{{ name|split_and_capitalize }}"
+        class="w-full rounded border {{ border_color }} p-2 focus:outline-none"
+    />
+    {% if error_message != "" %}
+    <p class="text-xs italic text-red-500">{{ error_message }}</p>
+    {% endif %}
+</div>

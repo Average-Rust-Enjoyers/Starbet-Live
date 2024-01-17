@@ -1,3 +1,5 @@
+#![allow(clippy::needless_raw_string_hashes)]
+
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 

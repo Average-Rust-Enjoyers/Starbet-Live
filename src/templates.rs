@@ -1,16 +1,53 @@
 use askama::Template;
 
+use crate::filters;
+
 #[derive(Template)]
 #[template(path = "index.html")]
-pub struct IndexTemplate {}
+pub struct Index {}
 
 #[derive(Template)]
-#[template(path = "login_page.html")]
-pub struct LoginPageTemplate {}
+#[template(path = "login/page.html")]
+pub struct LoginPage {}
 
 #[derive(Template)]
-#[template(path = "register_page.html")]
-pub struct RegisterPageTemplate {}
+#[template(path = "login/form.html")]
+pub struct LoginForm {}
+
+#[derive(Template)]
+#[template(path = "register/page.html")]
+pub struct RegisterPage<'a> {
+    pub form: RegisterForm<'a>,
+}
+
+#[derive(Template)]
+#[template(path = "register/form.html")]
+pub struct RegisterForm<'a> {
+    pub username: TextField<'a>,
+    pub first_name: TextField<'a>,
+    pub last_name: TextField<'a>,
+    pub email: TextField<'a>,
+    pub password: TextField<'a>,
+    pub confirm_password: TextField<'a>,
+}
+
+#[derive(Template, Clone)]
+#[template(path = "components/textfield.html")]
+pub struct TextField<'a> {
+    pub name: &'a str,
+    pub value: String,
+    pub error_message: String,
+}
+
+impl TextField<'_> {
+    pub fn new(name: &str) -> TextField {
+        TextField {
+            name,
+            value: String::new(),
+            error_message: String::new(),
+        }
+    }
+}
 
 pub struct UserSend {
     pub username: String,
@@ -23,14 +60,14 @@ pub struct UserSend {
 
 #[derive(Template)]
 #[template(path = "dashboard.html")]
-pub struct DashboardTemplate {
+pub struct Dashboard {
     pub items: Vec<String>,
     pub user: UserSend,
 }
 
 #[derive(Template)]
 #[template(path = "game.html")]
-pub struct GameTemplate {
+pub struct Game {
     pub matches: Vec<String>, // TODO: Change this to a struct
     pub game_name: String,
 }

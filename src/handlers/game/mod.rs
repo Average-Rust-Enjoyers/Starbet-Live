@@ -1,4 +1,4 @@
-use crate::templates::GameTemplate;
+use crate::templates::Game;
 use askama::Template;
 use axum::{
     extract::Json,
@@ -13,7 +13,7 @@ pub struct GameInput {
 }
 
 pub async fn game_handler(Json(input): Json<GameInput>) -> impl IntoResponse {
-    let template = GameTemplate {
+    let template = Game {
         game_name: input.game_name,
         matches: vec![],
     };
