@@ -9,5 +9,9 @@ pub use common::{
 pub use repositories::game::GameRepository;
 
 pub mod common;
+pub mod filters;
+pub mod handlers;
 pub mod models;
 pub mod repositories;
+pub mod templates;
+pub mod validators;
