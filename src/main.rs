@@ -78,7 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/register", post(register_submission_handler))
         .route("/dashboard", get(dashboard_handler))
         .route("/redis", get(redis_ok))
-        .route("/game", post(game_handler))
+        .route("/games/:name", post(game_handler))
         .route("/validation/:field", post(validation_handler))
         .with_state(app_state);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();

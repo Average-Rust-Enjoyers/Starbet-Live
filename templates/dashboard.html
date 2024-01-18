@@ -1,11 +1,13 @@
-<div class="flex h-screen flex-row">
-    <div class="w-1/4 bg-menu">
+<!-- prettier-ignore -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex h-screen flex-col">
+    <div class="flex-none">{% include "user_nav.html" %}</div>
+    <div id="content" class="flex flex-grow flex-row">
         <!-- prettier-ignore -->
-        {% include "games_menu.html" %}
-    </div>
-    <div class="flex w-3/4 flex-col">
-        <!-- prettier-ignore -->
-        {% include "user_nav.html" %}
+        {{ menu|safe }} 
         {% include "game_board.html" %}
     </div>
 </div>
+{% endblock %}
