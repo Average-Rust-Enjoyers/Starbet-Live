@@ -2,21 +2,48 @@
     tailwind.config = {
         theme: {
             colors: {
-                button: "#84cc16",
-                "button-hover": "#65a30d",
-                "button-active": "#166534",
-                "button-text": "#ffffff",
-                "input-border": "#d1d5db",
-                "input-border-focus": "#3b82f6",
-                "error-text": "#ef4444",
-                "menu-button": "#6b7280",
-                "menu-button-hover": "#4b5563",
-                "menu-button-text": "#ffffff",
-                menu: "#9ca3af",
-                "nav-bar": "#6b7280",
-                "game-board": "#4b5563",
-                "game-item": "#3b82f6",
-                "game-item-title": "#ffffff",
+                button: {
+                    DEFAULT: "#84cc16",
+                    hover: "#65a30d",
+                    active: "#166534",
+                    text: "#ffffff",
+                },
+                input: {
+                    DEFAULT: "#ffffff",
+                    hover: "#e5e7eb",
+                    focus: "#ffffff",
+                    text: "#000000",
+                    border: {
+                        DEFAULT: "#9ca3af",
+                        hover: "#6b7280",
+                        focus: "#3b82f6",
+                    },
+                },
+                menu: {
+                    DEFAULT: "#9ca3af",
+                    button: {
+                        DEFAULT: "#6b7280",
+                        hover: "#4b5563",
+                        text: "#ffffff",
+                        active: {
+                            DEFAULT: "#e7e5e4",
+                            hover: "#d1d5db",
+                        },
+                    },
+                },
+                game: {
+                    board: "#4b5563",
+                    item: {
+                        DEFAULT: "#3b82f6",
+                        title: "#ffffff",
+                    },
+                },
+                nav: {
+                    bar: "#6b7280",
+                },
+                error: {
+                    text: "#ef4444",
+                },
             },
         },
     };

@@ -61,8 +61,21 @@ pub struct UserSend {
 #[derive(Template)]
 #[template(path = "dashboard.html")]
 pub struct Dashboard {
-    pub items: Vec<String>,
     pub user: UserSend,
+    pub menu: Menu,
+}
+
+#[derive(Template)]
+#[template(path = "menu/games_menu.html")]
+pub struct Menu {
+    pub games: Vec<MenuItem>,
+}
+
+#[derive(Template)]
+#[template(path = "menu/menu_item.html")]
+pub struct MenuItem {
+    pub name: String,
+    pub active: bool,
 }
 
 #[derive(Template)]

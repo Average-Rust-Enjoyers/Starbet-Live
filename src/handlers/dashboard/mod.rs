@@ -1,4 +1,4 @@
-use crate::templates::{Dashboard, UserSend};
+use crate::templates::{Dashboard, Menu, MenuItem, UserSend};
 use askama::Template;
 use axum::{
     http::StatusCode,
@@ -6,14 +6,6 @@ use axum::{
 };
 
 pub async fn dashboard_handler() -> impl IntoResponse {
-    // TODO: Get the menu items from the database
-    let menu_items = vec![
-        "CS:GO".to_string(),
-        "Dota 2".to_string(),
-        "LoL".to_string(),
-        "Valorant".to_string(),
-    ];
-
     let user = UserSend {
         username: "Eric Cartman".to_string(),
         email: "eric.cartman@southpark.com".to_string(),
@@ -23,10 +15,28 @@ pub async fn dashboard_handler() -> impl IntoResponse {
         balance: 69420,
     };
 
-    let template = Dashboard {
-        items: menu_items,
-        user,
-    };
+    let menu_items = vec![
+        MenuItem {
+            name: "CS:GO".to_string(),
+            active: false,
+        },
+        MenuItem {
+            name: "Dota 2".to_string(),
+            active: false,
+        },
+        MenuItem {
+            name: "LoL".to_string(),
+            active: false,
+        },
+        MenuItem {
+            name: "Valorant".to_string(),
+            active: false,
+        },
+    ];
+
+    let menu = Menu { games: menu_items };
+
+    let template = Dashboard { user, menu };
 
     let reply_html = template.render().unwrap();
     (StatusCode::OK, Html(reply_html).into_response())
