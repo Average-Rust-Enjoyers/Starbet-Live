@@ -1,0 +1,21 @@
+<!-- prettier-ignore -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex h-screen flex-col">
+    <div class="flex-none">{% include "user_nav.html" %}</div>
+    <div class="flex grow flex-row">
+        <div id="content" class="flex grow flex-row">
+            <!-- prettier-ignore -->
+            {{ menu|safe }} 
+            {% include "dashboard/game/game_board.html" %}
+        </div>
+        <div
+            id="right_side_panel"
+            class="bg-panel flex min-w-48 flex-col items-center pt-5 font-bold"
+        >
+            My Active Bets
+        </div>
+    </div>
+</div>
+{% endblock %}

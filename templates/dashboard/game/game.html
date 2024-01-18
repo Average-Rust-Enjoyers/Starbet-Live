@@ -1,0 +1,9 @@
+<div class="bg-game-board flex flex-1 flex-col px-5 pt-5">
+    <div id="game_title" class="text-3xl font-bold">{{game_name}} - Live Matches</div>
+    <div id="matches" class="mt-5 flex flex-col gap-3" >
+        <!-- prettier-ignore -->
+        {% for match in matches %}
+            {{ match|safe }}
+        {% endfor %}
+    </div>
+</div>
