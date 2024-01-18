@@ -6,7 +6,6 @@ INSERT INTO AppUser (
         surname,
         profile_picture,
         password_hash,
-        password_salt,
         balance
     )
 VALUES (
@@ -17,7 +16,6 @@ VALUES (
         'Sherar',
         'https://robohash.org/exvelitperspiciatis.png?size=150x150&set=set1',
         '$2a$04$CkWmqBfhPhfEQ3bRGA5yruFQTfhOPUd.hX0i/UF4OVRcfh20ic49u',
-        'salt1',
         0
     ),
     (
@@ -28,7 +26,6 @@ VALUES (
         'Lambdean',
         'https://robohash.org/commodicorporisea.png?size=150x150&set=set1',
         '$2a$04$19OjOrihqLjy7YkPxgnVzOQTJepoHrSTZ3Ua1OQPUDUS3mTNzMR4i',
-        'salt2',
         1626
     ),
     (
@@ -39,7 +36,6 @@ VALUES (
         'Mallord',
         'https://robohash.org/dignissimossedvel.png?size=150x150&set=set1',
         '$2a$04$ZbD.soHdYAugAGJE04TjiePyNhOlrDdLM4Q9KcC1uqoQkJnVSZn.i',
-        'salt2',
         58706
     ),
     (
@@ -50,7 +46,6 @@ VALUES (
         'Miguet',
         'https://robohash.org/voluptatemrerumimpedit.png?size=150x150&set=set1',
         '$2a$04$CDOG46bUb3AdKYt9YeL8recp0ZRMOmukUDl3r23bWAx3dx.pDJjgK',
-        'salt3',
         12786
     ),
     (
@@ -61,6 +56,5 @@ VALUES (
         'Nicolls',
         'https://robohash.org/aspernaturquossed.png?size=150x150&set=set1',
         '$2a$04$V7uUsvlPlpP587snjQUneObHEgjxJTnrYrHdR8AqYovZayO55WbBO',
-        'salt2',
         88434
     );

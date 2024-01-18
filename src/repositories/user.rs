@@ -93,8 +93,8 @@ impl DbCreate<UserCreate, User> for UserRepository {
             User,
             r#"
                 INSERT INTO AppUser (username, email, name, surname,
-                    profile_picture, password_hash, password_salt)
-                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                    profile_picture, password_hash)
+                VALUES ($1, $2, $3, $4, $5, $6)
                 RETURNING *
             "#,
             data.username,
@@ -103,7 +103,6 @@ impl DbCreate<UserCreate, User> for UserRepository {
             data.surname,
             data.profile_picture,
             data.password_hash,
-            data.password_salt
         )
         .fetch_one(self.pool_handler.pool.as_ref())
         .await?;
@@ -160,9 +159,8 @@ impl DbUpdate<UserUpdate, User> for UserRepository {
                     surname = COALESCE($4, surname), 
                     profile_picture = COALESCE($5, profile_picture), 
                     password_hash = COALESCE($6, password_hash), 
-                    password_salt = COALESCE($7, password_salt),
-                    balance = COALESCE($8, balance)
-                WHERE id=$9
+                    balance = COALESCE($7, balance)
+                WHERE id=$8
                 RETURNING *
             "#,
             params.username,
@@ -171,7 +169,6 @@ impl DbUpdate<UserUpdate, User> for UserRepository {
             params.surname,
             params.profile_picture,
             params.password_hash,
-            params.password_salt,
             params.balance,
             params.id
         )
