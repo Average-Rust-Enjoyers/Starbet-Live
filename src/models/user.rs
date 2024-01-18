@@ -3,7 +3,7 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
-use crate::handlers::validation::RegisterFormData;
+use crate::{handlers::validation::RegisterFormData, helpers::hash_password};
 
 /// User structure which is serialized from the database, containing full information
 /// about the user. Only obtainable when you have the right email and the right password hash
@@ -57,13 +57,13 @@ impl UserCreate {
 
 impl From<&RegisterFormData> for UserCreate {
     fn from(register_form_data: &RegisterFormData) -> Self {
-        Self {
-            username: register_form_data.username.to_owned(),
-            email: register_form_data.email.to_owned(),
-            name: register_form_data.first_name.to_owned(),
-            surname: register_form_data.last_name.to_owned(),
-            profile_picture: "httpsdi://i.imgur.com/4oQWZ0e.png".to_owned(), // TODO: change this to a default image
-            password_hash: "".to_owned(), // TODO: change this to a default image
+        UserCreate {
+            username: register_form_data.username.clone(),
+            email: register_form_data.email.clone(),
+            name: register_form_data.first_name.clone(),
+            surname: register_form_data.last_name.clone(),
+            profile_picture: "httpsdi://i.imgur.com/4oQWZ0e.png".to_string(), // TODO: change this to a default image
+            password_hash: hash_password(register_form_data.password.as_bytes()),
         }
     }
 }

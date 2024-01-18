@@ -10,32 +10,32 @@ use bb8_redis::RedisConnectionManager;
 #[cfg(debug_assertions)]
 use dotenvy::dotenv;
 
-use crate::handlers::{
-    dashboard::dashboard_handler,
-    game::game_handler,
-    index::index_handler,
-    login::login_handler,
-    register::{register_page_handler, register_submission_handler},
-    validation::validation_handler,
+use crate::{
+    app_state::AppState,
+    common::{DbPoolHandler, PoolHandler},
+    handlers::{
+        dashboard::dashboard_handler,
+        game::game_handler,
+        index::index_handler,
+        login::login_handler,
+        register::{register_page_handler, register_submission_handler},
+        validation::validation_handler,
+    },
 };
 
 use redis::AsyncCommands;
 use sqlx::postgres::PgPoolOptions;
-use std::env;
+use std::{env, sync::Arc};
 
+mod app_state;
 mod common;
 mod filters;
 mod handlers;
+mod helpers;
 mod models;
 mod repositories;
 mod templates;
 mod validators;
-
-#[derive(FromRef, Clone)]
-pub struct AppState {
-    postgres_pool: sqlx::PgPool,
-    redis_pool: bb8::Pool<RedisConnectionManager>,
-}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -64,10 +64,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .get_connection()
         .expect("failed to connect to Redis");
 
-    let app_state: AppState = AppState {
+    let user_repo = Arc::new(repositories::user::UserRepository::new(PoolHandler::new(
+        Arc::new(postgres_pool.clone()),
+    )));
+
+    let app_state: AppState = Arc::new(AppState {
         postgres_pool,
         redis_pool,
-    };
+        user_repo,
+    });
 
     println!("Starting server. Listening on http://{addr}");
 
@@ -80,7 +85,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/redis", get(redis_ok))
         .route("/games/:name", post(game_handler))
         .route("/validation/:field", post(validation_handler))
-        .with_state(app_state);
+        .layer(app_state);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
     Ok(())

@@ -22,6 +22,10 @@ pub struct UserRepository {
 }
 
 impl UserRepository {
+    pub fn new(pool_handler: PoolHandler) -> Self {
+        Self { pool_handler }
+    }
+
     /// Function which retrieves a user by their id, usable within a transaction
     ///
     /// # Params

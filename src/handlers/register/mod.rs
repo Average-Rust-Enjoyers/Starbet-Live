@@ -1,13 +1,20 @@
-use crate::templates::{RegisterForm, RegisterPage, TextField};
+use std::sync::Arc;
+
 use askama::Template;
 use axum::{
     extract::Request,
     http::StatusCode,
     response::{Html, IntoResponse},
-    Form,
+    Extension, Form,
 };
 
 use super::validation::{validate_and_build, RegisterFormData};
+use crate::{
+    app_state::AppState,
+    common::repository::DbCreate,
+    models::user::UserCreate,
+    templates::{RegisterForm, RegisterPage, TextField},
+};
 
 const FIELDS: [&str; 6] = [
     "username",
@@ -39,6 +46,7 @@ pub async fn register_page_handler(req: Request) -> impl IntoResponse {
 }
 
 pub async fn register_submission_handler(
+    Extension(app_state): Extension<Arc<AppState>>,
     Form(payload): Form<RegisterFormData>,
 ) -> impl IntoResponse {
     let (all_valid, form_fields): (bool, Vec<TextField>) = FIELDS
@@ -67,7 +75,12 @@ pub async fn register_submission_handler(
         return (StatusCode::OK, Html(form).into_response());
     }
 
-    // TODO: insert user into database
+    let user_repo = &app_state.user_repo;
+
+    let user = user_repo
+        .create(&UserCreate::from(&payload))
+        .await
+        .expect("Failed to create user");
 
     (StatusCode::OK, Html("Hi").into_response())
 }
