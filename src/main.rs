@@ -62,8 +62,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .expect("failed to connect to Redis");
 
     let pool_handler = PoolHandler::new(Arc::new(postgres_pool.clone()));
-    let user_repo =
-        repositories::user::UserRepository::new(pool_handler.clone());
+    let user_repo = repositories::user::UserRepository::new(pool_handler.clone());
     println!("Starting server. Listening on http://{addr}");
 
     let app = Router::new()
