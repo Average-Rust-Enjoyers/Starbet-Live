@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use askama::Template;
 use axum::{
     extract::Request,
@@ -10,9 +8,9 @@ use axum::{
 
 use super::validation::{validate_and_build, RegisterFormData};
 use crate::{
-    app_state::AppState,
     common::repository::DbCreate,
     models::user::UserCreate,
+    repositories::user::UserRepository,
     templates::{RegisterForm, RegisterPage, TextField},
 };
 
@@ -46,7 +44,7 @@ pub async fn register_page_handler(req: Request) -> impl IntoResponse {
 }
 
 pub async fn register_submission_handler(
-    Extension(app_state): Extension<Arc<AppState>>,
+    Extension(mut user_repository): Extension<UserRepository>,
     Form(payload): Form<RegisterFormData>,
 ) -> impl IntoResponse {
     let (all_valid, form_fields): (bool, Vec<TextField>) = FIELDS
@@ -75,9 +73,7 @@ pub async fn register_submission_handler(
         return (StatusCode::OK, Html(form).into_response());
     }
 
-    let user_repo = &app_state.user_repo;
-
-    let user = user_repo
+    let _user = user_repository
         .create(&UserCreate::from(&payload))
         .await
         .expect("Failed to create user");

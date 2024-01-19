@@ -1,8 +1,7 @@
 use axum::{
-    extract::{FromRef, State},
     http,
     routing::{get, post},
-    Router,
+    Extension, Router,
 };
 
 use bb8_redis::RedisConnectionManager;
@@ -11,7 +10,6 @@ use bb8_redis::RedisConnectionManager;
 use dotenvy::dotenv;
 
 use crate::{
-    app_state::AppState,
     common::{DbPoolHandler, PoolHandler},
     handlers::{
         dashboard::dashboard_handler,
@@ -27,7 +25,6 @@ use redis::AsyncCommands;
 use sqlx::postgres::PgPoolOptions;
 use std::{env, sync::Arc};
 
-mod app_state;
 mod common;
 mod filters;
 mod handlers;
@@ -64,16 +61,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .get_connection()
         .expect("failed to connect to Redis");
 
-    let user_repo = Arc::new(repositories::user::UserRepository::new(PoolHandler::new(
-        Arc::new(postgres_pool.clone()),
-    )));
-
-    let app_state: AppState = Arc::new(AppState {
-        postgres_pool,
-        redis_pool,
-        user_repo,
-    });
-
+    let pool_handler = PoolHandler::new(Arc::new(postgres_pool.clone()));
+    let user_repo =
+        repositories::user::UserRepository::new(pool_handler.clone());
     println!("Starting server. Listening on http://{addr}");
 
     let app = Router::new()
@@ -85,7 +75,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/redis", get(redis_ok))
         .route("/games/:name", post(game_handler))
         .route("/validation/:field", post(validation_handler))
-        .layer(app_state);
+        .layer(Extension(user_repo))
+        .layer(Extension(redis_pool));
+
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
     Ok(())
@@ -93,7 +85,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 /// # Panics
 pub async fn redis_ok(
-    State(redis_pool): State<bb8::Pool<RedisConnectionManager>>,
+    Extension(redis_pool): Extension<bb8::Pool<RedisConnectionManager>>,
 ) -> http::StatusCode {
     let mut conn = redis_pool.get().await.unwrap();
     let value = 42;

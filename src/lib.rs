@@ -8,7 +8,6 @@ pub use common::{
 
 pub use repositories::game::GameRepository;
 
-pub mod app_state;
 pub mod common;
 pub mod filters;
 pub mod handlers;
