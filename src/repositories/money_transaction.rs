@@ -14,6 +14,7 @@ use crate::repositories::user::UserRepository;
 use async_trait::async_trait;
 use sqlx::{Acquire, Postgres, Transaction};
 
+#[derive(Clone)]
 pub struct MoneyTransactionRepository {
     pool_handler: PoolHandler,
 }

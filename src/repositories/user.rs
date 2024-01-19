@@ -17,6 +17,7 @@ use crate::{
     models::user::{GetByUserId, User, UserCreate, UserDelete, UserLogin, UserUpdate},
 };
 
+#[derive(Clone)]
 pub struct UserRepository {
     pool_handler: PoolHandler,
 }

@@ -15,6 +15,7 @@ use crate::{
     models::bet::{Bet, BetCreate, BetDelete, BetGetById, BetGetByUserId, BetUpdate},
 };
 
+#[derive(Clone)]
 pub struct BetRepository {
     pool_handler: PoolHandler,
 }

@@ -20,6 +20,7 @@ use crate::{
 
 use super::game_match::GameMatchRepository;
 
+#[derive(Clone)]
 pub struct OddsRepository {
     pool_handler: PoolHandler,
 }

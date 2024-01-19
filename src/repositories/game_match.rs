@@ -15,6 +15,7 @@ use crate::{
     },
 };
 
+#[derive(Clone)]
 pub struct GameMatchRepository {
     pool_handler: PoolHandler,
 }
