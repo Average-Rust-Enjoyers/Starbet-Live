@@ -1,6 +1,6 @@
 use askama::Template;
 
-use crate::filters;
+use crate::{filters, models::odds::Odds};
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -59,7 +59,7 @@ pub struct UserSend {
 }
 
 #[derive(Template)]
-#[template(path = "dashboard.html")]
+#[template(path = "dashboard/dashboard.html")]
 pub struct Dashboard {
     pub user: UserSend,
     pub menu: Menu,
@@ -79,8 +79,20 @@ pub struct MenuItem {
 }
 
 #[derive(Template)]
-#[template(path = "game.html")]
+#[template(path = "dashboard/game/game.html")]
 pub struct Game {
-    pub matches: Vec<String>, // TODO: Change this to a struct
+    pub matches: Vec<Match>,
     pub game_name: String,
+}
+
+#[derive(Template)]
+#[template(path = "dashboard/match/match.html")]
+pub struct Match {
+    pub team_a: Team,
+    pub team_b: Team,
+    pub current_odds: Odds,
+}
+
+pub struct Team {
+    pub name: String,
 }
