@@ -48,6 +48,13 @@ pub fn vlaidate_name(name: String) -> (String, String) {
     if name.len() < 2 {
         return (name, "Name must be at least 2 characters long".to_string());
     }
+    if !name.chars().all(|c| c.is_ascii_alphabetic()) {
+        return (
+            name,
+            "Name must contain only alphabetic characters".to_string(),
+        );
+    }
+
     (name, String::new())
 }
 

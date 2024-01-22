@@ -57,7 +57,7 @@ impl UserCreate {
 
 impl From<RegisterFormData> for UserCreate {
     fn from(register_form_data: RegisterFormData) -> Self {
-        UserCreate {
+        Self {
             username: register_form_data.username,
             email: register_form_data.email,
             name: register_form_data.first_name,
