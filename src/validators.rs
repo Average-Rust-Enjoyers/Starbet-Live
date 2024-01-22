@@ -44,7 +44,7 @@ pub async fn validate_username(
     }
 }
 
-pub fn vlaidate_name(name: String) -> (String, String) {
+pub fn validate_name(name: String) -> (String, String) {
     if name.len() < 2 {
         return (name, "Name must be at least 2 characters long".to_string());
     }

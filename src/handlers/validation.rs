@@ -10,9 +10,9 @@ use serde::Deserialize;
 use crate::{
     repositories::user::UserRepository,
     templates::TextField,
-    validators::register::{
-        validate_confirm_password, validate_email, validate_password, validate_username,
-        vlaidate_name,
+    validators::{
+        validate_confirm_password, validate_email, validate_name, validate_password,
+        validate_username,
     },
 };
 
@@ -53,8 +53,8 @@ pub async fn validate_and_build<'a>(
 ) -> (bool, TextField<'a>) {
     let (value, error_message) = match field {
         "username" => validate_username(payload.username.clone(), user_repository).await,
-        "first-name" => vlaidate_name(payload.first_name.clone()),
-        "last-name" => vlaidate_name(payload.last_name.clone()),
+        "first-name" => validate_name(payload.first_name.clone()),
+        "last-name" => validate_name(payload.last_name.clone()),
         "email" => validate_email(payload.email.clone(), user_repository).await,
         "password" => validate_password(payload.password.clone()),
         "confirm-password" => {
