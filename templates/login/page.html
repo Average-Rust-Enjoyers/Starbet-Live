@@ -2,5 +2,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% include "form.html" %} 
+<div class="flex h-screen items-center justify-center">
+    <div class="w-96 rounded bg-white p-8 shadow-md">
+        <h1 class="mb-4 text-2xl font-bold">LOGIN</h1>
+        <form hx-get="dashboard" hx-target="body">
+            <div class="mb-4">
+                <input
+                    type="text"
+                    id="username"
+                    placeholder="Username"
+                    class="border-input-border focus:border-input-border-focus w-full rounded border p-2 focus:outline-none"
+                />
+            </div>
+            <div class="mb-4">
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Password"
+                    class="border-input-border focus:border-input-border-focus w-full rounded border p-2 focus:outline-none"
+                />
+            </div>
+            <button
+                type="submit"
+                class="focus:shadow-outline-green bg-button text-button-text hover:bg-button-hover active:bg-button-active rounded p-2 focus:outline-none"
+            >
+                Submit
+            </button>
+        </form>
+    </div>
+</div>
 {% endblock %}

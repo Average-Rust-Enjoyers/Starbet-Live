@@ -11,18 +11,8 @@ pub struct Index {}
 pub struct LoginPage {}
 
 #[derive(Template)]
-#[template(path = "login/form.html")]
-pub struct LoginForm {}
-
-#[derive(Template)]
 #[template(path = "register/page.html")]
 pub struct RegisterPage<'a> {
-    pub form: RegisterForm<'a>,
-}
-
-#[derive(Template)]
-#[template(path = "register/form.html")]
-pub struct RegisterForm<'a> {
     pub username: TextField<'a>,
     pub first_name: TextField<'a>,
     pub last_name: TextField<'a>,

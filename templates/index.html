@@ -11,23 +11,19 @@
             height="650px"
         />
     </div>
-    <div class="flex flex-row">
-        <button
-            hx-get="login"
-            hx-target="body"
-            hx-push-url="true"
+    <div hx-boost="true" class="flex flex-row">
+        <a
+            href="login"
             class="bg-button text-button-text hover:bg-button-hover m-2 rounded-md p-2"
         >
             LOGIN
-        </button>
-        <button
-            hx-get="register"
-            hx-target="body"
-            hx-push-url="true"
+        </a>
+        <a
+            href="register"
             class="bg-button hover:bg-button-hover text-button-text m-2 rounded-md p-2"
         >
             REGISTER
-        </button>
+        </a>
     </div>
 </div>
 {% endblock %}

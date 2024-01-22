@@ -1,7 +1,6 @@
 use askama::Template;
 use axum::{
-    extract::Request,
-    http::StatusCode,
+    http::{HeaderValue, StatusCode},
     response::{Html, IntoResponse},
     Extension, Form,
 };
@@ -10,7 +9,7 @@ use super::validation::{validate_and_build, RegisterFormData};
 use crate::{
     common::repository::DbCreate,
     repositories::user::UserRepository,
-    templates::{RegisterForm, RegisterPage, TextField},
+    templates::{LoginPage, RegisterPage, TextField},
 };
 
 const FIELDS: [&str; 6] = [
@@ -22,8 +21,8 @@ const FIELDS: [&str; 6] = [
     "confirm-password",
 ];
 
-pub async fn register_page_handler(req: Request) -> impl IntoResponse {
-    let form = RegisterForm {
+pub async fn register_page_handler() -> impl IntoResponse {
+    let form = RegisterPage {
         username: TextField::new(FIELDS[0]),
         first_name: TextField::new(FIELDS[1]),
         last_name: TextField::new(FIELDS[2]),
@@ -32,14 +31,7 @@ pub async fn register_page_handler(req: Request) -> impl IntoResponse {
         confirm_password: TextField::new(FIELDS[5]),
     };
 
-    // If the reqest came from HTMX, render only the form
-    // and don't do a full page refresh
-    let reply_html = if req.headers().contains_key("referer") {
-        form.render().unwrap()
-    } else {
-        RegisterPage { form }.render().unwrap()
-    };
-    (StatusCode::OK, Html(reply_html).into_response())
+    (StatusCode::OK, Html(form.render().unwrap()).into_response())
 }
 
 pub async fn register_submission_handler(
@@ -55,7 +47,7 @@ pub async fn register_submission_handler(
     }
 
     if !all_valid {
-        let form = RegisterForm {
+        let form = RegisterPage {
             username: form_fields[0].clone(),
             first_name: form_fields[1].clone(),
             last_name: form_fields[2].clone(),
@@ -68,10 +60,13 @@ pub async fn register_submission_handler(
         return (StatusCode::OK, Html(form).into_response());
     }
 
-    let _user = user_repository
-        .create(&payload.into())
-        .await
-        .expect("Failed to create user");
-
-    (StatusCode::OK, Html("Hi").into_response())
+    if (user_repository.create(&payload.into()).await).is_ok() {
+        let mut response = Html(LoginPage {}.render().unwrap()).into_response();
+        response
+            .headers_mut()
+            .insert("HX-Redirect", HeaderValue::from_static("/login"));
+        (StatusCode::OK, response)
+    } else {
+        (StatusCode::OK, Html("HI").into_response())
+    }
 }
