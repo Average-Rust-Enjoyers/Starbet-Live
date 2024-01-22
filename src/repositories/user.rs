@@ -17,6 +17,11 @@ use crate::{
     models::user::{GetByUserId, User, UserCreate, UserDelete, UserLogin, UserUpdate},
 };
 
+pub enum Field {
+    Username,
+    Email,
+}
+
 #[derive(Clone)]
 pub struct UserRepository {
     pool_handler: PoolHandler,
@@ -76,6 +81,49 @@ impl UserRepository {
             Some(user) => Ok(user),
             None => Err(BusinessLogicError::new(UserDoesNotExist).into()),
         }
+    }
+
+    /// Function which checks if the field is in use
+    ///
+    /// # Params
+    /// - `field`: field to check
+    /// - `value`: value to check
+    ///
+    /// # Returns
+    /// - `Ok(true)`: if the field is in use
+    /// - `Ok(false)`: if the field is not in use
+    /// - `Err(_)`: otherwise
+    ///
+    /// # Errors
+    /// - `sqlx::Error`: if the query fails
+    pub async fn is_field_in_use(
+        &mut self,
+        field: Field,
+        value: &str,
+    ) -> Result<bool, sqlx::Error> {
+        let query = match field {
+            Field::Username => {
+                r"
+                SELECT 1
+                FROM AppUser
+                WHERE username=$1
+            "
+            }
+            Field::Email => {
+                r"
+                SELECT 1
+                FROM AppUser
+                WHERE email=$1
+            "
+            }
+        };
+
+        let user = sqlx::query(query)
+            .bind(value)
+            .fetch_optional(self.pool_handler.pool.as_ref())
+            .await?;
+
+        Ok(user.is_some())
     }
 }
 

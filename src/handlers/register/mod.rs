@@ -46,17 +46,13 @@ pub async fn register_submission_handler(
     Extension(mut user_repository): Extension<UserRepository>,
     Form(payload): Form<RegisterFormData>,
 ) -> impl IntoResponse {
-    let (all_valid, form_fields): (bool, Vec<TextField>) = FIELDS
-        .iter()
-        .map(|field| validate_and_build(field, &payload))
-        .fold(
-            (true, Vec::new()),
-            |(valid_acc, mut fields_acc), (valid, field)| {
-                // Perform logical AND on all bools and collect all TextFields
-                fields_acc.push(field);
-                (valid_acc && valid, fields_acc)
-            },
-        );
+    let (mut all_valid, mut form_fields) = (true, Vec::new());
+
+    for field in &FIELDS {
+        let (valid, field) = validate_and_build(field, &payload, &mut user_repository).await;
+        all_valid = all_valid && valid;
+        form_fields.push(field);
+    }
 
     if !all_valid {
         let form = RegisterForm {
