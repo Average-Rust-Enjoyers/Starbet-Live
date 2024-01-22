@@ -5,10 +5,8 @@ pub mod appuser_tests {
     use starbet_live::{
         common::repository::{DbRepository, PoolHandler},
         error::DbResultSingle,
-        models::{
-            user::{User, UserLogin},
-        },
-        repositories::{user::UserRepository},
+        models::user::{User, UserLogin},
+        repositories::user::UserRepository,
         DbPoolHandler, DbReadOne,
     };
     use std::sync::Arc;
