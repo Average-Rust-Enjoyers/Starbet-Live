@@ -41,7 +41,7 @@ pub mod appuser_tests {
                 .unwrap()
                 .into(),
             deleted_at: None,
-            balance: 0
+            balance: 0,
         };
 
         assert!(user.created_at == user.edited_at);
