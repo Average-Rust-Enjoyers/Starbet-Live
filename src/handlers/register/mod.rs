@@ -9,7 +9,6 @@ use axum::{
 use super::validation::{validate_and_build, RegisterFormData};
 use crate::{
     common::repository::DbCreate,
-    models::user::UserCreate,
     repositories::user::UserRepository,
     templates::{RegisterForm, RegisterPage, TextField},
 };
@@ -74,7 +73,7 @@ pub async fn register_submission_handler(
     }
 
     let _user = user_repository
-        .create(&UserCreate::from(&payload))
+        .create(&payload.into())
         .await
         .expect("Failed to create user");
 
