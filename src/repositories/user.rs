@@ -1,3 +1,4 @@
+use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 
@@ -8,7 +9,7 @@ use crate::{
             BusinessLogicErrorKind::{
                 UserDeleted, UserDoesNotExist, UserPasswordDoesNotMatch, UserUpdateParametersEmpty,
             },
-            DbResultMultiple, DbResultSingle,
+            DbError, DbResultMultiple, DbResultSingle,
         },
         repository::{
             DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
@@ -128,8 +129,14 @@ impl DbReadOne<UserLogin, User> for UserRepository {
         .await?;
         let user = Self::is_correct(user)?;
 
-        if user.password_hash != params.password_hash {
-            return Err(BusinessLogicError::new(UserPasswordDoesNotMatch).into());
+        if let Ok(parsed_hash) = PasswordHash::new(&user.password_hash) {
+            let check_result =
+                Argon2::default().verify_password(params.password.as_bytes(), &parsed_hash);
+            if check_result.is_err() {
+                return Err(BusinessLogicError::new(UserPasswordDoesNotMatch).into());
+            }
+        } else {
+            return Err(DbError::new("invalid hash"));
         }
 
         Ok(user)
