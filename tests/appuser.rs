@@ -20,8 +20,7 @@ pub mod appuser_tests {
         let user = user_repo
             .read_one(&UserLogin {
                 email: "lsherar0@pagesperso-orange.fr".to_string(),
-                password: "$2a$04$CkWmqBfhPhfEQ3bRGA5yruFQTfhOPUd.hX0i/UF4OVRcfh20ic49u"
-                    .to_string(),
+                password: "heslo".to_string(),
             })
             .await
             .expect("user should exist");
