@@ -33,7 +33,7 @@ pub mod appuser_tests {
             surname: "Sherar".to_string(),
             profile_picture: "https://robohash.org/exvelitperspiciatis.png?size=150x150&set=set1"
                 .to_string(),
-            password_hash: "$2a$04$CkWmqBfhPhfEQ3bRGA5yruFQTfhOPUd.hX0i/UF4OVRcfh20ic49u"
+            password_hash: "$argon2i$v=19$m=16,t=2,p=1$N1FCeUl5ZDZ4ck1GMHEzcA$b/6yLo+OqXOPYA1zmletIg"
                 .to_string(),
             created_at: DateTime::parse_from_rfc3339("2023-12-09 19:38:46.728083+00:00")
                 .unwrap()
