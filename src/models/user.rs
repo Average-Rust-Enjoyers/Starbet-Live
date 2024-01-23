@@ -72,14 +72,14 @@ impl From<RegisterFormData> for UserCreate {
 #[derive(Debug, Clone)]
 pub struct UserLogin {
     pub email: String,
-    pub password_hash: String,
+    pub password: String,
 }
 
 impl UserLogin {
-    pub fn new(email: &str, password_hash: &str) -> Self {
+    pub fn new(email: &str, password: &str) -> Self {
         Self {
             email: email.to_owned(),
-            password_hash: password_hash.to_owned(),
+            password: password.to_owned(),
         }
     }
 }
