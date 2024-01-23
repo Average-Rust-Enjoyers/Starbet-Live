@@ -15,7 +15,7 @@ VALUES (
         'Leslie',
         'Sherar',
         'https://robohash.org/exvelitperspiciatis.png?size=150x150&set=set1',
-        '$2a$04$CkWmqBfhPhfEQ3bRGA5yruFQTfhOPUd.hX0i/UF4OVRcfh20ic49u',
+        '$argon2i$v=19$m=16,t=2,p=1$N1FCeUl5ZDZ4ck1GMHEzcA$b/6yLo+OqXOPYA1zmletIg',
         0
     ),
     (

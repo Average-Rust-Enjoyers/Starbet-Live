@@ -20,8 +20,7 @@ pub mod appuser_tests {
         let user = user_repo
             .read_one(&UserLogin {
                 email: "lsherar0@pagesperso-orange.fr".to_string(),
-                password_hash: "$2a$04$CkWmqBfhPhfEQ3bRGA5yruFQTfhOPUd.hX0i/UF4OVRcfh20ic49u"
-                    .to_string(),
+                password: "heslo".to_string(),
             })
             .await
             .expect("user should exist");
@@ -34,8 +33,9 @@ pub mod appuser_tests {
             surname: "Sherar".to_string(),
             profile_picture: "https://robohash.org/exvelitperspiciatis.png?size=150x150&set=set1"
                 .to_string(),
-            password_hash: "$2a$04$CkWmqBfhPhfEQ3bRGA5yruFQTfhOPUd.hX0i/UF4OVRcfh20ic49u"
-                .to_string(),
+            password_hash:
+                "$argon2i$v=19$m=16,t=2,p=1$N1FCeUl5ZDZ4ck1GMHEzcA$b/6yLo+OqXOPYA1zmletIg"
+                    .to_string(),
             created_at: DateTime::parse_from_rfc3339("2023-12-09 19:38:46.728083+00:00")
                 .unwrap()
                 .into(),
@@ -55,7 +55,7 @@ pub mod appuser_tests {
         user_repo
             .read_one(&UserLogin {
                 email: "lsherar0@pagesperso-orange.fr".to_string(),
-                password_hash: "blbost".to_string(),
+                password: "blbost".to_string(),
             })
             .await
             .expect_err("invalid password should not be accepted");
@@ -63,7 +63,7 @@ pub mod appuser_tests {
         user_repo
             .read_one(&UserLogin {
                 email: "nope@nope.com".to_string(),
-                password_hash: "blbost".to_string(),
+                password: "blbost".to_string(),
             })
             .await
             .expect_err("nonexistent user should not be accepted");
