@@ -7,22 +7,16 @@ use crate::{filters, models::odds::Odds};
 pub struct Index {}
 
 #[derive(Template)]
-#[template(path = "login/page.html")]
+#[template(path = "server_error.html")]
+pub struct ServerErrorPage {}
+
+#[derive(Template)]
+#[template(path = "login.html")]
 pub struct LoginPage {}
 
 #[derive(Template)]
-#[template(path = "login/form.html")]
-pub struct LoginForm {}
-
-#[derive(Template)]
-#[template(path = "register/page.html")]
+#[template(path = "register.html")]
 pub struct RegisterPage<'a> {
-    pub form: RegisterForm<'a>,
-}
-
-#[derive(Template)]
-#[template(path = "register/form.html")]
-pub struct RegisterForm<'a> {
     pub username: TextField<'a>,
     pub first_name: TextField<'a>,
     pub last_name: TextField<'a>,

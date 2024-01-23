@@ -1,8 +1,7 @@
 use axum::{
-    extract::{FromRef, State},
     http,
     routing::{get, post},
-    Router,
+    Extension, Router,
 };
 
 use bb8_redis::RedisConnectionManager;
@@ -10,32 +9,30 @@ use bb8_redis::RedisConnectionManager;
 #[cfg(debug_assertions)]
 use dotenvy::dotenv;
 
-use crate::handlers::{
-    dashboard::dashboard_handler,
-    game::game_handler,
-    index::index_handler,
-    login::login_handler,
-    register::{register_page_handler, register_submission_handler},
-    validation::validation_handler,
+use crate::{
+    common::{DbPoolHandler, PoolHandler},
+    handlers::{
+        dashboard::dashboard_handler,
+        game::game_handler,
+        index::index_handler,
+        login::login_handler,
+        register::{register_page_handler, register_submission_handler},
+        validation::validation_handler,
+    },
 };
 
 use redis::AsyncCommands;
 use sqlx::postgres::PgPoolOptions;
-use std::env;
+use std::{env, sync::Arc};
 
 mod common;
 mod filters;
 mod handlers;
+mod helpers;
 mod models;
 mod repositories;
 mod templates;
 mod validators;
-
-#[derive(FromRef, Clone)]
-pub struct AppState {
-    postgres_pool: sqlx::PgPool,
-    redis_pool: bb8::Pool<RedisConnectionManager>,
-}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -64,11 +61,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .get_connection()
         .expect("failed to connect to Redis");
 
-    let app_state: AppState = AppState {
-        postgres_pool,
-        redis_pool,
-    };
-
+    let pool_handler = PoolHandler::new(Arc::new(postgres_pool.clone()));
+    let user_repo = repositories::user::UserRepository::new(pool_handler.clone());
     println!("Starting server. Listening on http://{addr}");
 
     let app = Router::new()
@@ -80,7 +74,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/redis", get(redis_ok))
         .route("/games/:name", post(game_handler))
         .route("/validation/:field", post(validation_handler))
-        .with_state(app_state);
+        .layer(Extension(user_repo))
+        .layer(Extension(redis_pool));
+
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
     Ok(())
@@ -88,7 +84,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 /// # Panics
 pub async fn redis_ok(
-    State(redis_pool): State<bb8::Pool<RedisConnectionManager>>,
+    Extension(redis_pool): Extension<bb8::Pool<RedisConnectionManager>>,
 ) -> http::StatusCode {
     let mut conn = redis_pool.get().await.unwrap();
     let value = 42;

@@ -1,6 +1,11 @@
 use regex::Regex;
 
-pub fn validate_username(username: String) -> (String, String) {
+use crate::repositories::user::{Field, UserRepository};
+
+pub async fn validate_username(
+    username: String,
+    user_repository: &mut UserRepository,
+) -> (String, String) {
     if username.len() < 3 {
         return (
             username,
@@ -23,18 +28,40 @@ pub fn validate_username(username: String) -> (String, String) {
         );
     }
 
-    //TODO: check if username is already taken
-    (username, String::new())
+    match user_repository
+        .is_field_in_use(Field::Username, &username)
+        .await
+    {
+        Ok(true) => (
+            username,
+            "Username is already taken, please choose another one".to_string(),
+        ),
+        Ok(false) => (username, String::new()),
+        Err(_) => (
+            username,
+            "Something went wrong, please try again later".to_string(),
+        ),
+    }
 }
 
-pub fn vlaidate_name(name: String) -> (String, String) {
+pub fn validate_name(name: String) -> (String, String) {
     if name.len() < 2 {
         return (name, "Name must be at least 2 characters long".to_string());
     }
+    if !name.chars().all(|c| c.is_ascii_alphabetic()) {
+        return (
+            name,
+            "Name must contain only alphabetic characters".to_string(),
+        );
+    }
+
     (name, String::new())
 }
 
-pub fn validate_email(email: String) -> (String, String) {
+pub async fn validate_email(
+    email: String,
+    user_repository: &mut UserRepository,
+) -> (String, String) {
     let email_regex = Regex::new(r"(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$").unwrap();
     if !email_regex.is_match(&email) {
         return (
@@ -43,7 +70,17 @@ pub fn validate_email(email: String) -> (String, String) {
         );
     }
 
-    (email, String::new())
+    match user_repository.is_field_in_use(Field::Email, &email).await {
+        Ok(true) => (
+            email,
+            "Email is already taken, please choose another one".to_string(),
+        ),
+        Ok(false) => (email, String::new()),
+        Err(_) => (
+            email,
+            "Something went wrong, please try again later".to_string(),
+        ),
+    }
 }
 
 pub fn validate_password(password: String) -> (String, String) {

@@ -65,7 +65,7 @@ pub async fn game_handler(Path(GameName { name }): Path<GameName>) -> impl IntoR
     let menu_items = GAMES
         .iter()
         .map(|game| MenuItem {
-            name: game.to_string(),
+            name: (*game).to_string(),
             active: *game == name.clone(),
         })
         .collect();
@@ -73,6 +73,6 @@ pub async fn game_handler(Path(GameName { name }): Path<GameName>) -> impl IntoR
     let menu = Menu { games: menu_items }.render().unwrap();
     let game = template.render().unwrap();
 
-    let response = format!("{}{}", menu, game);
+    let response = format!("{menu}{game}");
     (StatusCode::OK, Html(response).into_response())
 }

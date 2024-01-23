@@ -17,6 +17,7 @@ use crate::{
     models::game::{Game, GameCreate, GameDelete, GameFilter, GameGenre, GameGetById, GameUpdate},
 };
 
+#[derive(Clone)]
 pub struct GameRepository {
     pool_handler: PoolHandler,
 }
