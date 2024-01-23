@@ -4,7 +4,7 @@
 {% block main_content %}
 <div class="w-80">
     <h2 class="mb-4 text-4xl font-bold">Register</h2>
-    <p class="mb-8 text-lg text-gray-300">Create your acount here</p>
+    <p class="text-secondary-darkest mb-8 text-lg">Create your acount here</p>
     <form hx-post="register" hx-boost="true" hx-target="body" class="text-left">
         {{ username|safe }}
         <div class="flex flex-row gap-x-1">
@@ -19,7 +19,7 @@
         <div class="flex justify-center">
             <button
                 type="submit"
-                class="border-secondary text-secondary mt-4 h-10 rounded-md border bg-transparent px-8 text-sm font-medium transition-colors hover:bg-gray-800"
+                class="border-secondary text-secondary hover:bg-primary-lighter mt-4 h-10 rounded-md border bg-transparent px-8 text-sm font-medium transition-colors"
             >
                 Register
             </button>

@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="text-secondary min-h-screen bg-gray-900">
+<div class="text-secondary bg-primary min-h-screen">
     <header class="flex items-center justify-between px-6 py-4">
         <a hx-boost="true" href="/" class="flex items-center space-x-4">
             <svg
@@ -22,8 +22,8 @@
             <h1 class="text-2xl font-bold">Starbet-Live</h1>
         </a>
         <nav hx-boost="true" class="space-x-4">
-            <a class="hover:text-secondary text-gray-300" href="/login">Login</a
-            ><a class="hover:text-secondary text-gray-300" href="/register"
+            <a class="hover:text-secondary text-secondary-darkest" href="/login">Login</a
+            ><a class="hover:text-secondary text-secondary-darkest" href="/register"
                 >Register</a
             >
         </nav>
@@ -33,7 +33,7 @@
     >
         {% block main_content %} {% endblock %}
     </main>
-    <footer class="flex items-center justify-center py-4 text-gray-500">
+    <footer class="flex items-center justify-center py-4 text-footer">
         © 2024 Starbet-Live. All rights reserved.
     </footer>
 </div>

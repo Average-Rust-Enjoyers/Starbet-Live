@@ -23,7 +23,7 @@
         name="{{ name }}"
         id="{{ name }}"
         placeholder="{{ name|split_and_capitalize }}"
-        class="w-full rounded border-2 {{ border_color }} bg-transparent p-2 focus:outline-none "
+        class="w-full rounded border-2 {{ border_color }} bg-primary p-2 focus:outline-none "
     />
     {% if error_message != "" %}
     <p class="text-error text-xs italic">{{ error_message }}</p>

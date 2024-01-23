@@ -4,14 +4,14 @@
 {% block main_content %}
 <div class="w-80">
     <h2 class="mb-4 text-2xl font-bold">Login</h2>
-    <p class="mb-8 text-lg text-gray-300">Login to your account</p>
+    <p class="text-secondary-darkest mb-8 text-lg">Login to your account</p>
     <form hx-get="dashboard" hx-target="body">
         <div class="mb-4">
             <input
                 type="text"
                 id="username"
                 placeholder="Username"
-                class="border-secondary w-full rounded border-2 bg-transparent p-2 focus:outline-none"
+                class="border-secondary bg-primary w-full rounded border-2 p-2 focus:outline-none"
             />
         </div>
         <div class="mb-4">
@@ -19,12 +19,12 @@
                 type="password"
                 id="password"
                 placeholder="Password"
-                class="border-secondary w-full rounded border-2 bg-transparent p-2 focus:outline-none"
+                class="border-secondary bg-primary w-full rounded border-2 p-2 focus:outline-none"
             />
         </div>
         <button
             type="submit"
-            class="bg-secondary mt-4 h-10 rounded-md px-8 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-200"
+            class="bg-secondary text-primary hover:bg-secondary-darker mt-4 h-10 rounded-md px-8 text-sm font-medium transition-colors"
         >
             Login
         </button>
