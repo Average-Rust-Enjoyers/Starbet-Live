@@ -3,8 +3,12 @@ use askama::Template;
 use crate::{filters, models::odds::Odds};
 
 #[derive(Template)]
-#[template(path = "index.html")]
+#[template(path = "index2.html")]
 pub struct Index {}
+
+#[derive(Template)]
+#[template(path = "server_error.html")]
+pub struct ServerErrorPage {}
 
 #[derive(Template)]
 #[template(path = "login.html")]

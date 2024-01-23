@@ -9,7 +9,7 @@ use super::validation::{validate_and_build, RegisterFormData};
 use crate::{
     common::repository::DbCreate,
     repositories::user::UserRepository,
-    templates::{LoginPage, RegisterPage, TextField},
+    templates::{LoginPage, RegisterPage, ServerErrorPage, TextField},
 };
 
 const FIELDS: [&str; 6] = [
@@ -65,8 +65,11 @@ pub async fn register_submission_handler(
         response
             .headers_mut()
             .insert("HX-Redirect", HeaderValue::from_static("/login"));
-        (StatusCode::OK, response)
+        (StatusCode::CREATED, response)
     } else {
-        (StatusCode::OK, Html("HI").into_response())
+        (
+            StatusCode::OK,
+            Html(ServerErrorPage {}.render().unwrap()).into_response(),
+        )
     }
 }
