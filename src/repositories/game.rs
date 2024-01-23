@@ -13,6 +13,7 @@ use crate::{
             DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate,
             PoolHandler,
         },
+        DbReadAll,
     },
     models::game::{Game, GameCreate, GameDelete, GameFilter, GameGenre, GameGetById, GameUpdate},
 };
@@ -23,6 +24,10 @@ pub struct GameRepository {
 }
 
 impl GameRepository {
+    pub fn new(pool_handler: PoolHandler) -> Self {
+        Self { pool_handler }
+    }
+
     /// # Panics
     /// # Errors
     pub async fn get_game<'a>(
@@ -226,6 +231,35 @@ impl DbDelete<GameDelete, Game> for GameRepository {
                     deleted_at
             "#,
             params.id
+        )
+        .fetch_all(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(games)
+    }
+}
+
+#[async_trait]
+impl DbReadAll<Game> for GameRepository {
+    async fn read_all(&mut self) -> DbResultMultiple<Game> {
+        let mut tx = self.pool_handler.pool.begin().await?;
+
+        let games = sqlx::query_as!(
+            Game,
+            r#"
+                SELECT id,
+                    name,
+                    description,
+                    logo,
+                    genre AS "genre: _",
+                    created_at,
+                    edited_at,
+                    deleted_at
+                FROM Game
+                WHERE deleted_at IS NULL
+            "#,
         )
         .fetch_all(&mut *tx)
         .await?;
