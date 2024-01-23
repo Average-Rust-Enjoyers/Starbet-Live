@@ -3,7 +3,7 @@ use askama::Template;
 use crate::{filters, models::odds::Odds};
 
 #[derive(Template)]
-#[template(path = "index2.html")]
+#[template(path = "index.html")]
 pub struct Index {}
 
 #[derive(Template)]
