@@ -8,9 +8,9 @@
 
 {% let border_color %}
 {% if error_message == "" %}
-    {% let border_color = "border-input-border" %}
+    {% let border_color = "border-white" %}
 {% else %}
-    {% let border_color = "border-red-500" %}
+    {% let border_color = "border-red-600" %}
 {% endif %}
 <div class="mb-4" id="{{ name }}-div">
     <input
@@ -23,9 +23,9 @@
         name="{{ name }}"
         id="{{ name }}"
         placeholder="{{ name|split_and_capitalize }}"
-        class="w-full rounded border {{ border_color }} p-2 focus:outline-none"
+        class="w-full rounded border-2 {{ border_color }} bg-transparent p-2 focus:outline-none "
     />
     {% if error_message != "" %}
-    <p class="text-xs italic text-error-text">{{ error_message }}</p>
+    <p class="text-xs italic text-red-600">{{ error_message }}</p>
     {% endif %}
 </div>

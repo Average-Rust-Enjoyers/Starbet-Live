@@ -1,11 +1,17 @@
 <!-- prettier-ignore -->
-{% extends "base.html" %}
+{% extends "layout_unauth.html" %}
 
-{% block content %}
-<div class="flex h-screen items-center justify-center">
-    <div class="w-96 rounded bg-white p-8 shadow-md">
-        <h1 class="mb-4 text-2xl font-bold">REGISTER</h1>
-        <form hx-post="register" hx-boost="true" hx-target="body">
+{% block main_content %}
+<div class="flex items-center justify-center">
+    <div class="w-96">
+        <h2 class="mb-4 text-4xl font-bold">Register</h2>
+        <p class="mb-8 text-lg text-gray-300">Create your acount here</p>
+        <form
+            hx-post="register"
+            hx-boost="true"
+            hx-target="body"
+            class="text-left"
+        >
             {{ username|safe }}
             <div class="flex flex-row gap-x-1">
                 <!-- prettier-ignore -->
@@ -16,12 +22,14 @@
             {{ email|safe }}
             {{ password|safe }}
             {{ confirm_password|safe }}
-            <button
-                type="submit"
-                class="focus:shadow-outline-green bg-button text-button-text hover:bg-button-hover active:bg-button-active rounded p-2 focus:outline-none"
-            >
-                Submit
-            </button>
+            <div class="flex justify-center">
+                <button
+                    type="submit"
+                    class="mt-4 h-10 rounded-md border border-white bg-transparent px-8 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                >
+                    Register
+                </button>
+            </div>
         </form>
     </div>
 </div>
