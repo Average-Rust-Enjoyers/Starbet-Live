@@ -1,29 +1,22 @@
 <!-- prettier-ignore -->
-{% extends "base.html" %}
+{% extends "layout_unauth.html" %}
 
-{% block content %}
-<div class="flex h-screen flex-col items-center justify-center">
-    <div class="m-4 text-lg font-bold">Starbet Live</div>
-    <div class="m-4 flex flex-col items-center justify-center text-center">
-        <img
-            src="https://st2.depositphotos.com/4211323/7822/v/950/depositphotos_78227312-stock-illustration-winged-penis-logo-phallus-with.jpg"
-            width="650px"
-            height="650px"
-        />
-    </div>
-    <div hx-boost="true" class="flex flex-row">
-        <a
-            href="login"
-            class="bg-button text-button-text hover:bg-button-hover m-2 rounded-md p-2"
-        >
-            LOGIN
-        </a>
-        <a
-            href="register"
-            class="bg-button hover:bg-button-hover text-button-text m-2 rounded-md p-2"
-        >
-            REGISTER
-        </a>
-    </div>
+{% block main_content %}
+<h2 class="mb-4 text-4xl font-bold">Welcome to Starbet-Live</h2>
+<p class="text-secondary-darkest mb-8 text-lg">
+    Experience the thrill of live e-sport betting
+</p>
+<div hx-boost="true" class="flex space-x-4">
+    <a
+        class="bg-secondary text-primary hover:bg-secondary-darker inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium transition-colors"
+        href="/login"
+    >
+        Login </a
+    ><a
+        class="border-secondary text-secondary hover:bg-primary-lighter inline-flex h-10 items-center justify-center rounded-md border bg-transparent px-8 text-sm font-medium transition-colors"
+        href="/register"
+    >
+        Register
+    </a>
 </div>
 {% endblock %}
