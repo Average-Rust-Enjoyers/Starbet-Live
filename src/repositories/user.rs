@@ -133,7 +133,7 @@ impl UserRepository {
         params: UserUpdateBalance,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<User> {
-        let user = Self::is_correct(
+        Self::is_correct(
             Self::get_user(GetByUserId { id: params.id }, &mut *transaction_handle).await?,
         )?;
 
