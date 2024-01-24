@@ -8,10 +8,11 @@ use crate::{
             BusinessLogicErrorKind::{GameMatchDeleted, GameMatchDoesNotExist},
             DbResultMultiple, DbResultSingle,
         },
-        DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
+        DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler, logic::pay_out_match,
     },
     models::game_match::{
         GameMatch, GameMatchCreate, GameMatchDelete, GameMatchGetById, GameMatchUpdate,
+        GameMatchUpdateFinished,
     },
 };
 
@@ -149,6 +150,51 @@ impl DbUpdate<GameMatchUpdate, GameMatch> for GameMatchRepository {
         )
         .fetch_all(&mut *tx)
         .await?;
+
+        tx.commit().await?;
+
+        Ok(matches)
+    }
+}
+
+#[async_trait]
+impl DbUpdate<GameMatchUpdateFinished, GameMatch> for GameMatchRepository {
+    async fn update(&mut self, data: &GameMatchUpdateFinished) -> DbResultMultiple<GameMatch> {
+        let mut tx = self.pool_handler.pool.begin().await?;
+
+        GameMatchRepository::is_correct(
+            GameMatchRepository::get_game_match(GameMatchGetById { id: data.id }, &mut tx).await?,
+        )?;
+
+        let matches = sqlx::query_as!(
+            GameMatch,
+            r#"UPDATE GameMatch gm SET 
+                ends_at = now(),
+                edited_at = now(),
+                status = $1
+            WHERE gm.id = $2
+            RETURNING
+                id, 
+                game_id, 
+                name_a, 
+                name_b, 
+                starts_at, 
+                ends_at, 
+                outcome AS "outcome: _", 
+                status AS "status: _", 
+                created_at, 
+                edited_at, 
+                deleted_at
+            "#,
+            data.status as _,
+            data.id
+        )
+        .fetch_all(&mut *tx)
+        .await?;
+
+        for game_match in &matches {
+            pay_out_match(game_match, &mut tx).await?;
+        }
 
         tx.commit().await?;
 

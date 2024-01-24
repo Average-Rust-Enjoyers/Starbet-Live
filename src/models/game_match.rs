@@ -68,6 +68,11 @@ pub struct GameMatchUpdate {
     pub status: Option<GameMatchStatus>,
 }
 
+pub struct GameMatchUpdateFinished {
+    pub id: Uuid,
+    pub status: GameMatchStatus,
+}
+
 impl GameMatchUpdate {
     pub fn new(
         id: &Uuid,
