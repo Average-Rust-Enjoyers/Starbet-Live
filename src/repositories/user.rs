@@ -15,7 +15,7 @@ use crate::{
             DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
         },
     },
-    models::user::{GetByUserId, User, UserCreate, UserDelete, UserLogin, UserUpdate},
+    models::user::{GetByUserId, User, UserCreate, UserDelete, UserLogin, UserUpdate, UserUpdateBalance},
 };
 
 pub enum Field {
@@ -125,6 +125,33 @@ impl UserRepository {
             .await?;
 
         Ok(user.is_some())
+    }
+
+    pub async fn update_user_balance<'a>(
+        params: UserUpdateBalance,
+        transaction_handle: &mut Transaction<'a, Postgres>,
+    ) -> DbResultSingle<User> {
+
+        let user = Self::is_correct(
+            Self::get_user(GetByUserId { id: params.id }, &mut *transaction_handle).await?
+        )?;
+        
+        let user = sqlx::query_as!(
+            User,
+            r#"
+                UPDATE AppUser
+                SET edited_at = NOW(), 
+                    balance = $1
+                WHERE id = $2
+                RETURNING *
+            "#,
+            user.balance + params.delta,
+            params.id
+        )
+        .fetch_one(transaction_handle.as_mut())
+        .await?;
+
+        Ok(user)
     }
 }
 

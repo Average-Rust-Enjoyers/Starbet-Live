@@ -97,6 +97,11 @@ pub struct UserUpdate {
     pub balance: Option<i32>,
 }
 
+pub struct UserUpdateBalance {
+    pub id: Uuid,
+    pub delta: i32
+}
+
 impl UserUpdate {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
