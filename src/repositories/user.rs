@@ -142,11 +142,11 @@ impl UserRepository {
             r#"
                 UPDATE AppUser
                 SET edited_at = NOW(), 
-                    balance = $1
+                    balance = balance + $1
                 WHERE id = $2
                 RETURNING *
             "#,
-            user.balance + params.delta,
+            params.delta,
             params.id
         )
         .fetch_one(transaction_handle.as_mut())
