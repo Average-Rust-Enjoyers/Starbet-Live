@@ -12,7 +12,9 @@ use crate::{
             PoolHandler,
         },
     },
-    models::bet::{Bet, BetCreate, BetDelete, BetGetById, BetGetByUserId, BetUpdate},
+    models::bet::{
+        Bet, BetCreate, BetDelete, BetGetById, BetGetByMatchId, BetGetByUserId, BetUpdate,
+    },
 };
 
 #[derive(Clone)]
@@ -49,6 +51,69 @@ impl BetRepository {
         .await?;
 
         Ok(bet)
+    }
+
+    pub async fn get_bets_for_game<'a>(
+        params: BetGetByMatchId,
+        transaction_handle: &mut Transaction<'a, Postgres>,
+    ) -> DbResultMultiple<Bet> {
+        let bets: Vec<Bet> = sqlx::query_as!(
+            Bet,
+            r#"
+                SELECT
+                    id,
+                    app_user_id,
+                    game_match_id,
+                    amount,
+                    status AS "status: _",
+                    expected_outcome AS "expected_outcome: _",
+                    created_at,
+                    edited_at,
+                    deleted_at
+                FROM Bet
+                WHERE game_match_id = $1
+            "#,
+            params.match_id
+        )
+        .fetch_all(transaction_handle.as_mut())
+        .await?;
+
+        Ok(bets
+            .into_iter()
+            .map(|b| Self::is_correct(Some(b)))
+            .flatten()
+            .collect())
+    }
+
+    pub async fn update_bet<'a>(
+        params: BetUpdate,
+        transaction_handle: &mut Transaction<'a, Postgres>,
+    ) -> DbResultMultiple<Bet> {
+        let bets = sqlx::query_as!(
+            Bet,
+            r#"
+                UPDATE Bet
+                SET status = $2,
+                    edited_at = now()
+                WHERE id = $1
+                RETURNING
+                    id,
+                    app_user_id,
+                    game_match_id,
+                    amount,
+                    status AS "status: _",
+                    expected_outcome AS "expected_outcome: _",
+                    created_at,
+                    edited_at,
+                    deleted_at
+            "#,
+            params.id,
+            params.status as _,
+        )
+        .fetch_all(transaction_handle.as_mut())
+        .await?;
+
+        Ok(bets)
     }
 
     /// # Errors
@@ -113,29 +178,7 @@ impl DbUpdate<BetUpdate, Bet> for BetRepository {
             BetRepository::get_bet(BetGetById { id: data.id }, &mut tx).await?,
         )?;
 
-        let bets = sqlx::query_as!(
-            Bet,
-            r#"
-                UPDATE Bet
-                SET status = COALESCE($2, status),
-                    edited_at = now()
-                WHERE id = $1
-                RETURNING
-                    id,
-                    app_user_id,
-                    game_match_id,
-                    amount,
-                    status AS "status: _",
-                    expected_outcome AS "expected_outcome: _",
-                    created_at,
-                    edited_at,
-                    deleted_at
-            "#,
-            data.id,
-            data.status as _,
-        )
-        .fetch_all(&mut *tx)
-        .await?;
+        let bets = BetRepository::update_bet(data.clone(), &mut tx).await?;
 
         tx.commit().await?;
 
