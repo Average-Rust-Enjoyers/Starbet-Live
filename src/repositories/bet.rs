@@ -80,8 +80,7 @@ impl BetRepository {
 
         Ok(bets
             .into_iter()
-            .map(|b| Self::is_correct(Some(b)))
-            .flatten()
+            .flat_map(|b| Self::is_correct(Some(b)))
             .collect())
     }
 

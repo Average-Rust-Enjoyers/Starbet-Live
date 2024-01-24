@@ -99,7 +99,7 @@ pub struct UserUpdate {
 
 pub struct UserUpdateBalance {
     pub id: Uuid,
-    pub delta: i32
+    pub delta: i32,
 }
 
 impl UserUpdate {

@@ -4,9 +4,12 @@ use crate::{
     common::error::DbError,
     models::{
         bet::{BetGetByMatchId, BetStatus, BetUpdate},
-        game_match::GameMatch, user::UserUpdateBalance, odds::OddsGetByMatchId, game_match_outcome::GameMatchOutcome,
+        game_match::GameMatch,
+        game_match_outcome::GameMatchOutcome,
+        odds::OddsGetByMatchId,
+        user::UserUpdateBalance,
     },
-    repositories::{bet::BetRepository, user::UserRepository, odds::OddsRepository},
+    repositories::{bet::BetRepository, odds::OddsRepository, user::UserRepository},
 };
 
 pub async fn pay_out_match<'a>(
@@ -31,10 +34,15 @@ pub async fn pay_out_match<'a>(
             if outcome == &bet.expected_outcome {
                 bet_status = BetStatus::Won;
 
-                let odds = OddsRepository::get_latest_odds_for_match(OddsGetByMatchId {
-                    match_id: bet.game_match_id
-                }, tx).await?;
-                
+                // TODO: this should be pulled via odds_id from bets once it's added
+                let odds = OddsRepository::get_latest_odds_for_match(
+                    OddsGetByMatchId {
+                        match_id: bet.game_match_id,
+                    },
+                    tx,
+                )
+                .await?;
+
                 if let Some(odds) = odds {
                     let multiplier = match outcome {
                         GameMatchOutcome::Draw => 1f64,
@@ -42,21 +50,27 @@ pub async fn pay_out_match<'a>(
                         GameMatchOutcome::WinB => odds.odds_b,
                     };
 
-                    UserRepository::update_user_balance(UserUpdateBalance {
-                        id: bet.app_user_id,
-                        delta: (bet.amount as f64 * multiplier).round() as i32
-                    }, tx).await?;
+                    UserRepository::update_user_balance(
+                        UserUpdateBalance {
+                            id: bet.app_user_id,
+                            delta: (bet.amount as f64 * multiplier).round() as i32,
+                        },
+                        tx,
+                    )
+                    .await?;
                 }
-
             }
 
-            BetRepository::update_bet(BetUpdate {
-                id: bet.id,
-                status: bet_status
-            }, tx).await?;
+            BetRepository::update_bet(
+                BetUpdate {
+                    id: bet.id,
+                    status: bet_status,
+                },
+                tx,
+            )
+            .await?;
 
             // TODO: notify websocket regardless of outcome
-
         }
     }
 
