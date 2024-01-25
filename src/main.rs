@@ -2,6 +2,7 @@
 use dotenvy::dotenv;
 
 use std::{env, net::SocketAddr};
+use time::Duration;
 
 use starbet_live::app::App;
 
@@ -12,6 +13,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().expect(".env file not found");
 
     let pool_connections = 5;
+    let session_expiry = Duration::hours(2);
 
     let port = std::env::var("STARBET_PORT").unwrap_or_else(|_| "6969".to_string());
     let database_url = env::var("DATABASE_URL").expect("missing DATABASE_URL env variable");
@@ -26,7 +28,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Starting server. Listening on http://{socket_addr}");
 
-    app.serve(socket_addr).await?;
+    app.serve(socket_addr, session_expiry).await?;
 
     Ok(())
 }

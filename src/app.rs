@@ -7,22 +7,19 @@ use sqlx::postgres::PgPoolOptions;
 use std::{net::SocketAddr, sync::Arc};
 use time::Duration;
 
-use tower_sessions::{
-    fred::{clients::RedisPool, interfaces::ClientLike, types::RedisConfig},
-    Expiry, RedisStore, SessionManagerLayer,
-};
+use tower_sessions::{Expiry, SessionManagerLayer};
 
 use crate::{
     auth::Auth,
     common::{DbPoolHandler, PoolHandler},
     repositories::user::UserRepository,
     routers::{auth_router, protected_router, public_router},
+    session_store::RedisStore,
 };
 
 pub struct App {
     pub pg_pool_handler: PoolHandler,
-    pub bb8_redis_pool: bb8::Pool<RedisConnectionManager>,
-    pub fred_redis_pool: RedisPool,
+    pub redis_pool: bb8::Pool<RedisConnectionManager>,
 }
 
 impl App {
@@ -37,18 +34,11 @@ impl App {
             .await?;
         let pg_pool_handler = PoolHandler::new(Arc::new(postgres_pool.clone()));
 
-        let fred_config = RedisConfig::from_url(&redis_url)?;
-        let fred_redis_pool = RedisPool::new(fred_config, None, None, None, 6)?; // TODO: remove constant
-
-        fred_redis_pool.connect();
-        fred_redis_pool.wait_for_connect().await?;
-
-        let bb8_manager = RedisConnectionManager::new(redis_url.clone())?;
-        let bb8_redis_pool = bb8::Pool::builder().build(bb8_manager).await?;
+        let redis_manager = RedisConnectionManager::new(redis_url.clone())?;
+        let redis_pool = bb8::Pool::builder().build(redis_manager).await?;
 
         let app = App {
-            fred_redis_pool,
-            bb8_redis_pool,
+            redis_pool,
             pg_pool_handler,
         };
         Ok(app)
@@ -61,11 +51,15 @@ impl App {
         Ok(self)
     }
 
-    pub async fn serve(self, address: SocketAddr) -> Result<(), Box<dyn std::error::Error>> {
-        let session_store = RedisStore::new(self.fred_redis_pool.clone());
+    pub async fn serve(
+        self,
+        address: SocketAddr,
+        session_expiration: Duration,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let session_store = RedisStore::new(self.redis_pool.clone());
         let session_layer = SessionManagerLayer::new(session_store)
             .with_secure(false)
-            .with_expiry(Expiry::OnInactivity(Duration::hours(48))); // TODO: remove constant
+            .with_expiry(Expiry::OnInactivity(session_expiration));
 
         let user_repo = UserRepository::new(self.pg_pool_handler.clone());
 
@@ -78,7 +72,7 @@ impl App {
             .merge(public_router())
             .layer(auth_layer)
             .layer(Extension(user_repo))
-            .layer(Extension(self.bb8_redis_pool));
+            .layer(Extension(self.redis_pool));
 
         let listener = tokio::net::TcpListener::bind(address).await.unwrap();
         axum::serve(listener, app).await.unwrap();

@@ -17,5 +17,6 @@ pub mod helpers;
 pub mod models;
 pub mod repositories;
 pub mod routers;
+pub mod session_store;
 pub mod templates;
 pub mod validators;
