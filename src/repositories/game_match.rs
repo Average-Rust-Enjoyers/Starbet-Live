@@ -9,8 +9,8 @@ use crate::{
             BusinessLogicErrorKind::{GameMatchDeleted, GameMatchDoesNotExist},
             DbResultMultiple, DbResultSingle,
         },
-        DbCreate, DbDelete, DbGetByForeignKey, DbPoolHandler, DbReadAll, DbReadOne, DbRepository,
-        DbUpdate, PoolHandler,
+        DbCreate, DbPoolHandler, DbReadAll, DbReadByForeignKey, DbReadOne, DbRepository,
+        DbUpdateOne, PoolHandler,
     },
     models::game_match::{
         GameMatch, GameMatchCreate, GameMatchDelete, GameMatchGetById, GameMatchStatus,
@@ -250,7 +250,7 @@ impl DbReadAll<GameMatch> for GameMatchRepository {
 }
 
 #[async_trait]
-impl DbGetByForeignKey<Uuid, GameMatch> for GameMatchRepository {
+impl DbReadByForeignKey<Uuid, GameMatch> for GameMatchRepository {
     async fn get_by_foreign_key(&mut self, game_id: &Uuid) -> DbResultMultiple<GameMatch> {
         let mut tx = self.pool_handler.pool.begin().await?;
 

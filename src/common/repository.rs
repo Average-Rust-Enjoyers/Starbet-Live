@@ -62,7 +62,21 @@ pub trait DbReadAll<Data> {
 }
 
 #[async_trait]
-pub trait DbUpdate<Update, Data> {
+pub trait DbReadByForeignKey<ForeignKey, Data> {
+    /// Generic call which reads records by its foreign key from the database
+    ///
+    /// # Arguments
+    ///
+    /// - `self`: mutable reference to the repository to access the pool handler
+    /// - `params`: the structure which passes foreign key for the read operation
+    ///
+    /// # Returns
+    ///
+    /// - `Ok(Vec<Data>)` on success (a vector of structures which represent read data from the
+    ///                               database)
+    /// - `sqlx::Error(_)` on any failure (SQL, DB constraints, connection, etc.)
+    async fn get_by_foreign_key(&mut self, params: &ForeignKey) -> DbResultMultiple<Data>;
+}
     /// Generic call which updates record(s) present in the database
     ///
     /// # Arguments
