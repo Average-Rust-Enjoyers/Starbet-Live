@@ -1,16 +1,15 @@
 use crate::auth::AuthSession;
 use crate::models::user::Credentials;
+use crate::routers::HxRedirect;
 use crate::templates::LoginPage;
 use askama::Template;
+use axum::http::Uri;
 use axum::Form;
-use axum::{
-    body::Body,
-    http::{HeaderValue, Response},
-};
 use axum::{
     http::StatusCode,
     response::{Html, IntoResponse, Redirect},
 };
+use std::str::FromStr;
 
 pub mod get {
 
@@ -18,14 +17,14 @@ pub mod get {
 
     pub async fn login(auth_session: AuthSession) -> impl IntoResponse {
         if auth_session.user.is_some() {
-            return Redirect::to("/dashboard").into_response();
+            return Redirect::to("/dashboard").into_response(); // TODO: do we need hx redirect here?
         }
         Html(LoginPage {}.render().unwrap()).into_response()
     }
 
     pub async fn logout(mut auth_session: AuthSession) -> impl IntoResponse {
         match auth_session.logout().await {
-            Ok(_) => Redirect::to("/").into_response(),
+            Ok(_) => Redirect::to("/").into_response(), // TODO: do we need hx redirect here?
             Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
         }
     }
@@ -43,19 +42,23 @@ pub mod post {
             Ok(Some(user)) => user,
             // TODO: this can not happen at the moment because we always send Some()
             Ok(None) => {
-                let mut login_url = "/login".to_string();
-                if let Some(next) = creds.next {
-                    login_url = format!("{}?next={}", login_url, next.clone());
-                };
-                let hx_redirect_value = HeaderValue::from_str(login_url.as_str()).unwrap();
-
-                // TODO: fix temporary ugly responses
-                let response = Response::builder()
-                    .status(StatusCode::OK) // TODO: change to correct status code
-                    .header("HX-Redirect", hx_redirect_value)
-                    .body(Body::from("redirecting..."))
-                    .unwrap();
-                return response;
+                const LOGIN_URL: &str = "/login";
+                match creds.next {
+                    Some(next) => {
+                        let l: &str = &format!("{}?next={}", LOGIN_URL, next.clone());
+                        match Uri::from_str(l) {
+                            Ok(uri) => {
+                                return HxRedirect(uri).into_response();
+                            }
+                            Err(_) => {
+                                return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+                            }
+                        }
+                    }
+                    None => {
+                        return HxRedirect(Uri::from_static(LOGIN_URL)).into_response();
+                    }
+                }
             }
             Err(_) => {
                 return StatusCode::INTERNAL_SERVER_ERROR.into_response();
@@ -66,17 +69,12 @@ pub mod post {
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
 
-        let hx_redirect_value = match creds.next {
+        let hx_redirect_uri = match creds.next {
             // TODO: redirect to "next" value is not really working
-            Some(ref next) => HeaderValue::from_str(next.as_str()).unwrap(),
-            None => HeaderValue::from_static("/dashboard"),
+            Some(ref next) => Uri::from_str(next.as_str()).unwrap(),
+            None => Uri::from_static("/dashboard"),
         };
 
-        // TODO: fix temporary ugly responses
-        Response::builder()
-            .status(StatusCode::OK) // TODO: change to correct status code
-            .header("HX-Redirect", hx_redirect_value)
-            .body(Body::from("redirecting..."))
-            .unwrap()
+        HxRedirect(hx_redirect_uri).into_response()
     }
 }
