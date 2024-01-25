@@ -5,16 +5,19 @@ use axum::{
     Extension, Router,
 };
 
-use bb8_redis::{redis::AsyncCommands, RedisConnectionManager};
+use bb8_redis::redis::AsyncCommands;
 
-use crate::handlers::{
-    self,
-    bet::{get_bet_handler, place_bet_handler},
-    dashboard::dashboard_handler,
-    game::game_handler,
-    index::index_handler,
-    register::register_submission_handler,
-    ws::ws_handler,
+use crate::{
+    app::RedisPool,
+    handlers::{
+        self,
+        bet::{get_bet_handler, place_bet_handler},
+        dashboard::dashboard_handler,
+        game::game_handler,
+        index::index_handler,
+        register::register_submission_handler,
+        ws::ws_handler,
+    },
 };
 
 pub fn auth_router() -> Router<()> {
@@ -70,9 +73,7 @@ impl IntoResponse for HxRedirect {
 
 // TODO: remove after first actual handler with redis is implemented
 /// # Panics
-pub async fn redis_ok(
-    Extension(redis_pool): Extension<bb8::Pool<RedisConnectionManager>>,
-) -> http::StatusCode {
+pub async fn redis_ok(Extension(redis_pool): Extension<RedisPool>) -> http::StatusCode {
     let mut conn = redis_pool.get().await.unwrap();
     let value = 42;
     let my_key = "my_key";

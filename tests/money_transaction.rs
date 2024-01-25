@@ -3,7 +3,10 @@ pub mod money_transaction_repo_tests {
     use chrono::DateTime;
     use sqlx::PgPool;
     use starbet_live::{
-        common::repository::{DbRepository, PoolHandler},
+        common::{
+            repository::{DbRepository, PoolHandler},
+            DbUpdateOne,
+        },
         error::DbResultSingle,
         models::{
             money_transaction::{
@@ -13,7 +16,7 @@ pub mod money_transaction_repo_tests {
             user::GetByUserId,
         },
         repositories::money_transaction::MoneyTransactionRepository,
-        DbPoolHandler, DbReadMany, DbReadOne, DbUpdate,
+        DbPoolHandler, DbReadMany, DbReadOne,
     };
     use std::sync::Arc;
     use uuid::Uuid;
@@ -96,10 +99,10 @@ pub mod money_transaction_repo_tests {
             ..pending_money_transaction.clone()
         };
 
-        completed_money_transaction.created_at = changed_status_transaction[0].created_at;
-        completed_money_transaction.edited_at = changed_status_transaction[0].edited_at;
+        completed_money_transaction.created_at = changed_status_transaction.created_at;
+        completed_money_transaction.edited_at = changed_status_transaction.edited_at;
 
-        assert!(completed_money_transaction.eq(&changed_status_transaction[0]));
+        assert!(completed_money_transaction.eq(&changed_status_transaction));
 
         money_transaction_repository.disconnect().await;
         Ok(())
