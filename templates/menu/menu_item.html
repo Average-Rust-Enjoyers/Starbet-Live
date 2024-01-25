@@ -1,21 +1,24 @@
 <!-- prettier-ignore -->
 {% let bg_color %}
 {% let hover_bg_color %}
+{% let text_color_hover %}
 
 {% if active %}
-    {% let bg_color = "bg-menu-button-active" %}
-    {% let hover_bg_color = "bg-menu-button-active-hover" %}
+    {% let bg_color = "bg-primary-lightest" %}
+    {% let hover_bg_color = "bg-secondary-darkest" %}
+    {% let text_color_hover = "text-primary" %}
 {% else %}
-    {% let bg_color = "bg-menu-button" %}
-    {% let hover_bg_color = "bg-menu-button-hover" %}
+    {% let bg_color = "bg-primary-lighter" %}
+    {% let hover_bg_color = "bg-secondary-darker" %}
+    {% let text_color_hover = "text-primary-lighter" %}
 {% endif %}
 <div
-    hx-post="games/{{ name }}"
+    hx-post="games/{{ game_id }}"
     hx-trigger="click"
     hx-target="#content"
     hx-swap="innerHTML"
     hx-ext="json-enc"
-    class="game-item {{bg_color}} text-menu-button-text hover:{{hover_bg_color}} mx-4 cursor-pointer rounded p-4 p-4"
+    class="game-item {{bg_color}} text-secondary hover:{{text_color_hover}} hover:{{hover_bg_color}} font-bold mx-4 cursor-pointer rounded p-4 p-4"
 >
     {{name}}
 </div>

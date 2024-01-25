@@ -8,13 +8,12 @@ use crate::{
             BusinessLogicErrorKind::{OddsDeleted, OddsDoNotExist},
             DbResultMultiple, DbResultSingle,
         },
-        repository::{
-            DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler,
-        },
+        repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
     },
     models::{
         bet::BetGetById, game_match::GameMatchGetById, odds::{Odds, OddsCreate, OddsGetById, OddsGetByBetId}
     },
+    DbDelete,
 };
 
 use super::{bet::BetRepository, game_match::GameMatchRepository};
@@ -25,6 +24,10 @@ pub struct OddsRepository {
 }
 
 impl OddsRepository {
+    pub fn new(pool_handler: PoolHandler) -> Self {
+        Self { pool_handler }
+    }
+
     /// # Panics
     /// # Errors
     pub async fn get_odds<'a>(

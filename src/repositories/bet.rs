@@ -7,14 +7,14 @@ use crate::{
             BusinessLogicError, BusinessLogicErrorKind::BetDeleted,
             BusinessLogicErrorKind::BetDoesNotExist, DbResultMultiple, DbResultSingle,
         },
-        repository::{
-            DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate,
-            PoolHandler,
-        },
+        repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
+        DbUpdateOne,
     },
     models::bet::{
         Bet, BetCreate, BetDelete, BetGetById, BetGetByMatchId, BetGetByUserId, BetUpdate,
     },
+    models::bet::{Bet, BetCreate, BetDelete, BetGetById, BetGetByUserId, BetUpdate},
+    DbDelete,
 };
 
 #[derive(Clone)]
@@ -169,19 +169,41 @@ impl DbCreate<BetCreate, Bet> for BetRepository {
 }
 
 #[async_trait]
-impl DbUpdate<BetUpdate, Bet> for BetRepository {
-    async fn update(&mut self, data: &BetUpdate) -> DbResultMultiple<Bet> {
+impl DbUpdateOne<BetUpdate, Bet> for BetRepository {
+    async fn update(&mut self, data: &BetUpdate) -> DbResultSingle<Bet> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
         BetRepository::is_correct(
             BetRepository::get_bet(BetGetById { id: data.id }, &mut tx).await?,
         )?;
 
-        let bets = BetRepository::update_bet(data.clone(), &mut tx).await?;
+        let bet = sqlx::query_as!(
+            Bet,
+            r#"
+                UPDATE Bet
+                SET status = COALESCE($2, status),
+                    edited_at = now()
+                WHERE id = $1
+                RETURNING
+                    id,
+                    app_user_id,
+                    game_match_id,
+                    amount,
+                    status AS "status: _",
+                    expected_outcome AS "expected_outcome: _",
+                    created_at,
+                    edited_at,
+                    deleted_at
+            "#,
+            data.id,
+            data.status as _,
+        )
+        .fetch_one(&mut *tx)
+        .await?;
 
         tx.commit().await?;
 
-        Ok(bets)
+        Ok(bet)
     }
 }
 

@@ -1,72 +1,73 @@
 use crate::{
-    models::odds::Odds,
-    templates::{Game, Match, Menu, MenuItem, Team},
+    common::DbReadByForeignKey,
+    models::{game::GameGetById, game_match::GameMatchGetById},
+    repositories::{game::GameRepository, game_match::GameMatchRepository, odds::OddsRepository},
+    templates::{Game, Match, Menu, MenuItem},
 };
 use askama::Template;
 use axum::{
     extract::Path,
     http::StatusCode,
     response::{Html, IntoResponse},
+    Extension,
 };
-use chrono::Utc;
+
 use serde::Deserialize;
 use uuid::Uuid;
 
+use crate::common::repository::{DbReadAll, DbReadMany, DbReadOne};
+
 #[derive(Deserialize)]
-pub struct GameName {
-    name: String,
+pub struct GameId {
+    pub game_id: String,
 }
 
-const GAMES: [&str; 4] = ["CS:GO", "Dota 2", "LoL", "Valorant"];
+pub async fn game_handler(
+    Extension(mut game_repository): Extension<GameRepository>,
+    Extension(mut game_match_repo): Extension<GameMatchRepository>,
+    Extension(mut odds_repo): Extension<OddsRepository>,
+    Path(GameId { game_id }): Path<GameId>,
+) -> impl IntoResponse {
+    let game = game_repository
+        .read_one(&GameGetById {
+            id: Uuid::parse_str(&game_id.clone()).unwrap(),
+        })
+        .await
+        .unwrap();
 
-fn mock_matches() -> Vec<Match> {
-    vec![
-        Match {
-            team_a: Team {
-                name: "T1".to_string(),
-            },
-            team_b: Team {
-                name: "GenG".to_string(),
-            },
-            current_odds: Odds {
-                id: Uuid::from_u128(420_u128),
-                created_at: Utc::now(),
-                deleted_at: None,
-                game_match_id: Uuid::from_u128(69_u128),
-                odds_a: 1.5,
-                odds_b: 2.5,
-            },
-        },
-        Match {
-            team_a: Team {
-                name: "Dplus KIA".to_string(),
-            },
-            team_b: Team {
-                name: "OK BRION".to_string(),
-            },
-            current_odds: Odds {
-                id: Uuid::from_u128(420_u128),
-                created_at: Utc::now(),
-                deleted_at: None,
-                game_match_id: Uuid::from_u128(69_u128),
-                odds_a: 2.3,
-                odds_b: 1.2,
-            },
-        },
-    ]
-}
+    let matches = game_match_repo.get_by_foreign_key(&game.id).await.unwrap();
 
-pub async fn game_handler(Path(GameName { name }): Path<GameName>) -> impl IntoResponse {
+    let mut matches_to_render = Vec::new();
+
+    for game_match in matches {
+        let odds = &odds_repo
+            .read_many(&GameMatchGetById { id: game_match.id })
+            .await
+            .unwrap()[0]; // There always will be exactly one active Odd
+
+        matches_to_render.push(Match {
+            match_id: game_match.id,
+            team_a: game_match.name_a,
+            team_b: game_match.name_b,
+            current_odds: odds.to_owned(),
+        });
+    }
+
     let template = Game {
-        game_name: name.clone(),
-        matches: mock_matches(),
+        game_name: game.name.clone(),
+        matches: matches_to_render,
+        game_id: game_id.clone(),
     };
 
-    let menu_items = GAMES
+    let menu_items = game_repository
+        .read_all()
+        .await
+        .unwrap()
         .iter()
         .map(|game| MenuItem {
-            name: (*game).to_string(),
-            active: *game == name.clone(),
+            name: game.name.clone(),
+            game_id: game.id,
+            active: game.id.clone().to_string() == game_id,
         })
         .collect();
 

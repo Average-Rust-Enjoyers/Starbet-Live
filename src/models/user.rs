@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
+use axum_login::AuthUser;
 use chrono::{DateTime, Utc};
+use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{handlers::validation::RegisterFormData, helpers::hash_password};
@@ -69,17 +71,19 @@ impl From<RegisterFormData> for UserCreate {
 }
 
 /// Structure passed to the repository when trying to log in (read one == login)
-#[derive(Debug, Clone)]
-pub struct UserLogin {
+#[derive(Debug, Clone, Deserialize)]
+pub struct Credentials {
     pub email: String,
     pub password: String,
+    pub next: Option<String>,
 }
 
-impl UserLogin {
+impl Credentials {
     pub fn new(email: &str, password: &str) -> Self {
         Self {
             email: email.to_owned(),
             password: password.to_owned(),
+            next: None,
         }
     }
 }
@@ -172,5 +176,17 @@ impl From<&UserDelete> for GetByUserId {
 impl From<&UserUpdate> for GetByUserId {
     fn from(user_update: &UserUpdate) -> Self {
         Self { id: user_update.id }
+    }
+}
+
+impl AuthUser for User {
+    type Id = Uuid;
+
+    fn id(&self) -> Self::Id {
+        self.id
+    }
+
+    fn session_auth_hash(&self) -> &[u8] {
+        self.password_hash.as_bytes()
     }
 }

@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
+use uuid::Uuid;
 
 use crate::{
     common::{
@@ -12,9 +13,12 @@ use crate::{
         DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
     },
     models::game_match::{
-        GameMatch, GameMatchCreate, GameMatchDelete, GameMatchGetById, GameMatchUpdate,
-        GameMatchUpdateFinished,
+        GameMatch, GameMatchCreate, GameMatchDelete, GameMatchGetById, GameMatchStatus,
+        GameMatchUpdate, GameMatchUpdateFinished,
+        DbCreate, DbPoolHandler, DbReadAll, DbReadByForeignKey, DbReadOne, DbRepository,
+        DbUpdateOne, PoolHandler,
     },
+    DbDelete,
 };
 
 #[derive(Clone)]
@@ -23,6 +27,10 @@ pub struct GameMatchRepository {
 }
 
 impl GameMatchRepository {
+    pub fn new(pool_handler: PoolHandler) -> Self {
+        Self { pool_handler }
+    }
+
     /// # Panics
     /// # Errors
     pub async fn get_game_match<'a>(
@@ -31,7 +39,8 @@ impl GameMatchRepository {
     ) -> DbResultSingle<Option<GameMatch>> {
         let game_match = sqlx::query_as!(
             GameMatch,
-            r#"SELECT 
+            r#"
+            SELECT 
                 id, 
                 game_id, 
                 name_a, 
@@ -43,7 +52,8 @@ impl GameMatchRepository {
                 created_at, 
                 edited_at, 
                 deleted_at
-             FROM GameMatch gm WHERE gm.id = $1"#,
+            FROM GameMatch gm WHERE gm.id = $1
+            "#,
             params.id
         )
         .fetch_optional(transaction_handle.as_mut())
@@ -80,7 +90,8 @@ impl DbCreate<GameMatchCreate, GameMatch> for GameMatchRepository {
     async fn create(&mut self, data: &GameMatchCreate) -> DbResultSingle<GameMatch> {
         let game_match = sqlx::query_as!(
             GameMatch,
-            r#"INSERT INTO GameMatch 
+            r#"
+            INSERT INTO GameMatch 
             (game_id, name_a, name_b, starts_at, ends_at) 
             VALUES 
             ($1, $2, $3, $4, $5) 
@@ -111,17 +122,18 @@ impl DbCreate<GameMatchCreate, GameMatch> for GameMatchRepository {
 }
 
 #[async_trait]
-impl DbUpdate<GameMatchUpdate, GameMatch> for GameMatchRepository {
-    async fn update(&mut self, data: &GameMatchUpdate) -> DbResultMultiple<GameMatch> {
+impl DbUpdateOne<GameMatchUpdate, GameMatch> for GameMatchRepository {
+    async fn update(&mut self, data: &GameMatchUpdate) -> DbResultSingle<GameMatch> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
         GameMatchRepository::is_correct(
             GameMatchRepository::get_game_match(GameMatchGetById { id: data.id }, &mut tx).await?,
         )?;
 
-        let matches = sqlx::query_as!(
+        let game_match = sqlx::query_as!(
             GameMatch,
-            r#"UPDATE GameMatch gm SET 
+            r#"
+            UPDATE GameMatch gm SET 
                 name_a = COALESCE($1, name_a),
                 name_b = COALESCE($2, name_b),
                 starts_at = COALESCE($3, starts_at),
@@ -149,12 +161,12 @@ impl DbUpdate<GameMatchUpdate, GameMatch> for GameMatchRepository {
             data.status as _,
             data.id
         )
-        .fetch_all(&mut *tx)
+        .fetch_one(&mut *tx)
         .await?;
 
         tx.commit().await?;
 
-        Ok(matches)
+        Ok(game_match)
     }
 }
 
@@ -232,8 +244,9 @@ impl DbDelete<GameMatchDelete, GameMatch> for GameMatchRepository {
 
         let matches = sqlx::query_as!(
             GameMatch,
-            r#"UPDATE GameMatch gm SET 
-                deleted_at = now()
+            r#"
+            UPDATE GameMatch gm 
+            SET deleted_at = now()
             WHERE gm.id = $1
             RETURNING
                 id, 
@@ -249,6 +262,73 @@ impl DbDelete<GameMatchDelete, GameMatch> for GameMatchRepository {
                 deleted_at
             "#,
             params.id
+        )
+        .fetch_all(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(matches)
+    }
+}
+
+#[async_trait]
+impl DbReadAll<GameMatch> for GameMatchRepository {
+    async fn read_all(&mut self) -> DbResultMultiple<GameMatch> {
+        let mut tx = self.pool_handler.pool.begin().await?;
+
+        let matches = sqlx::query_as!(
+            GameMatch,
+            r#"
+            SELECT 
+                id, 
+                game_id, 
+                name_a, 
+                name_b, 
+                starts_at, 
+                ends_at, 
+                outcome AS "outcome: _", 
+                status AS "status: _", 
+                created_at, 
+                edited_at, 
+                deleted_at
+            FROM GameMatch gm
+            "#
+        )
+        .fetch_all(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(matches)
+    }
+}
+
+#[async_trait]
+impl DbReadByForeignKey<Uuid, GameMatch> for GameMatchRepository {
+    async fn get_by_foreign_key(&mut self, game_id: &Uuid) -> DbResultMultiple<GameMatch> {
+        let mut tx = self.pool_handler.pool.begin().await?;
+
+        let matches = sqlx::query_as!(
+            GameMatch,
+            r#"
+            SELECT 
+                id, 
+                game_id, 
+                name_a, 
+                name_b, 
+                starts_at, 
+                ends_at, 
+                outcome AS "outcome: _", 
+                status AS "status: _", 
+                created_at, 
+                edited_at, 
+                deleted_at
+            FROM GameMatch gm 
+            WHERE gm.game_id = $1 AND gm.status = $2
+            "#,
+            game_id,
+            GameMatchStatus::Live as _
         )
         .fetch_all(&mut *tx)
         .await?;

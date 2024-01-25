@@ -9,12 +9,11 @@ use crate::{
             BusinessLogicError, BusinessLogicErrorKind::GameDeleted,
             BusinessLogicErrorKind::GameDoesNotExist, DbResultMultiple, DbResultSingle,
         },
-        repository::{
-            DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate,
-            PoolHandler,
-        },
+        repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
+        DbReadAll, DbUpdateOne,
     },
     models::game::{Game, GameCreate, GameDelete, GameFilter, GameGenre, GameGetById, GameUpdate},
+    DbDelete,
 };
 
 #[derive(Clone)]
@@ -23,6 +22,10 @@ pub struct GameRepository {
 }
 
 impl GameRepository {
+    pub fn new(pool_handler: PoolHandler) -> Self {
+        Self { pool_handler }
+    }
+
     /// # Panics
     /// # Errors
     pub async fn get_game<'a>(
@@ -102,15 +105,15 @@ impl DbCreate<GameCreate, Game> for GameRepository {
 }
 
 #[async_trait]
-impl DbUpdate<GameUpdate, Game> for GameRepository {
-    async fn update(&mut self, data: &GameUpdate) -> DbResultMultiple<Game> {
+impl DbUpdateOne<GameUpdate, Game> for GameRepository {
+    async fn update(&mut self, data: &GameUpdate) -> DbResultSingle<Game> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
         GameRepository::is_correct(
             GameRepository::get_game(GameGetById { id: data.id }, &mut tx).await?,
         )?;
 
-        let games = sqlx::query_as!(
+        let game = sqlx::query_as!(
             Game,
             r#"
                 UPDATE Game
@@ -135,12 +138,12 @@ impl DbUpdate<GameUpdate, Game> for GameRepository {
             data.genre as _,
             data.id,
         )
-        .fetch_all(&mut *tx)
+        .fetch_one(&mut *tx)
         .await?;
 
         tx.commit().await?;
 
-        Ok(games)
+        Ok(game)
     }
 }
 
@@ -226,6 +229,35 @@ impl DbDelete<GameDelete, Game> for GameRepository {
                     deleted_at
             "#,
             params.id
+        )
+        .fetch_all(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(games)
+    }
+}
+
+#[async_trait]
+impl DbReadAll<Game> for GameRepository {
+    async fn read_all(&mut self) -> DbResultMultiple<Game> {
+        let mut tx = self.pool_handler.pool.begin().await?;
+
+        let games = sqlx::query_as!(
+            Game,
+            r#"
+                SELECT id,
+                    name,
+                    description,
+                    logo,
+                    genre AS "genre: _",
+                    created_at,
+                    edited_at,
+                    deleted_at
+                FROM Game
+                WHERE deleted_at IS NULL
+            "#,
         )
         .fetch_all(&mut *tx)
         .await?;

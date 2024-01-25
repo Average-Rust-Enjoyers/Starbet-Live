@@ -11,13 +11,12 @@ use crate::{
             },
             DbError, DbResultMultiple, DbResultSingle,
         },
-        repository::{
-            DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
-        },
+        DbUpdateOne, PoolHandler,
     },
     models::user::{
-        GetByUserId, User, UserCreate, UserDelete, UserLogin, UserUpdate, UserUpdateBalance,
+        Credentials, GetByUserId, User, UserCreate, UserDelete, UserLogin, UserUpdate, UserUpdateBalance,
     },
+    DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository,
 };
 
 pub enum Field {
@@ -194,9 +193,9 @@ impl DbCreate<UserCreate, User> for UserRepository {
 }
 
 #[async_trait]
-impl DbReadOne<UserLogin, User> for UserRepository {
+impl DbReadOne<Credentials, User> for UserRepository {
     /// Login the user with provided parameters,
-    async fn read_one(&mut self, params: &UserLogin) -> DbResultSingle<User> {
+    async fn read_one(&mut self, params: &Credentials) -> DbResultSingle<User> {
         let user = sqlx::query_as!(
             User,
             r#"
@@ -225,10 +224,10 @@ impl DbReadOne<UserLogin, User> for UserRepository {
 }
 
 #[async_trait]
-impl DbUpdate<UserUpdate, User> for UserRepository {
+impl DbUpdateOne<UserUpdate, User> for UserRepository {
     /// Update user information if we know their id (we're logged in as that user)
     /// Fails if the relevant update fields are all none
-    async fn update(&mut self, params: &UserUpdate) -> DbResultMultiple<User> {
+    async fn update(&mut self, params: &UserUpdate) -> DbResultSingle<User> {
         if params.update_fields_none() {
             return Err(BusinessLogicError::new(UserUpdateParametersEmpty).into());
         }
@@ -260,7 +259,7 @@ impl DbUpdate<UserUpdate, User> for UserRepository {
             params.balance,
             params.id
         )
-        .fetch_all(&mut *tx)
+        .fetch_one(&mut *tx)
         .await?;
 
         tx.commit().await?;

@@ -2,8 +2,9 @@
 use crate::common::error::{BusinessLogicError, DbResultSingle};
 use crate::common::error::{BusinessLogicErrorKind, DbResultMultiple};
 use crate::common::repository::{
-    DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate, PoolHandler,
+    DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler,
 };
+use crate::common::DbUpdateOne;
 use crate::models::money_transaction::{
     MoneyTransaction, MoneyTransactionCreate, MoneyTransactionGetById, MoneyTransactionUpdateStatus,
 };
@@ -190,11 +191,11 @@ impl DbReadMany<GetByUserId, MoneyTransaction> for MoneyTransactionRepository {
 }
 
 #[async_trait]
-impl DbUpdate<MoneyTransactionUpdateStatus, MoneyTransaction> for MoneyTransactionRepository {
+impl DbUpdateOne<MoneyTransactionUpdateStatus, MoneyTransaction> for MoneyTransactionRepository {
     async fn update(
         &mut self,
         params: &MoneyTransactionUpdateStatus,
-    ) -> DbResultMultiple<MoneyTransaction> {
+    ) -> DbResultSingle<MoneyTransaction> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
         Self::is_correct(
@@ -222,7 +223,7 @@ impl DbUpdate<MoneyTransactionUpdateStatus, MoneyTransaction> for MoneyTransacti
             params.status as _,
             params.id
         )
-        .fetch_all(&mut *tx)
+        .fetch_one(&mut *tx)
         .await?;
 
         tx.commit().await?;

@@ -1,6 +1,10 @@
 use askama::Template;
+use uuid::Uuid;
 
-use crate::{filters, models::odds::Odds};
+use crate::{
+    filters,
+    models::{odds::Odds, user::User},
+};
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -52,6 +56,19 @@ pub struct UserSend {
     pub balance: i32,
 }
 
+impl From<&User> for UserSend {
+    fn from(user: &User) -> Self {
+        Self {
+            username: user.username.clone(),
+            email: user.email.clone(),
+            name: user.name.clone(),
+            surname: user.surname.clone(),
+            profile_picture: user.profile_picture.clone(),
+            balance: user.balance,
+        }
+    }
+}
+
 #[derive(Template)]
 #[template(path = "dashboard/dashboard.html")]
 pub struct Dashboard {
@@ -69,6 +86,7 @@ pub struct Menu {
 #[template(path = "menu/menu_item.html")]
 pub struct MenuItem {
     pub name: String,
+    pub game_id: Uuid,
     pub active: bool,
 }
 
@@ -77,16 +95,21 @@ pub struct MenuItem {
 pub struct Game {
     pub matches: Vec<Match>,
     pub game_name: String,
+    pub game_id: String,
 }
 
 #[derive(Template)]
 #[template(path = "dashboard/match/match.html")]
 pub struct Match {
-    pub team_a: Team,
-    pub team_b: Team,
+    pub match_id: Uuid,
+    pub team_a: String,
+    pub team_b: String,
     pub current_odds: Odds,
 }
 
-pub struct Team {
-    pub name: String,
+#[derive(Template)]
+#[template(path = "dashboard/bet/place_bet_form.html")]
+pub struct PlaceBetForm {
+    pub match_id: Uuid,
+    pub predicted_team: String,
 }

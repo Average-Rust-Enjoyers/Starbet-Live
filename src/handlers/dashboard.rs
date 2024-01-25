@@ -1,43 +1,41 @@
-use crate::templates::{Dashboard, Menu, MenuItem, UserSend};
+use crate::{
+    auth::AuthSession,
+    common::DbReadAll,
+    templates::{Dashboard, Menu, MenuItem, UserSend},
+    GameRepository,
+};
 use askama::Template;
 use axum::{
     http::StatusCode,
     response::{Html, IntoResponse},
+    Extension,
 };
 
-pub async fn dashboard_handler() -> impl IntoResponse {
-    let user = UserSend {
-        username: "Eric Cartman".to_string(),
-        email: "eric.cartman@southpark.com".to_string(),
-        name: "Eric".to_string(),
-        surname: "Cartman".to_string(),
-        profile_picture: "this_is_my_picture.jpg".to_string(),
-        balance: 69420,
+/// # Panics
+pub async fn dashboard_handler(
+    auth_session: AuthSession,
+    Extension(mut game_repository): Extension<GameRepository>,
+) -> impl IntoResponse {
+    let user = match auth_session.user {
+        Some(user) => UserSend::from(&user),
+        None => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
 
-    let menu_items = vec![
-        MenuItem {
-            name: "CS:GO".to_string(),
+    let games = game_repository.read_all().await.unwrap();
+
+    let menu_items: Vec<MenuItem> = games
+        .iter()
+        .map(|game| MenuItem {
+            name: game.name.clone(),
+            game_id: game.id,
             active: false,
-        },
-        MenuItem {
-            name: "Dota 2".to_string(),
-            active: false,
-        },
-        MenuItem {
-            name: "LoL".to_string(),
-            active: false,
-        },
-        MenuItem {
-            name: "Valorant".to_string(),
-            active: false,
-        },
-    ];
+        })
+        .collect();
 
     let menu = Menu { games: menu_items };
 
     let template = Dashboard { user, menu };
 
     let reply_html = template.render().unwrap();
-    (StatusCode::OK, Html(reply_html).into_response())
+    (StatusCode::OK, Html(reply_html)).into_response()
 }
