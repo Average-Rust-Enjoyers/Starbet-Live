@@ -14,8 +14,7 @@ use crate::{
         DbUpdateOne, PoolHandler,
     },
     models::user::{
-        Credentials, GetByUserId, User, UserCreate, UserDelete, UserUpdate,
-        UserUpdateBalance,
+        Credentials, GetByUserId, User, UserCreate, UserDelete, UserUpdate, UserUpdateBalance,
     },
     DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository,
 };

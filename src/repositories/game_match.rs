@@ -8,12 +8,15 @@ use crate::{
             BusinessLogicError,
             BusinessLogicErrorKind::{GameMatchDeleted, GameMatchDoesNotExist},
             DbResultMultiple, DbResultSingle,
-        }, logic::pay_out_match, DbCreate, DbDelete, DbPoolHandler, DbReadAll, DbReadByForeignKey, DbReadOne, DbRepository, DbUpdateOne, PoolHandler
+        },
+        logic::pay_out_match,
+        DbCreate, DbDelete, DbPoolHandler, DbReadAll, DbReadByForeignKey, DbReadOne, DbRepository,
+        DbUpdateOne, PoolHandler,
     },
     models::game_match::{
-        GameMatch, GameMatchCreate, GameMatchDelete, GameMatchGetById,
-        GameMatchUpdate, GameMatchUpdateFinished, GameMatchStatus
-    }
+        GameMatch, GameMatchCreate, GameMatchDelete, GameMatchGetById, GameMatchStatus,
+        GameMatchUpdate, GameMatchUpdateFinished,
+    },
 };
 
 #[derive(Clone)]

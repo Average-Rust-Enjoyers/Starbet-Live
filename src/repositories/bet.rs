@@ -13,7 +13,7 @@ use crate::{
     models::bet::{
         Bet, BetCreate, BetDelete, BetGetById, BetGetByMatchId, BetGetByUserId, BetUpdate,
     },
-    DbDelete
+    DbDelete,
 };
 
 #[derive(Clone)]
