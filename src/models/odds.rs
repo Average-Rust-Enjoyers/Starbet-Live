@@ -76,9 +76,7 @@ pub struct OddsGetByBetId {
 
 impl OddsGetByBetId {
     pub fn new(bet_id: &Uuid) -> Self {
-        Self {
-            bet_id: *bet_id,
-        }
+        Self { bet_id: *bet_id }
     }
 }
 

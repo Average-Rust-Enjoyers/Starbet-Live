@@ -11,7 +11,9 @@ use crate::{
         repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
     },
     models::{
-        bet::BetGetById, game_match::GameMatchGetById, odds::{Odds, OddsCreate, OddsGetById, OddsGetByBetId}
+        bet::BetGetById,
+        game_match::GameMatchGetById,
+        odds::{Odds, OddsCreate, OddsGetByBetId, OddsGetById},
     },
     DbDelete,
 };

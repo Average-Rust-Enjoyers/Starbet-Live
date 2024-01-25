@@ -34,13 +34,9 @@ pub async fn pay_out_match<'a>(
             if outcome == &bet.expected_outcome {
                 bet_status = BetStatus::Won;
 
-                let odds = OddsRepository::get_closest_odds_for_bet(
-                    OddsGetByBetId {
-                        bet_id: bet.id,
-                    },
-                    tx,
-                )
-                .await?;
+                let odds =
+                    OddsRepository::get_closest_odds_for_bet(OddsGetByBetId { bet_id: bet.id }, tx)
+                        .await?;
 
                 if let Some(odds) = odds {
                     let multiplier = match outcome {
