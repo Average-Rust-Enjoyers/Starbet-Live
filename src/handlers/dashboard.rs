@@ -1,18 +1,18 @@
-use crate::templates::{Dashboard, Menu, MenuItem, UserSend};
+use crate::{
+    auth::AuthSession,
+    templates::{Dashboard, Menu, MenuItem, UserSend},
+};
 use askama::Template;
 use axum::{
     http::StatusCode,
     response::{Html, IntoResponse},
 };
 
-pub async fn dashboard_handler() -> impl IntoResponse {
-    let user = UserSend {
-        username: "Eric Cartman".to_string(),
-        email: "eric.cartman@southpark.com".to_string(),
-        name: "Eric".to_string(),
-        surname: "Cartman".to_string(),
-        profile_picture: "this_is_my_picture.jpg".to_string(),
-        balance: 69420,
+/// # Panics
+pub async fn dashboard_handler(auth_session: AuthSession) -> impl IntoResponse {
+    let user = match auth_session.user {
+        Some(user) => UserSend::from(&user),
+        None => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
 
     let menu_items = vec![
@@ -39,5 +39,6 @@ pub async fn dashboard_handler() -> impl IntoResponse {
     let template = Dashboard { user, menu };
 
     let reply_html = template.render().unwrap();
-    (StatusCode::OK, Html(reply_html).into_response())
+    // TODO: status code?
+    Html(reply_html).into_response()
 }
