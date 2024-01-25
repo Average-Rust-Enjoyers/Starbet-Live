@@ -11,11 +11,10 @@ use crate::{
             },
             DbError, DbResultMultiple, DbResultSingle,
         },
-        repository::{
-            DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate, PoolHandler,
-        },
+        PoolHandler,
     },
-    models::user::{GetByUserId, User, UserCreate, UserDelete, UserLogin, UserUpdate},
+    models::user::{Credentials, GetByUserId, User, UserCreate, UserDelete, UserUpdate},
+    DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate,
 };
 
 pub enum Field {
@@ -166,9 +165,9 @@ impl DbCreate<UserCreate, User> for UserRepository {
 }
 
 #[async_trait]
-impl DbReadOne<UserLogin, User> for UserRepository {
+impl DbReadOne<Credentials, User> for UserRepository {
     /// Login the user with provided parameters,
-    async fn read_one(&mut self, params: &UserLogin) -> DbResultSingle<User> {
+    async fn read_one(&mut self, params: &Credentials) -> DbResultSingle<User> {
         let user = sqlx::query_as!(
             User,
             r#"

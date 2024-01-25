@@ -2,12 +2,13 @@
 pub mod appuser_tests {
     use chrono::DateTime;
     use sqlx::PgPool;
+    use starbet_live::common::PoolHandler;
+    use starbet_live::DbPoolHandler;
+    use starbet_live::DbReadOne;
     use starbet_live::{
-        common::repository::{DbRepository, PoolHandler},
         error::DbResultSingle,
-        models::user::{User, UserLogin},
+        models::user::{Credentials, User},
         repositories::user::UserRepository,
-        DbPoolHandler, DbReadOne,
     };
     use std::sync::Arc;
     use uuid::Uuid;
@@ -18,10 +19,7 @@ pub mod appuser_tests {
 
         let mut user_repo = UserRepository::new(PoolHandler::new(arc_pool));
         let user = user_repo
-            .read_one(&UserLogin {
-                email: "lsherar0@pagesperso-orange.fr".to_string(),
-                password: "heslo".to_string(),
-            })
+            .read_one(&Credentials::new("lsherar0@pagesperso-orange.fr", "heslo"))
             .await
             .expect("user should exist");
 
@@ -53,18 +51,12 @@ pub mod appuser_tests {
         assert!(expected_user.eq(&user));
 
         user_repo
-            .read_one(&UserLogin {
-                email: "lsherar0@pagesperso-orange.fr".to_string(),
-                password: "blbost".to_string(),
-            })
+            .read_one(&Credentials::new("lsherar0@pagesperso-orange.fr", "blbost"))
             .await
             .expect_err("invalid password should not be accepted");
 
         user_repo
-            .read_one(&UserLogin {
-                email: "nope@nope.com".to_string(),
-                password: "blbost".to_string(),
-            })
+            .read_one(&Credentials::new("nope@nope.com", "blbost"))
             .await
             .expect_err("nonexistent user should not be accepted");
 

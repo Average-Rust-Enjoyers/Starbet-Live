@@ -1,15 +1,18 @@
 use askama::Template;
 use axum::{
-    http::{HeaderValue, StatusCode},
+    http::{StatusCode, Uri},
     response::{Html, IntoResponse},
     Extension, Form,
 };
 
 use super::validation::{validate_and_build, RegisterFormData};
 use crate::{
+    auth::AuthSession,
     common::repository::DbCreate,
+    models::user::Credentials,
     repositories::user::UserRepository,
-    templates::{LoginPage, RegisterPage, ServerErrorPage, TextField},
+    routers::HxRedirect,
+    templates::{RegisterPage, ServerErrorPage, TextField},
 };
 
 const FIELDS: [&str; 6] = [
@@ -35,6 +38,7 @@ pub async fn register_page_handler() -> impl IntoResponse {
 }
 
 pub async fn register_submission_handler(
+    mut auth_session: AuthSession,
     Extension(mut user_repository): Extension<UserRepository>,
     Form(payload): Form<RegisterFormData>,
 ) -> impl IntoResponse {
@@ -57,19 +61,32 @@ pub async fn register_submission_handler(
         }
         .render()
         .unwrap();
-        return (StatusCode::OK, Html(form).into_response());
+        return (StatusCode::OK, Html(form).into_response()).into_response();
     }
 
-    if (user_repository.create(&payload.into()).await).is_ok() {
-        let mut response = Html(LoginPage {}.render().unwrap()).into_response();
-        response
-            .headers_mut()
-            .insert("HX-Redirect", HeaderValue::from_static("/login"));
-        (StatusCode::CREATED, response)
-    } else {
-        (
+    let credentials = Credentials {
+        email: payload.email.clone(),
+        password: payload.password.clone(),
+        next: None,
+    };
+
+    match user_repository.create(&payload.into()).await {
+        Ok(_) => {
+            match auth_session.authenticate(credentials).await {
+                Ok(Some(user)) => {
+                    if auth_session.login(&user).await.is_err() {
+                        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+                    }
+                }
+                _ => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+            };
+
+            HxRedirect(Uri::from_static("/dashboard")).into_response()
+        }
+        Err(_) => (
             StatusCode::OK,
             Html(ServerErrorPage {}.render().unwrap()).into_response(),
         )
+            .into_response(),
     }
 }
