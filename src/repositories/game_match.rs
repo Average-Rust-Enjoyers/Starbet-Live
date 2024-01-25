@@ -166,15 +166,15 @@ impl DbUpdateOne<GameMatchUpdate, GameMatch> for GameMatchRepository {
 }
 
 #[async_trait]
-impl DbUpdate<GameMatchUpdateFinished, GameMatch> for GameMatchRepository {
-    async fn update(&mut self, data: &GameMatchUpdateFinished) -> DbResultMultiple<GameMatch> {
+impl DbUpdateOne<GameMatchUpdateFinished, GameMatch> for GameMatchRepository {
+    async fn update(&mut self, data: &GameMatchUpdateFinished) -> DbResultSingle<GameMatch> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
         GameMatchRepository::is_correct(
             GameMatchRepository::get_game_match(GameMatchGetById { id: data.id }, &mut tx).await?,
         )?;
 
-        let matches = sqlx::query_as!(
+        let game_match = sqlx::query_as!(
             GameMatch,
             r#"UPDATE GameMatch gm SET 
                 ends_at = now(),
@@ -197,16 +197,13 @@ impl DbUpdate<GameMatchUpdateFinished, GameMatch> for GameMatchRepository {
             data.status as _,
             data.id
         )
-        .fetch_all(&mut *tx)
+        .fetch_one(&mut *tx)
         .await?;
 
-        for game_match in &matches {
-            pay_out_match(game_match, &mut tx).await?;
-        }
-
+        pay_out_match(&game_match, &mut tx).await?;
         tx.commit().await?;
 
-        Ok(matches)
+        Ok(game_match)
     }
 }
 
