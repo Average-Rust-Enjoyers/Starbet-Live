@@ -62,7 +62,7 @@ pub mod odds_tests {
             .await
             .expect("The repository call should succeed - read one bet");
 
-        assert!(read_one.eq(&odds_a));
+        assert_eq!(read_one, odds_a.clone());
 
         let read_one = odds_repo
             .read_one(&OddsGetById {
@@ -71,7 +71,7 @@ pub mod odds_tests {
             .await
             .expect("The repository call should succeed - read one bet");
 
-        assert!(read_one.eq(&odds_b));
+        assert_eq!(read_one, odds_b.clone());
 
         let read_one = odds_repo
             .read_one(&OddsGetById {
@@ -80,14 +80,14 @@ pub mod odds_tests {
             .await
             .expect("The repository call should succeed - read one bet");
 
-        assert!(read_one.eq(&odds_c));
+        assert_eq!(read_one, odds_c.clone());
 
         let by_uid = odds_repo
             .read_many(&GameMatchGetById { id: game_match_id })
             .await
             .expect("The repository call should succeed - select by user ID");
 
-        assert!(by_uid.iter().eq(vec![&odds_a, &odds_b, &odds_c]));
+        assert_eq!(by_uid, vec![odds_a, odds_b, odds_c]);
 
         odds_repo.disconnect().await;
         Ok(())

@@ -64,7 +64,7 @@ pub mod bet_tests {
         canceled_bet.created_at = read_one.created_at;
         canceled_bet.edited_at = read_one.edited_at;
 
-        assert!(read_one.eq(&canceled_bet));
+        assert_eq!(read_one, canceled_bet);
 
         let read_one = bet_repository
             .read_one(&BetGetById {
@@ -75,7 +75,7 @@ pub mod bet_tests {
 
         lost_bet.created_at = read_one.created_at;
         lost_bet.edited_at = read_one.edited_at;
-        assert!(read_one.eq(&lost_bet));
+        assert_eq!(read_one, lost_bet);
 
         let by_uid = bet_repository
             .read_many(&BetGetByUserId {
@@ -84,7 +84,7 @@ pub mod bet_tests {
             .await
             .expect("The repository call should succeed - select by user ID");
 
-        assert!(by_uid.iter().eq(vec![&canceled_bet, &lost_bet]));
+        assert_eq!(by_uid, vec![canceled_bet, lost_bet]);
 
         bet_repository.disconnect().await;
         Ok(())

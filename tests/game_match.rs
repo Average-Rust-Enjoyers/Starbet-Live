@@ -83,7 +83,7 @@ pub mod game_match_tests {
         pending_game_match.created_at = read_pending.created_at;
         pending_game_match.edited_at = read_pending.edited_at;
 
-        assert!(read_pending.eq(&pending_game_match));
+        assert_eq!(read_pending, pending_game_match);
 
         let read_finished = game_match_repository
             .read_one(&GameMatchGetById {
@@ -95,7 +95,7 @@ pub mod game_match_tests {
         finished_game_match.created_at = read_finished.created_at;
         finished_game_match.edited_at = read_finished.edited_at;
 
-        assert!(read_finished.eq(&finished_game_match));
+        assert_eq!(read_finished, finished_game_match);
 
         game_match_repository.disconnect().await;
         Ok(())

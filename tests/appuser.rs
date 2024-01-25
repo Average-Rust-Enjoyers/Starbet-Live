@@ -44,11 +44,11 @@ pub mod appuser_tests {
             balance: 0,
         };
 
-        assert!(user.created_at == user.edited_at);
+        assert_eq!(user.created_at, user.edited_at);
         expected_user.created_at = user.created_at;
         expected_user.edited_at = user.created_at;
 
-        assert!(expected_user.eq(&user));
+        assert_eq!(expected_user, user);
 
         user_repo
             .read_one(&Credentials::new("lsherar0@pagesperso-orange.fr", "blbost"))
