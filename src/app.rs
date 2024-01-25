@@ -7,6 +7,7 @@ use crate::{
     models::extension_web_socket::ExtensionWebSocket,
     repositories::{game_match::GameMatchRepository, odds::OddsRepository, user::UserRepository},
     routers::{auth_router, protected_router, public_router},
+    session_store::RedisStore,
     GameRepository,
 };
 use axum_login::{login_required, AuthManagerLayerBuilder};
@@ -17,17 +18,12 @@ use time::Duration;
 
 use tower_sessions::{Expiry, SessionManagerLayer};
 
-use crate::{
-    auth::Auth,
-    common::{DbPoolHandler, PoolHandler},
-    repositories::user::UserRepository,
-    routers::{auth_router, protected_router, public_router},
-    session_store::RedisStore,
-};
+// TODO: move to more appropriate place
+pub type RedisPool = bb8::Pool<RedisConnectionManager>;
 
 pub struct App {
     pub pg_pool_handler: PoolHandler,
-    pub redis_pool: bb8::Pool<RedisConnectionManager>,
+    pub redis_pool: RedisPool,
 }
 
 impl App {
