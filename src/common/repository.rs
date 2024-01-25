@@ -58,6 +58,17 @@ pub trait DbReadMany<ReadMany, Data> {
 
 #[async_trait]
 pub trait DbReadAll<Data> {
+    /// Generic call which reads all records from the database
+    ///
+    /// # Arguments
+    ///
+    /// - `self`: mutable reference to the repository to access the pool handler
+    ///
+    /// # Returns
+    ///
+    /// - `Ok(Vec<Data>)` on success (a vector of structures which represent read data from the
+    ///                               database)
+    /// - `sqlx::Error(_)` on any failure (SQL, DB constraints, connection, etc.)
     async fn read_all(&mut self) -> DbResultMultiple<Data>;
 }
 
@@ -77,6 +88,26 @@ pub trait DbReadByForeignKey<ForeignKey, Data> {
     /// - `sqlx::Error(_)` on any failure (SQL, DB constraints, connection, etc.)
     async fn get_by_foreign_key(&mut self, params: &ForeignKey) -> DbResultMultiple<Data>;
 }
+
+#[async_trait]
+pub trait DbUpdateOne<UpdateOne, Data> {
+    /// Generic call which updates single record present in the database
+    ///
+    /// # Arguments
+    ///
+    /// - `self`: mutable reference to the repository to access the pool handler
+    /// - `params`: the structure which passes parameters for the update operation
+    ///
+    /// # Returns
+    ///
+    /// - `Ok(Data)` on success (astructure which represents updated data from the
+    ///                               database)
+    /// - `sqlx::Error(_)` on any failure (SQL, DB constraints, connection, etc.)
+    async fn update(&mut self, params: &UpdateOne) -> DbResultSingle<Data>;
+}
+
+#[async_trait]
+pub trait DbUpdateMany<UpdateMany, Data> {
     /// Generic call which updates record(s) present in the database
     ///
     /// # Arguments
@@ -89,14 +120,8 @@ pub trait DbReadByForeignKey<ForeignKey, Data> {
     /// - `Ok(Vec<Data>)` on success (a vector of structures which represent updated data from the
     ///                               database)
     /// - `sqlx::Error(_)` on any failure (SQL, DB constraints, connection, etc.)
-    async fn update(&mut self, params: &Update) -> DbResultMultiple<Data>;
+    async fn update(&mut self, params: &UpdateMany) -> DbResultMultiple<Data>;
 }
-
-#[async_trait]
-pub trait DbGetByForeignKey<ForeignKey, Data> {
-    async fn get_by_foreign_key(&mut self, params: &ForeignKey) -> DbResultMultiple<Data>;
-}
-
 #[async_trait]
 pub trait DbDelete<Delete, Data> {
     /// Generic call which deletes record(s) present in the database

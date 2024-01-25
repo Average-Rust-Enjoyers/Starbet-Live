@@ -1,8 +1,7 @@
 pub use common::{
     error,
     repository::{
-        DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate,
-        PoolHandler,
+        DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler,
     },
 };
 

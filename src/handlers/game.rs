@@ -15,7 +15,7 @@ use axum::{
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::common::repository::{DbGetByForeignKey, DbReadAll, DbReadMany, DbReadOne};
+use crate::common::repository::{DbReadAll, DbReadMany, DbReadOne};
 
 #[derive(Deserialize)]
 pub struct GameId {

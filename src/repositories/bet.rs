@@ -7,12 +7,11 @@ use crate::{
             BusinessLogicError, BusinessLogicErrorKind::BetDeleted,
             BusinessLogicErrorKind::BetDoesNotExist, DbResultMultiple, DbResultSingle,
         },
-        repository::{
-            DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate,
-            PoolHandler,
-        },
+        repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
+        DbUpdateOne,
     },
     models::bet::{Bet, BetCreate, BetDelete, BetGetById, BetGetByUserId, BetUpdate},
+    DbDelete,
 };
 
 #[derive(Clone)]
@@ -105,15 +104,15 @@ impl DbCreate<BetCreate, Bet> for BetRepository {
 }
 
 #[async_trait]
-impl DbUpdate<BetUpdate, Bet> for BetRepository {
-    async fn update(&mut self, data: &BetUpdate) -> DbResultMultiple<Bet> {
+impl DbUpdateOne<BetUpdate, Bet> for BetRepository {
+    async fn update(&mut self, data: &BetUpdate) -> DbResultSingle<Bet> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
         BetRepository::is_correct(
             BetRepository::get_bet(BetGetById { id: data.id }, &mut tx).await?,
         )?;
 
-        let bets = sqlx::query_as!(
+        let bet = sqlx::query_as!(
             Bet,
             r#"
                 UPDATE Bet
@@ -134,12 +133,12 @@ impl DbUpdate<BetUpdate, Bet> for BetRepository {
             data.id,
             data.status as _,
         )
-        .fetch_all(&mut *tx)
+        .fetch_one(&mut *tx)
         .await?;
 
         tx.commit().await?;
 
-        Ok(bets)
+        Ok(bet)
     }
 }
 

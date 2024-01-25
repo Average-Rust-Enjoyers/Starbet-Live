@@ -16,6 +16,7 @@ use crate::{
         GameMatch, GameMatchCreate, GameMatchDelete, GameMatchGetById, GameMatchStatus,
         GameMatchUpdate,
     },
+    DbDelete,
 };
 
 #[derive(Clone)]
@@ -36,7 +37,8 @@ impl GameMatchRepository {
     ) -> DbResultSingle<Option<GameMatch>> {
         let game_match = sqlx::query_as!(
             GameMatch,
-            r#"SELECT 
+            r#"
+            SELECT 
                 id, 
                 game_id, 
                 name_a, 
@@ -48,7 +50,8 @@ impl GameMatchRepository {
                 created_at, 
                 edited_at, 
                 deleted_at
-             FROM GameMatch gm WHERE gm.id = $1"#,
+            FROM GameMatch gm WHERE gm.id = $1
+            "#,
             params.id
         )
         .fetch_optional(transaction_handle.as_mut())
@@ -85,7 +88,8 @@ impl DbCreate<GameMatchCreate, GameMatch> for GameMatchRepository {
     async fn create(&mut self, data: &GameMatchCreate) -> DbResultSingle<GameMatch> {
         let game_match = sqlx::query_as!(
             GameMatch,
-            r#"INSERT INTO GameMatch 
+            r#"
+            INSERT INTO GameMatch 
             (game_id, name_a, name_b, starts_at, ends_at) 
             VALUES 
             ($1, $2, $3, $4, $5) 
@@ -116,17 +120,18 @@ impl DbCreate<GameMatchCreate, GameMatch> for GameMatchRepository {
 }
 
 #[async_trait]
-impl DbUpdate<GameMatchUpdate, GameMatch> for GameMatchRepository {
-    async fn update(&mut self, data: &GameMatchUpdate) -> DbResultMultiple<GameMatch> {
+impl DbUpdateOne<GameMatchUpdate, GameMatch> for GameMatchRepository {
+    async fn update(&mut self, data: &GameMatchUpdate) -> DbResultSingle<GameMatch> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
         GameMatchRepository::is_correct(
             GameMatchRepository::get_game_match(GameMatchGetById { id: data.id }, &mut tx).await?,
         )?;
 
-        let matches = sqlx::query_as!(
+        let game_match = sqlx::query_as!(
             GameMatch,
-            r#"UPDATE GameMatch gm SET 
+            r#"
+            UPDATE GameMatch gm SET 
                 name_a = COALESCE($1, name_a),
                 name_b = COALESCE($2, name_b),
                 starts_at = COALESCE($3, starts_at),
@@ -154,12 +159,12 @@ impl DbUpdate<GameMatchUpdate, GameMatch> for GameMatchRepository {
             data.status as _,
             data.id
         )
-        .fetch_all(&mut *tx)
+        .fetch_one(&mut *tx)
         .await?;
 
         tx.commit().await?;
 
-        Ok(matches)
+        Ok(game_match)
     }
 }
 
@@ -192,8 +197,9 @@ impl DbDelete<GameMatchDelete, GameMatch> for GameMatchRepository {
 
         let matches = sqlx::query_as!(
             GameMatch,
-            r#"UPDATE GameMatch gm SET 
-                deleted_at = now()
+            r#"
+            UPDATE GameMatch gm 
+            SET deleted_at = now()
             WHERE gm.id = $1
             RETURNING
                 id, 
@@ -226,7 +232,8 @@ impl DbReadAll<GameMatch> for GameMatchRepository {
 
         let matches = sqlx::query_as!(
             GameMatch,
-            r#"SELECT 
+            r#"
+            SELECT 
                 id, 
                 game_id, 
                 name_a, 
@@ -238,7 +245,8 @@ impl DbReadAll<GameMatch> for GameMatchRepository {
                 created_at, 
                 edited_at, 
                 deleted_at
-             FROM GameMatch gm"#
+            FROM GameMatch gm
+            "#
         )
         .fetch_all(&mut *tx)
         .await?;
@@ -256,7 +264,8 @@ impl DbReadByForeignKey<Uuid, GameMatch> for GameMatchRepository {
 
         let matches = sqlx::query_as!(
             GameMatch,
-            r#"SELECT 
+            r#"
+            SELECT 
                 id, 
                 game_id, 
                 name_a, 
@@ -268,7 +277,9 @@ impl DbReadByForeignKey<Uuid, GameMatch> for GameMatchRepository {
                 created_at, 
                 edited_at, 
                 deleted_at
-             FROM GameMatch gm WHERE gm.game_id = $1 AND gm.status = $2"#,
+            FROM GameMatch gm 
+            WHERE gm.game_id = $1 AND gm.status = $2
+            "#,
             game_id,
             GameMatchStatus::Live as _
         )
