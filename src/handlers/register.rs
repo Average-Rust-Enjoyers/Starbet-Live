@@ -1,7 +1,6 @@
 use askama::Template;
 use axum::{
-    body::Body,
-    http::{HeaderValue, Response, StatusCode},
+    http::{StatusCode, Uri},
     response::{Html, IntoResponse},
     Extension, Form,
 };
@@ -12,6 +11,7 @@ use crate::{
     common::repository::DbCreate,
     models::user::Credentials,
     repositories::user::UserRepository,
+    routers::HxRedirect,
     templates::{RegisterPage, ServerErrorPage, TextField},
 };
 
@@ -61,7 +61,7 @@ pub async fn register_submission_handler(
         }
         .render()
         .unwrap();
-        return (StatusCode::OK, Html(form).into_response());
+        return (StatusCode::OK, Html(form).into_response()).into_response();
     }
 
     let credentials = Credentials {
@@ -75,35 +75,18 @@ pub async fn register_submission_handler(
             match auth_session.authenticate(credentials).await {
                 Ok(Some(user)) => {
                     if auth_session.login(&user).await.is_err() {
-                        // TODO: fix ugly return value
-                        return (
-                            StatusCode::INTERNAL_SERVER_ERROR,
-                            StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-                        );
+                        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
                     }
                 }
-                _ => {
-                    // TODO: fix ugly return value
-                    return (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-                    );
-                }
+                _ => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
             };
 
-            (
-                StatusCode::CREATED,
-                // TODO: fix temporary ugly responses
-                Response::builder()
-                    .status(StatusCode::CREATED)
-                    .header("HX-Redirect", HeaderValue::from_static("/dashboard"))
-                    .body(Body::from("redirecting..."))
-                    .unwrap(),
-            )
+            HxRedirect(Uri::from_static("/dashboard")).into_response()
         }
         Err(_) => (
             StatusCode::OK,
             Html(ServerErrorPage {}.render().unwrap()).into_response(),
-        ),
+        )
+            .into_response(),
     }
 }

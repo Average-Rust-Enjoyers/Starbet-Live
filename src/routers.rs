@@ -1,8 +1,10 @@
 use axum::{
-    http,
+    http::{self, HeaderValue, StatusCode, Uri},
+    response::{IntoResponse, Response},
     routing::{get, post},
     Extension, Router,
 };
+
 use bb8_redis::{redis::AsyncCommands, RedisConnectionManager};
 
 use crate::handlers::{
@@ -36,6 +38,26 @@ pub fn protected_router() -> Router<()> {
 
 pub fn public_router() -> Router<()> {
     Router::new().route("/", get(index_handler))
+}
+
+/// Redirect using the `HX-Redirect` header.
+///
+/// Will fail if the supplied Uri contains characters that are not visible ASCII
+/// (32-127).
+#[derive(Debug, Clone)]
+pub struct HxRedirect(pub Uri);
+
+impl IntoResponse for HxRedirect {
+    fn into_response(self) -> Response {
+        (
+            StatusCode::SEE_OTHER,
+            [(
+                "HX-Redirect",
+                HeaderValue::from_maybe_shared(self.0.to_string()).expect("Invalid header value"),
+            )],
+        )
+            .into_response()
+    }
 }
 
 // TODO: remove after first actual handler with redis is implemented
