@@ -8,6 +8,7 @@ use axum::{
 use super::validation::{validate_and_build, RegisterFormData};
 use crate::{
     common::repository::DbCreate,
+    models::user::Credentials,
     repositories::user::UserRepository,
     templates::{LoginPage, RegisterPage, ServerErrorPage, TextField},
 };
