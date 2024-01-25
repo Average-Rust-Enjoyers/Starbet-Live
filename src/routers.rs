@@ -8,8 +8,13 @@ use axum::{
 use bb8_redis::{redis::AsyncCommands, RedisConnectionManager};
 
 use crate::handlers::{
-    self, dashboard::dashboard_handler, game::game_handler, index::index_handler,
+    self,
+    bet::{get_bet_handler, place_bet_handler},
+    dashboard::dashboard_handler,
+    game::game_handler,
+    index::index_handler,
     register::register_submission_handler,
+    ws::ws_handler,
 };
 
 pub fn auth_router() -> Router<()> {
@@ -33,7 +38,10 @@ pub fn protected_router() -> Router<()> {
     Router::new()
         .route("/redis", get(redis_ok))
         .route("/dashboard", get(dashboard_handler))
-        .route("/games/:name", post(game_handler))
+        .route("/games/:game_id", post(game_handler))
+        .route("/ws/:game_name", get(ws_handler))
+        .route("/bet/:match_id", post(place_bet_handler))
+        .route("/bet/:match_id/:prediction", get(get_bet_handler))
 }
 
 pub fn public_router() -> Router<()> {
