@@ -26,6 +26,10 @@ pub struct OddsRepository {
 }
 
 impl OddsRepository {
+    pub fn new(pool_handler: PoolHandler) -> Self {
+        Self { pool_handler }
+    }
+
     /// # Panics
     /// # Errors
     pub async fn get_odds<'a>(

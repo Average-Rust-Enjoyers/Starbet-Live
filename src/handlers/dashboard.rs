@@ -6,6 +6,7 @@ use askama::Template;
 use axum::{
     http::StatusCode,
     response::{Html, IntoResponse},
+    Extension,
 };
 
 /// # Panics
@@ -15,24 +16,16 @@ pub async fn dashboard_handler(auth_session: AuthSession) -> impl IntoResponse {
         None => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
 
-    let menu_items = vec![
-        MenuItem {
-            name: "CS:GO".to_string(),
+    let games = game_repository.read_all().await.unwrap();
+
+    let menu_items: Vec<MenuItem> = games
+        .iter()
+        .map(|game| MenuItem {
+            name: game.name.clone(),
+            game_id: game.id,
             active: false,
-        },
-        MenuItem {
-            name: "Dota 2".to_string(),
-            active: false,
-        },
-        MenuItem {
-            name: "LoL".to_string(),
-            active: false,
-        },
-        MenuItem {
-            name: "Valorant".to_string(),
-            active: false,
-        },
-    ];
+        })
+        .collect();
 
     let menu = Menu { games: menu_items };
 
