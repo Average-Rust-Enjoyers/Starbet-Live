@@ -1,6 +1,9 @@
 use askama::Template;
 
-use crate::{filters, models::odds::Odds};
+use crate::{
+    filters,
+    models::{odds::Odds, user::User},
+};
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -50,6 +53,19 @@ pub struct UserSend {
     pub surname: String,
     pub profile_picture: String,
     pub balance: i32,
+}
+
+impl From<&User> for UserSend {
+    fn from(user: &User) -> Self {
+        Self {
+            username: user.username.clone(),
+            email: user.email.clone(),
+            name: user.name.clone(),
+            surname: user.surname.clone(),
+            profile_picture: user.profile_picture.clone(),
+            balance: user.balance,
+        }
+    }
 }
 
 #[derive(Template)]
