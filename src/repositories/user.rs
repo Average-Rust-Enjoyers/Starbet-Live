@@ -14,6 +14,7 @@ use crate::{
         PoolHandler,
     },
     models::user::{Credentials, GetByUserId, User, UserCreate, UserDelete, UserUpdate},
+    DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate,
 };
 
 pub enum Field {
