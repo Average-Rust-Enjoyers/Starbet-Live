@@ -27,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     println!("Starting server. Listening on http://{socket_addr}");
-
+  
     app.serve(socket_addr, session_expiry).await?;
 
     Ok(())
