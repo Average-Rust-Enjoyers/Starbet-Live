@@ -6,7 +6,7 @@ use crate::{
         bet::{BetGetByMatchId, BetStatus, BetUpdate},
         game_match::GameMatch,
         game_match_outcome::GameMatchOutcome,
-        odds::OddsGetByMatchId,
+        odds::OddsGetByBetId,
         user::UserUpdateBalance,
     },
     repositories::{bet::BetRepository, odds::OddsRepository, user::UserRepository},
@@ -34,10 +34,9 @@ pub async fn pay_out_match<'a>(
             if outcome == &bet.expected_outcome {
                 bet_status = BetStatus::Won;
 
-                // TODO: this should be pulled via odds_id from bets once it's added
-                let odds = OddsRepository::get_latest_odds_for_match(
-                    OddsGetByMatchId {
-                        match_id: bet.game_match_id,
+                let odds = OddsRepository::get_closest_odds_for_bet(
+                    OddsGetByBetId {
+                        bet_id: bet.id,
                     },
                     tx,
                 )
@@ -45,7 +44,7 @@ pub async fn pay_out_match<'a>(
 
                 if let Some(odds) = odds {
                     let multiplier = match outcome {
-                        GameMatchOutcome::Draw => 1f64,
+                        GameMatchOutcome::Draw => 0f64,
                         GameMatchOutcome::WinA => odds.odds_a,
                         GameMatchOutcome::WinB => odds.odds_b,
                     };

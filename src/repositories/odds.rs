@@ -13,12 +13,11 @@ use crate::{
         },
     },
     models::{
-        game_match::GameMatchGetById,
-        odds::{Odds, OddsCreate, OddsGetById, OddsGetByMatchId},
+        bet::BetGetById, game_match::GameMatchGetById, odds::{Odds, OddsCreate, OddsGetById, OddsGetByBetId}
     },
 };
 
-use super::game_match::GameMatchRepository;
+use super::{bet::BetRepository, game_match::GameMatchRepository};
 
 #[derive(Clone)]
 pub struct OddsRepository {
@@ -56,20 +55,30 @@ impl OddsRepository {
         }
     }
 
-    pub async fn get_latest_odds_for_match<'a>(
-        params: OddsGetByMatchId,
+    pub async fn get_closest_odds_for_bet<'a>(
+        params: OddsGetByBetId,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Option<Odds>> {
+        let bet = BetRepository::is_correct(
+            BetRepository::get_bet(BetGetById { id: params.bet_id }, transaction_handle).await?,
+        )?;
+
         let odds = sqlx::query_as!(
             Odds,
             r#"
                 SELECT *
                 FROM odds
                 WHERE game_match_id = $1
-                ORDER BY created_at DESC
+                ORDER BY CASE
+                    WHEN $2 > created_at
+                        THEN $2 - created_at
+                        ELSE created_at - $2
+                    END
+                    ASC
                 LIMIT 1
             "#,
-            params.match_id
+            bet.game_match_id,
+            bet.created_at
         )
         .fetch_optional(transaction_handle.as_mut())
         .await?;
