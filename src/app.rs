@@ -1,22 +1,22 @@
 use anyhow::Error;
 use axum::Extension;
 
+use crate::{
+    auth::Auth,
+    common::{DbPoolHandler, PoolHandler},
+    models::extension_web_socket::ExtensionWebSocket,
+    repositories::{game_match::GameMatchRepository, odds::OddsRepository, user::UserRepository},
+    routers::{auth_router, protected_router, public_router},
+    GameRepository,
+};
 use axum_login::{login_required, AuthManagerLayerBuilder};
 use bb8_redis::RedisConnectionManager;
 use sqlx::postgres::PgPoolOptions;
 use std::{net::SocketAddr, sync::Arc};
 use time::Duration;
-
 use tower_sessions::{
     fred::{clients::RedisPool, interfaces::ClientLike, types::RedisConfig},
     Expiry, RedisStore, SessionManagerLayer,
-};
-
-use crate::{
-    auth::Auth,
-    common::{DbPoolHandler, PoolHandler},
-    repositories::user::UserRepository,
-    routers::{auth_router, protected_router, public_router},
 };
 
 pub struct App {
@@ -68,9 +68,15 @@ impl App {
             .with_expiry(Expiry::OnInactivity(Duration::hours(48))); // TODO: remove constant
 
         let user_repo = UserRepository::new(self.pg_pool_handler.clone());
+        let game_match_repo = GameMatchRepository::new(self.pg_pool_handler.clone());
+        let game_repo = GameRepository::new(self.pg_pool_handler.clone());
+        let odds_repo = OddsRepository::new(self.pg_pool_handler.clone());
 
         let auth_backend = Auth::new(self.pg_pool_handler);
         let auth_layer = AuthManagerLayerBuilder::new(auth_backend, session_layer).build();
+
+        let (tx, rx) = barrage::unbounded();
+        let web_socket = ExtensionWebSocket { tx, rx };
 
         let app = protected_router()
             .route_layer(login_required!(Auth, login_url = "/login"))
@@ -78,10 +84,14 @@ impl App {
             .merge(public_router())
             .layer(auth_layer)
             .layer(Extension(user_repo))
+            .layer(Extension(game_match_repo))
+            .layer(Extension(game_repo))
+            .layer(Extension(odds_repo))
+            .layer(Extension(web_socket))
             .layer(Extension(self.bb8_redis_pool));
 
-        let listener = tokio::net::TcpListener::bind(address).await.unwrap();
-        axum::serve(listener, app).await.unwrap();
+        let listener = tokio::net::TcpListener::bind(address).await?;
+        axum::serve(listener, app).await?;
 
         Ok(())
     }
