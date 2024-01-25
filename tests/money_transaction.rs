@@ -56,7 +56,7 @@ pub mod money_transaction_repo_tests {
         pending_money_transaction.created_at = money_transaction_by_id.created_at;
         pending_money_transaction.edited_at = money_transaction_by_id.edited_at;
 
-        assert!(pending_money_transaction.eq(&money_transaction_by_id));
+        assert_eq!(pending_money_transaction, money_transaction_by_id);
         money_transaction_repository.disconnect().await;
         Ok(())
     }
@@ -102,7 +102,7 @@ pub mod money_transaction_repo_tests {
         completed_money_transaction.created_at = changed_status_transaction.created_at;
         completed_money_transaction.edited_at = changed_status_transaction.edited_at;
 
-        assert!(completed_money_transaction.eq(&changed_status_transaction));
+        assert_eq!(completed_money_transaction, changed_status_transaction);
 
         money_transaction_repository.disconnect().await;
         Ok(())
@@ -159,10 +159,10 @@ pub mod money_transaction_repo_tests {
         money_transactions_by_user_id[1].created_at = completed_money_transaction.created_at;
         money_transactions_by_user_id[1].edited_at = completed_money_transaction.edited_at;
 
-        assert!(money_transactions_by_user_id.iter().eq(vec![
-            &pending_money_transaction,
-            &completed_money_transaction,
-        ]));
+        assert_eq!(
+            money_transactions_by_user_id,
+            vec![pending_money_transaction, completed_money_transaction]
+        );
 
         money_transaction_repository.disconnect().await;
         Ok(())

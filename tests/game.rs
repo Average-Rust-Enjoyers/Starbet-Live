@@ -71,9 +71,15 @@ pub mod game_repo_tests {
             .await
             .expect("The repository call should succeed - no parameters given");
 
-        assert!(no_params
-            .iter()
-            .eq(vec![&lol_game, &csgo_game, &dota2_game, &valorant_game]));
+        assert_eq!(
+            no_params,
+            vec![
+                lol_game,
+                csgo_game.clone(),
+                dota2_game.clone(),
+                valorant_game.clone()
+            ]
+        );
 
         let filter_by_name = GameFilter {
             name: Some("2".to_string()),
@@ -85,7 +91,7 @@ pub mod game_repo_tests {
             .await
             .expect("The repository call should succeed - name parameter given");
 
-        assert!(name.iter().eq(vec![&csgo_game, &dota2_game]));
+        assert_eq!(name, vec![csgo_game.clone(), dota2_game.clone()]);
 
         let filter_by_genre = GameFilter {
             name: None,
@@ -97,7 +103,7 @@ pub mod game_repo_tests {
             .await
             .expect("The repository call should succeed - genre parameter given");
 
-        assert!(genre.iter().eq(dbg!(vec![&csgo_game, &valorant_game])));
+        assert_eq!(genre, vec![csgo_game.clone(), valorant_game.clone()]);
 
         let filter_by_name_and_genre = GameFilter {
             name: Some("2".to_string()),
@@ -109,7 +115,7 @@ pub mod game_repo_tests {
             .await
             .expect("The repository call should succeed - name and genre parameters given");
 
-        assert!(name_and_genre.iter().eq(vec![&csgo_game]));
+        assert_eq!(name_and_genre, vec![csgo_game]);
 
         let filter_by_nonexistent = GameFilter {
             name: Some("nonexistent_string".to_string()),
@@ -121,7 +127,7 @@ pub mod game_repo_tests {
             .await
             .expect("The repository call should succeed - name and genre parameters given");
 
-        assert!(nonexistent.iter().eq(Vec::<&Game>::new()));
+        assert_eq!(nonexistent, vec![]);
 
         game_repository.disconnect().await;
         Ok(())
