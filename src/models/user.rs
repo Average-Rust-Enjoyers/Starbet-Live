@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use axum_login::AuthUser;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use uuid::Uuid;
@@ -170,5 +171,17 @@ impl From<&UserDelete> for GetByUserId {
 impl From<&UserUpdate> for GetByUserId {
     fn from(user_update: &UserUpdate) -> Self {
         Self { id: user_update.id }
+    }
+}
+
+impl AuthUser for User {
+    type Id = Uuid;
+
+    fn id(&self) -> Self::Id {
+        self.id
+    }
+
+    fn session_auth_hash(&self) -> &[u8] {
+        self.password_hash.as_bytes()
     }
 }
