@@ -15,5 +15,6 @@ pub mod handlers;
 pub mod helpers;
 pub mod models;
 pub mod repositories;
+pub mod routers;
 pub mod templates;
 pub mod validators;
