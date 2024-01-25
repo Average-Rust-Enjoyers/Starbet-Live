@@ -57,6 +57,11 @@ pub trait DbReadMany<ReadMany, Data> {
 }
 
 #[async_trait]
+pub trait DbReadAll<Data> {
+    async fn read_all(&mut self) -> DbResultMultiple<Data>;
+}
+
+#[async_trait]
 pub trait DbUpdate<Update, Data> {
     /// Generic call which updates record(s) present in the database
     ///
@@ -71,6 +76,11 @@ pub trait DbUpdate<Update, Data> {
     ///                               database)
     /// - `sqlx::Error(_)` on any failure (SQL, DB constraints, connection, etc.)
     async fn update(&mut self, params: &Update) -> DbResultMultiple<Data>;
+}
+
+#[async_trait]
+pub trait DbGetByForeignKey<ForeignKey, Data> {
+    async fn get_by_foreign_key(&mut self, params: &ForeignKey) -> DbResultMultiple<Data>;
 }
 
 #[async_trait]

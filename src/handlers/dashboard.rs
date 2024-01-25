@@ -1,11 +1,19 @@
-use crate::templates::{Dashboard, Menu, MenuItem, UserSend};
+use crate::{
+    repositories::game::GameRepository,
+    templates::{Dashboard, Menu, MenuItem, UserSend},
+};
 use askama::Template;
 use axum::{
     http::StatusCode,
     response::{Html, IntoResponse},
+    Extension,
 };
 
-pub async fn dashboard_handler() -> impl IntoResponse {
+use crate::common::repository::DbReadAll;
+
+pub async fn dashboard_handler(
+    Extension(mut game_repository): Extension<GameRepository>,
+) -> impl IntoResponse {
     let user = UserSend {
         username: "Eric Cartman".to_string(),
         email: "eric.cartman@southpark.com".to_string(),
@@ -15,24 +23,16 @@ pub async fn dashboard_handler() -> impl IntoResponse {
         balance: 69420,
     };
 
-    let menu_items = vec![
-        MenuItem {
-            name: "CS:GO".to_string(),
+    let games = game_repository.read_all().await.unwrap();
+
+    let menu_items: Vec<MenuItem> = games
+        .iter()
+        .map(|game| MenuItem {
+            name: game.name.clone(),
+            game_id: game.id,
             active: false,
-        },
-        MenuItem {
-            name: "Dota 2".to_string(),
-            active: false,
-        },
-        MenuItem {
-            name: "LoL".to_string(),
-            active: false,
-        },
-        MenuItem {
-            name: "Valorant".to_string(),
-            active: false,
-        },
-    ];
+        })
+        .collect();
 
     let menu = Menu { games: menu_items };
 

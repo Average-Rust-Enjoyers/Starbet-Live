@@ -12,15 +12,18 @@ use dotenvy::dotenv;
 use crate::{
     common::{DbPoolHandler, PoolHandler},
     handlers::{
+        bet::{get_bet_handler, place_bet_handler},
         dashboard::dashboard_handler,
         game::game_handler,
         index::index_handler,
         login::login_handler,
         register::{register_page_handler, register_submission_handler},
         validation::validation_handler,
+        ws::ws_handler,
     },
 };
 
+use models::extension_web_socket::ExtensionWebSocket;
 use redis::AsyncCommands;
 use sqlx::postgres::PgPoolOptions;
 use std::{env, sync::Arc};
@@ -63,6 +66,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let pool_handler = PoolHandler::new(Arc::new(postgres_pool.clone()));
     let user_repo = repositories::user::UserRepository::new(pool_handler.clone());
+    let game_match_repo = repositories::game_match::GameMatchRepository::new(pool_handler.clone());
+    let game_repo = repositories::game::GameRepository::new(pool_handler.clone());
+    let odds_repo = repositories::odds::OddsRepository::new(pool_handler.clone());
+    let (tx, rx) = barrage::unbounded();
+    let web_socket = ExtensionWebSocket { tx, rx };
+
     println!("Starting server. Listening on http://{addr}");
 
     let app = Router::new()
@@ -72,10 +81,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/register", post(register_submission_handler))
         .route("/dashboard", get(dashboard_handler))
         .route("/redis", get(redis_ok))
-        .route("/games/:name", post(game_handler))
+        .route("/games/:game_id", post(game_handler))
         .route("/validation/:field", post(validation_handler))
+        .route("/ws/:game_name", get(ws_handler))
+        .route("/bet/:match_id", post(place_bet_handler))
+        .route("/bet/:match_id/:prediction", get(get_bet_handler))
         .layer(Extension(user_repo))
-        .layer(Extension(redis_pool));
+        .layer(Extension(game_match_repo))
+        .layer(Extension(game_repo))
+        .layer(Extension(odds_repo))
+        .layer(Extension(redis_pool))
+        .layer(Extension(web_socket));
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
