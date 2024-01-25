@@ -1,4 +1,5 @@
 use crate::{
+    common::DbReadByForeignKey,
     models::{game::GameGetById, game_match::GameMatchGetById},
     repositories::{game::GameRepository, game_match::GameMatchRepository, odds::OddsRepository},
     templates::{Game, Match, Menu, MenuItem},
@@ -14,7 +15,7 @@ use axum::{
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::common::repository::{DbGetByForeignKey, DbReadAll, DbReadMany, DbReadOne};
+use crate::common::repository::{DbReadAll, DbReadMany, DbReadOne};
 
 #[derive(Deserialize)]
 pub struct GameId {

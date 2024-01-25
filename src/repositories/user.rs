@@ -11,10 +11,10 @@ use crate::{
             },
             DbError, DbResultMultiple, DbResultSingle,
         },
-        PoolHandler,
+        DbUpdateOne, PoolHandler,
     },
     models::user::{Credentials, GetByUserId, User, UserCreate, UserDelete, UserUpdate},
-    DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdate,
+    DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository,
 };
 
 pub enum Field {
@@ -196,10 +196,10 @@ impl DbReadOne<Credentials, User> for UserRepository {
 }
 
 #[async_trait]
-impl DbUpdate<UserUpdate, User> for UserRepository {
+impl DbUpdateOne<UserUpdate, User> for UserRepository {
     /// Update user information if we know their id (we're logged in as that user)
     /// Fails if the relevant update fields are all none
-    async fn update(&mut self, params: &UserUpdate) -> DbResultMultiple<User> {
+    async fn update(&mut self, params: &UserUpdate) -> DbResultSingle<User> {
         if params.update_fields_none() {
             return Err(BusinessLogicError::new(UserUpdateParametersEmpty).into());
         }
@@ -231,7 +231,7 @@ impl DbUpdate<UserUpdate, User> for UserRepository {
             params.balance,
             params.id
         )
-        .fetch_all(&mut *tx)
+        .fetch_one(&mut *tx)
         .await?;
 
         tx.commit().await?;

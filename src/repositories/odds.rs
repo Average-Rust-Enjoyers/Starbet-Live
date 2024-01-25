@@ -8,14 +8,13 @@ use crate::{
             BusinessLogicErrorKind::{OddsDeleted, OddsDoNotExist},
             DbResultMultiple, DbResultSingle,
         },
-        repository::{
-            DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler,
-        },
+        repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
     },
     models::{
         game_match::GameMatchGetById,
         odds::{Odds, OddsCreate, OddsGetById},
     },
+    DbDelete,
 };
 
 use super::game_match::GameMatchRepository;

@@ -9,13 +9,11 @@ use crate::{
             BusinessLogicError, BusinessLogicErrorKind::GameDeleted,
             BusinessLogicErrorKind::GameDoesNotExist, DbResultMultiple, DbResultSingle,
         },
-        repository::{
-            DbCreate, DbDelete, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, DbUpdate,
-            PoolHandler,
-        },
-        DbReadAll,
+        repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
+        DbReadAll, DbUpdateOne,
     },
     models::game::{Game, GameCreate, GameDelete, GameFilter, GameGenre, GameGetById, GameUpdate},
+    DbDelete,
 };
 
 #[derive(Clone)]
@@ -107,15 +105,15 @@ impl DbCreate<GameCreate, Game> for GameRepository {
 }
 
 #[async_trait]
-impl DbUpdate<GameUpdate, Game> for GameRepository {
-    async fn update(&mut self, data: &GameUpdate) -> DbResultMultiple<Game> {
+impl DbUpdateOne<GameUpdate, Game> for GameRepository {
+    async fn update(&mut self, data: &GameUpdate) -> DbResultSingle<Game> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
         GameRepository::is_correct(
             GameRepository::get_game(GameGetById { id: data.id }, &mut tx).await?,
         )?;
 
-        let games = sqlx::query_as!(
+        let game = sqlx::query_as!(
             Game,
             r#"
                 UPDATE Game
@@ -140,12 +138,12 @@ impl DbUpdate<GameUpdate, Game> for GameRepository {
             data.genre as _,
             data.id,
         )
-        .fetch_all(&mut *tx)
+        .fetch_one(&mut *tx)
         .await?;
 
         tx.commit().await?;
 
-        Ok(games)
+        Ok(game)
     }
 }
 
