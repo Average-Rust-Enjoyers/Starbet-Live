@@ -53,7 +53,7 @@ pub mod game_match_tests {
             Uuid::parse_str("b56c2fb1-6c6c-4931-97b2-525bf3970252").unwrap();
         let mut finished_game_match = GameMatch {
             id: finished_game_match_id,
-            game_id: game_id,
+            game_id,
             name_a: "Arua".to_string(),
             name_b: "Sorriso".to_string(),
             starts_at: DateTime::parse_from_rfc3339("2023-06-11 02:31:09+00:00")
