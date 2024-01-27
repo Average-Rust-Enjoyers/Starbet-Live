@@ -19,19 +19,19 @@
                 id="new_match_form"
                 class="flex text-primary flex-col w-1/2 bg-primary-lighter rounded-md p-2 m-2"
             >
-                <select class="m-2 px-2 rounded-md" name="game_id">
+                <select required class="m-2 px-2 rounded-md" name="game_id">
                     <option selected disabled>Game</option>
                     {% for game in games %}
                         <option value="{{ game.id }}">{{ game.name }}</option>
                     {% endfor %}
                 </select>
                 <div class="flex flex-row py-2">
-                    <input type="text" class="mx-2 px-2 min-w-0 rounded-md" name="name_a" placeholder="Name A">
-                    <input type="text" class="mx-2 px-2 min-w-0 rounded-md" name="name_b" placeholder="Name B">
+                    <input required type="text" class="mx-2 px-2 min-w-0 rounded-md" name="name_a" placeholder="Name A">
+                    <input required type="text" class="mx-2 px-2 min-w-0 rounded-md" name="name_b" placeholder="Name B">
                 </div>
                 <div class="flex flex-row py-2">
-                    <input type="datetime-local" class="mx-2 px-2 min-w-0 rounded-md" name="starts_at" placeholder="Starts at">
-                    <input type="datetime-local" class="mx-2 px-2 min-w-0 rounded-md" name="ends_at" placeholder="Ends at">
+                    <input required type="datetime-local" class="mx-2 px-2 min-w-0 rounded-md" name="starts_at" placeholder="Starts at">
+                    <input required type="datetime-local" class="mx-2 px-2 min-w-0 rounded-md" name="ends_at" placeholder="Ends at">
                 </div>
                 <button
                     type="submit"
