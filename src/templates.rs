@@ -128,4 +128,5 @@ pub struct Match {
 pub struct PlaceBetForm {
     pub match_id: Uuid,
     pub predicted_team: String,
+    pub prediction: String,
 }

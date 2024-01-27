@@ -44,7 +44,7 @@ pub fn protected_router() -> Router<()> {
         .route("/dashboard", get(dashboard_handler))
         .route("/games/:game_id", post(game_handler))
         .route("/ws/:game_name", get(ws_handler))
-        .route("/bet/:match_id", post(place_bet_handler))
+        .route("/bet/:match_id/:prediction", post(place_bet_handler))
         .route("/bet/:match_id/:prediction", get(get_bet_handler))
 }
 
