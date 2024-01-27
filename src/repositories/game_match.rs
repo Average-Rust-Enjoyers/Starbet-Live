@@ -176,6 +176,10 @@ impl DbUpdateOne<GameMatchUpdate, GameMatch> for GameMatchRepository {
         .fetch_one(&mut *tx)
         .await?;
 
+        // TODO: check that status + outcome is valid?
+        // TODO: disallow changing cancelled/finished matches?
+        // TODO: refund users if new status is cancelled
+
         if let Some(status) = &data.status {
             if data.outcome.is_some() && *status == GameMatchStatus::Finished {
                 pay_out_match(&game_match, &mut tx).await?;
