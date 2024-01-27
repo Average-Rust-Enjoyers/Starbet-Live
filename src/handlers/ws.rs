@@ -24,7 +24,7 @@ pub async fn handle_socket(ws: WebSocket, _game_name: String, web_socket: Extens
 
     let mut send_task = tokio::spawn(async move {
         while let Ok(msg) = cloned_server_rx.recv_async().await {
-            if ws.send(Message::Text(msg.to_string())).await.is_err() {
+            if ws.send(Message::Text(msg)).await.is_err() {
                 break;
             }
         }

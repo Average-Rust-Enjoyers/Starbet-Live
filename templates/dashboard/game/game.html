@@ -2,13 +2,21 @@
     <div id="game_title" class="text-3xl font-bold">
         {{game_name}} - Live Matches
     </div>
-    <div id="matches" class="mt-5 flex flex-col gap-3">
+    <div
+        id="matches"
+        class="mt-5 flex flex-col gap-3"
+        hx-ext="ws"
+        ws-connect="/ws/{{game_name}}"
+    >
         <!-- prettier-ignore -->
         {% for match in matches %}
+        <!-- The div is here, because when it was in the askama match.html template, the websocket updates weren't working -->
+        <div
+            id="{{match.match_id}}" 
+            class="bg-primary-lightest flex flex-grow flex-row items-center justify-between gap-10 rounded-sm p-2"
+        >
             {{ match|safe }}
+        </div>
         {% endfor %}
-
-        <!-- The below is how we connect to a websocket -->
-        <div hx-ext="ws" ws-connect="/ws/{{game_name}}"></div>
     </div>
 </div>
