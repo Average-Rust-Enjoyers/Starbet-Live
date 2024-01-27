@@ -2,20 +2,22 @@
 <div id="odds" class="flex flex-row gap-3">
     <div
         id="odds_a"
-        class="bg-primary-lighter hover:bg-primary flex flex-col items-center gap-1 rounded-lg p-2 font-bold"
+        class="bg-primary-lighter hover:bg-primary flex cursor-pointer flex-col items-center gap-1 rounded-lg p-2 font-bold"
         hx-get="/bet/{{match_id}}/a"
         hx-target="#right_side_panel"
         hx-swap="innerHTML"
+        hx-indicator="#indicator"
     >
         <div>Win A</div>
         <div>{{current_odds.odds_a}}</div>
     </div>
     <div
         id="odds_b"
-        class="bg-primary-lighter hover:bg-primary flex flex-col items-center gap-1 rounded-lg p-2 font-bold"
+        class="bg-primary-lighter hover:bg-primary flex cursor-pointer flex-col items-center gap-1 rounded-lg p-2 font-bold"
         hx-get="/bet/{{match_id}}/b"
         hx-target="#right_side_panel"
         hx-swap="innerHTML"
+        hx-indicator="#indicator"
     >
         <div>Win B</div>
         <div>{{current_odds.odds_b}}</div>

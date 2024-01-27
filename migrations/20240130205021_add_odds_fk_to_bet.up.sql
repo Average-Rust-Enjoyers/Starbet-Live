@@ -1,0 +1,5 @@
+ALTER TABLE Bet
+ADD odds_id uuid NOT NULL;
+
+ALTER TABLE Bet
+ADD FOREIGN KEY (odds_id) REFERENCES Odds(id);

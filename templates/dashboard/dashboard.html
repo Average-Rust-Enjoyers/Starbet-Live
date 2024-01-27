@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="flex h-screen flex-col">
-    <div class="flex-none">{% include "user_nav.html" %}</div>
+    <div class="flex-none">{{ user_nav|safe }}</div>
     <div class="flex grow flex-row">
         <div id="content" class="flex grow flex-row">
             <!-- prettier-ignore -->
@@ -12,8 +12,10 @@
         </div>
         <div
             id="right_side_panel"
-            class="bg-primary text-secondary flex min-w-48 flex-col items-center font-bold"
-        >Your bets</div>
+            class="bg-primary text-secondary flex flex-col items-center min-w-60"
+        >
+            {{ active_bets|safe }}
+        </div>
     </div>
 </div>
 {% endblock %}

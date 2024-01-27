@@ -15,7 +15,7 @@ pub mod bet_tests {
     use std::sync::Arc;
     use uuid::Uuid;
 
-    #[sqlx::test(fixtures("appuser", "game", "gamematch", "bet"))]
+    #[sqlx::test(fixtures("appuser", "game", "gamematch", "odds", "bet"))]
     async fn read_many(pool: PgPool) -> DbResultSingle<()> {
         let arc_pool = Arc::new(pool);
 
@@ -26,6 +26,7 @@ pub mod bet_tests {
             id: Uuid::parse_str("4b852c26-2bbf-421d-9194-cca0f670e3e3").unwrap(),
             app_user_id,
             game_match_id: Uuid::parse_str("8902ab54-61fd-40e3-808f-55ddfcd89e37").unwrap(),
+            odds_id: Uuid::parse_str("3d785464-e76c-474b-8f88-268a6d808c32").unwrap(),
             amount: 1114i32,
             status: BetStatus::Canceled,
             expected_outcome: GameMatchOutcome::WinB,
@@ -42,6 +43,7 @@ pub mod bet_tests {
             id: Uuid::parse_str("3cd44b3d-9b4d-4080-94d4-092811353396").unwrap(),
             app_user_id,
             game_match_id: Uuid::parse_str("cd2fce3e-7260-48be-9da1-b85df105e40a").unwrap(),
+            odds_id: Uuid::parse_str("3d785464-e76c-474b-8f88-268a6d808c32").unwrap(),
             amount: 5770i32,
             status: BetStatus::Lost,
             expected_outcome: GameMatchOutcome::WinA,

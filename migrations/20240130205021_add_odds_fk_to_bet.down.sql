@@ -1,0 +1,2 @@
+ALTER TABLE Bet 
+DROP COLUMN odds_id;

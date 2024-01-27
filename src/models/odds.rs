@@ -78,6 +78,19 @@ impl OddsGetByBetId {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct OddsGetByGameMatchId {
+    pub game_match_id: Uuid,
+}
+
+impl OddsGetByGameMatchId {
+    pub fn new(game_match_id: &Uuid) -> Self {
+        Self {
+            game_match_id: *game_match_id,
+        }
+    }
+}
+
 impl From<&OddsDelete> for OddsGetById {
     fn from(odds_delete_id: &OddsDelete) -> Self {
         Self {

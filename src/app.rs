@@ -5,10 +5,13 @@ use crate::{
     auth::Auth,
     common::{DbPoolHandler, PoolHandler},
     models::extension_web_socket::ExtensionWebSocket,
-    repositories::{game_match::GameMatchRepository, odds::OddsRepository, user::UserRepository},
+    repositories::{
+        bet::BetRepository, game_match::GameMatchRepository, odds::OddsRepository,
+        user::UserRepository,
+    },
     routers::{auth_router, protected_router, public_router},
     session_store::RedisStore,
-    GameRepository,
+    DbRepository, GameRepository,
 };
 use axum_login::{login_required, AuthManagerLayerBuilder};
 use bb8_redis::RedisConnectionManager;
@@ -69,6 +72,7 @@ impl App {
         let game_match_repo = GameMatchRepository::new(self.pg_pool_handler.clone());
         let game_repo = GameRepository::new(self.pg_pool_handler.clone());
         let odds_repo = OddsRepository::new(self.pg_pool_handler.clone());
+        let bets_repo = BetRepository::new(self.pg_pool_handler.clone());
 
         let auth_backend = Auth::new(self.pg_pool_handler);
         let auth_layer = AuthManagerLayerBuilder::new(auth_backend, session_layer).build();
@@ -82,6 +86,7 @@ impl App {
             .merge(public_router())
             .layer(auth_layer)
             .layer(Extension(user_repo))
+            .layer(Extension(bets_repo))
             .layer(Extension(game_match_repo))
             .layer(Extension(game_repo))
             .layer(Extension(odds_repo))

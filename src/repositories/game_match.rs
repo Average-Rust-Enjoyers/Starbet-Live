@@ -329,10 +329,11 @@ impl DbReadByForeignKey<Uuid, GameMatch> for GameMatchRepository {
                 edited_at, 
                 deleted_at
             FROM GameMatch gm 
-            WHERE gm.game_id = $1 AND gm.status = $2
+            WHERE gm.game_id = $1 AND (gm.status = $2 OR gm.status = $3)
             "#,
             game_id,
-            GameMatchStatus::Live as _
+            GameMatchStatus::Live as _,
+            GameMatchStatus::Pending as _,
         )
         .fetch_all(&mut *tx)
         .await?;

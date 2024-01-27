@@ -12,11 +12,12 @@ use crate::{
     handlers::{
         self,
         admin::{admin_handler, gamematch_update_handler, new_gamematch_handler},
-        bet::{get_bet_handler, place_bet_handler},
+        bet::{get_active_bets_handler, get_bet_handler, place_bet_handler},
         dashboard::dashboard_handler,
         game::game_handler,
         index::index_handler,
         register::register_submission_handler,
+        user::user_balance_handler,
         ws::ws_handler,
     },
 };
@@ -46,6 +47,8 @@ pub fn protected_router() -> Router<()> {
         .route("/ws/:game_name", get(ws_handler))
         .route("/bet/:match_id/:prediction", post(place_bet_handler))
         .route("/bet/:match_id/:prediction", get(get_bet_handler))
+        .route("/bet/active", get(get_active_bets_handler))
+        .route("/user/balance", get(user_balance_handler))
 }
 
 pub fn public_router() -> Router<()> {
