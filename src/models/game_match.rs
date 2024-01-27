@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use std::fmt::Display;
+
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
@@ -12,6 +14,21 @@ pub enum GameMatchStatus {
     Live,
     Finished,
     Canceled,
+}
+
+impl Display for GameMatchStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Pending => "PENDING",
+                Self::Live => "LIVE",
+                Self::Finished => "FINISHED",
+                Self::Canceled => "CANCELED",
+            }
+        )
+    }
 }
 
 #[derive(sqlx::FromRow, Debug, PartialEq, Eq, Clone)]
