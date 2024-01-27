@@ -3,6 +3,7 @@
 use std::fmt::Display;
 
 use chrono::{DateTime, Utc};
+use serde::Deserialize;
 use uuid::Uuid;
 
 use super::game_match_outcome::GameMatchOutcome;
@@ -48,7 +49,7 @@ pub struct GameMatch {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Deserialize)]
 pub struct GameMatchCreate {
     pub game_id: Uuid,
     pub name_a: String,
@@ -83,11 +84,7 @@ pub struct GameMatchUpdate {
     pub starts_at: Option<DateTime<Utc>>,
     pub ends_at: Option<DateTime<Utc>>,
     pub status: Option<GameMatchStatus>,
-}
-
-pub struct GameMatchUpdateFinished {
-    pub id: Uuid,
-    pub status: GameMatchStatus,
+    pub outcome: Option<GameMatchOutcome>,
 }
 
 impl GameMatchUpdate {
@@ -98,6 +95,7 @@ impl GameMatchUpdate {
         starts_at: Option<DateTime<Utc>>,
         ends_at: Option<DateTime<Utc>>,
         status: Option<GameMatchStatus>,
+        outcome: Option<GameMatchOutcome>,
     ) -> Self {
         let change_to_owned = |value: &str| Some(value.to_owned());
         Self {
@@ -107,6 +105,7 @@ impl GameMatchUpdate {
             starts_at,
             ends_at,
             status,
+            outcome,
         }
     }
 

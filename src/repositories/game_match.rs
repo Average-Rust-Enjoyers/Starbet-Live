@@ -137,8 +137,9 @@ impl DbUpdateOne<GameMatchUpdate, GameMatch> for GameMatchRepository {
                 starts_at = COALESCE($3, starts_at),
                 ends_at = COALESCE($4, ends_at),
                 status = COALESCE($5, status),
+                outcome = COALESCE($6, outcome),
                 edited_at = now()
-            WHERE gm.id = $6
+            WHERE gm.id = $7
             RETURNING
                 id, 
                 game_id, 
@@ -157,53 +158,18 @@ impl DbUpdateOne<GameMatchUpdate, GameMatch> for GameMatchRepository {
             data.starts_at,
             data.ends_at,
             data.status as _,
+            data.outcome as _,
             data.id
         )
         .fetch_one(&mut *tx)
         .await?;
 
-        tx.commit().await?;
+        if let Some(status) = &data.status {
+            if data.outcome.is_some() && *status == GameMatchStatus::Finished {
+                pay_out_match(&game_match, &mut tx).await?;
+            }
+        }
 
-        Ok(game_match)
-    }
-}
-
-#[async_trait]
-impl DbUpdateOne<GameMatchUpdateFinished, GameMatch> for GameMatchRepository {
-    async fn update(&mut self, data: &GameMatchUpdateFinished) -> DbResultSingle<GameMatch> {
-        let mut tx = self.pool_handler.pool.begin().await?;
-
-        GameMatchRepository::is_correct(
-            GameMatchRepository::get_game_match(GameMatchGetById { id: data.id }, &mut tx).await?,
-        )?;
-
-        let game_match = sqlx::query_as!(
-            GameMatch,
-            r#"UPDATE GameMatch gm SET 
-                ends_at = now(),
-                edited_at = now(),
-                status = $1
-            WHERE gm.id = $2
-            RETURNING
-                id, 
-                game_id, 
-                name_a, 
-                name_b, 
-                starts_at, 
-                ends_at, 
-                outcome AS "outcome: _", 
-                status AS "status: _", 
-                created_at, 
-                edited_at, 
-                deleted_at
-            "#,
-            data.status as _,
-            data.id
-        )
-        .fetch_one(&mut *tx)
-        .await?;
-
-        pay_out_match(&game_match, &mut tx).await?;
         tx.commit().await?;
 
         Ok(game_match)
