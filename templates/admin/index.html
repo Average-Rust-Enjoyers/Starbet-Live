@@ -1,0 +1,74 @@
+<!-- prettier-ignore -->
+{% extends "base.html" %}
+
+{% block content %}
+<div
+    class="text-secondary bg-primary flex h-screen min-h-screen flex-col"
+>
+    <header class="flex items-center justify-between px-6 py-4">
+        <a hx-boost="true" href="/admin" class="flex items-center space-x-4">
+            <h1 class="text-2xl font-bold">Admin panel</h1>
+        </a>
+    </header>
+    <main class="px-2">
+        <div class="mx-4">
+            <h2 class="text-xl font-bold">Create new match</h2>
+            <form
+                method="POST"
+                action="/admin/match"
+                id="new_match_form"
+                class="flex text-primary flex-col w-1/2 bg-primary-lighter rounded-md p-2 m-2"
+            >
+                <select class="m-2 px-2 rounded-md" name="game_id">
+                    <option selected disabled>Game</option>
+                    {% for game in games %}
+                        <option value="{{ game.id }}">{{ game.name }}</option>
+                    {% endfor %}
+                </select>
+                <div class="flex flex-row py-2">
+                    <input type="text" class="mx-2 px-2 min-w-0 rounded-md" name="name_a" placeholder="Name A">
+                    <input type="text" class="mx-2 px-2 min-w-0 rounded-md" name="name_b" placeholder="Name B">
+                </div>
+                <div class="flex flex-row py-2">
+                    <input type="datetime-local" class="mx-2 px-2 min-w-0 rounded-md" name="starts_at" placeholder="Starts at">
+                    <input type="datetime-local" class="mx-2 px-2 min-w-0 rounded-md" name="ends_at" placeholder="Ends at">
+                </div>
+                <button
+                    type="submit"
+                    class="bg-secondary text-primary rounded-md m-2 py-2 text-sm font-medium">
+                    Submit
+                </button>
+            </form>
+            <script>
+                const $ = e => document.querySelector(e);
+                new_match_form.onsubmit = e => {
+                    const start = $('[name=starts_at]'), end = $('[name=ends_at]');
+                    start.type = end.type = 'text';
+                    start.value = new Date(start.value).toISOString();
+                    end.value = new Date(end.value).toISOString();
+                }
+            </script>
+        </div>
+        <div class="mx-4">
+            <h2 class="text-xl font-bold">Existing matches</h2>
+            <div class="p-2">
+                <table class="w-1/2">
+                    <thead class="text-left">
+                        <tr>
+                            <th>Name A</th>
+                            <th>Name B</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for game_match in matches %}
+                            {% include "admin/match.html" %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -1,3 +1,4 @@
+pub mod admin;
 pub mod bet;
 pub mod dashboard;
 pub mod game;
