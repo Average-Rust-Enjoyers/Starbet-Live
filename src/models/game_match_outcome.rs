@@ -17,7 +17,7 @@ impl Display for GameMatchOutcome {
             match self {
                 Self::WinA => "WIN A",
                 Self::WinB => "WIN B",
-                Self::Draw => "DRAW"
+                Self::Draw => "DRAW",
             }
         )
     }
