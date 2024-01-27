@@ -13,10 +13,14 @@ use crate::{
         DbCreate, DbDelete, DbPoolHandler, DbReadAll, DbReadByForeignKey, DbReadOne, DbRepository,
         DbUpdateOne, PoolHandler,
     },
-    models::game_match::{
-        GameMatch, GameMatchCreate, GameMatchDelete, GameMatchGetById, GameMatchStatus,
-        GameMatchUpdate, GameMatchUpdateFinished,
+    models::{
+        game::GameGetById,
+        game_match::{
+            GameMatch, GameMatchCreate, GameMatchDelete, GameMatchGetById, GameMatchStatus,
+            GameMatchUpdate,
+        },
     },
+    GameRepository,
 };
 
 #[derive(Clone)]
@@ -86,6 +90,12 @@ impl DbRepository for GameMatchRepository {
 #[async_trait]
 impl DbCreate<GameMatchCreate, GameMatch> for GameMatchRepository {
     async fn create(&mut self, data: &GameMatchCreate) -> DbResultSingle<GameMatch> {
+        let mut tx = self.pool_handler.pool.begin().await?;
+
+        GameRepository::is_correct(
+            GameRepository::get_game(GameGetById { id: data.game_id }, &mut tx).await?,
+        )?;
+
         let game_match = sqlx::query_as!(
             GameMatch,
             r#"
@@ -112,8 +122,10 @@ impl DbCreate<GameMatchCreate, GameMatch> for GameMatchRepository {
             data.starts_at,
             data.ends_at
         )
-        .fetch_one(self.pool_handler.pool.as_ref())
+        .fetch_one(&mut *tx)
         .await?;
+
+        tx.commit().await?;
 
         Ok(game_match)
     }
