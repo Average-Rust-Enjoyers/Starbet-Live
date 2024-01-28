@@ -180,6 +180,7 @@ pub mod game_match_tests {
                 starts_at: None,
                 ends_at: None,
                 status: Some(GameMatchStatus::Live),
+                outcome: None,
             })
             .await
             .expect("The repository call should succeed - game_match status updated");
@@ -196,6 +197,7 @@ pub mod game_match_tests {
                 starts_at: None,
                 ends_at: None,
                 status: Some(GameMatchStatus::Finished),
+                outcome: Some(GameMatchOutcome::WinA),
             })
             .await
             .expect("The repository call should succeed - game_match status updated");

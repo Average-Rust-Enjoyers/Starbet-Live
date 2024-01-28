@@ -3,12 +3,28 @@ use uuid::Uuid;
 
 use crate::{
     filters,
+    models::game_match::GameMatchStatus,
     models::{odds::Odds, user::User},
 };
+
+use crate::models;
 
 #[derive(Template)]
 #[template(path = "index.html")]
 pub struct Index {}
+
+#[derive(Template)]
+#[template(path = "admin/index.html")]
+pub struct AdminPanel {
+    pub games: Vec<models::game::Game>,
+    pub matches: Vec<models::game_match::GameMatch>,
+}
+
+#[derive(Template)]
+#[template(path = "admin/match.html")]
+pub struct AdminPanelMatch {
+    pub game_match: models::game_match::GameMatch,
+}
 
 #[derive(Template)]
 #[template(path = "server_error.html")]

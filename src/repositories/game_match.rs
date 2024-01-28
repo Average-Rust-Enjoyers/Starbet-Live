@@ -9,14 +9,18 @@ use crate::{
             BusinessLogicErrorKind::{GameMatchDeleted, GameMatchDoesNotExist},
             DbResultMultiple, DbResultSingle,
         },
-        DbCreate, DbPoolHandler, DbReadAll, DbReadByForeignKey, DbReadOne, DbRepository,
+        logic::pay_out_match,
+        DbCreate, DbDelete, DbPoolHandler, DbReadAll, DbReadByForeignKey, DbReadOne, DbRepository,
         DbUpdateOne, PoolHandler,
     },
-    models::game_match::{
-        GameMatch, GameMatchCreate, GameMatchDelete, GameMatchGetById, GameMatchStatus,
-        GameMatchUpdate,
+    models::{
+        game::GameGetById,
+        game_match::{
+            GameMatch, GameMatchCreate, GameMatchDelete, GameMatchGetById, GameMatchStatus,
+            GameMatchUpdate,
+        },
     },
-    DbDelete,
+    GameRepository,
 };
 
 #[derive(Clone)]
@@ -86,6 +90,12 @@ impl DbRepository for GameMatchRepository {
 #[async_trait]
 impl DbCreate<GameMatchCreate, GameMatch> for GameMatchRepository {
     async fn create(&mut self, data: &GameMatchCreate) -> DbResultSingle<GameMatch> {
+        let mut tx = self.pool_handler.pool.begin().await?;
+
+        GameRepository::is_correct(
+            GameRepository::get_game(GameGetById { id: data.game_id }, &mut tx).await?,
+        )?;
+
         let game_match = sqlx::query_as!(
             GameMatch,
             r#"
@@ -112,8 +122,10 @@ impl DbCreate<GameMatchCreate, GameMatch> for GameMatchRepository {
             data.starts_at,
             data.ends_at
         )
-        .fetch_one(self.pool_handler.pool.as_ref())
+        .fetch_one(&mut *tx)
         .await?;
+
+        tx.commit().await?;
 
         Ok(game_match)
     }
@@ -137,8 +149,9 @@ impl DbUpdateOne<GameMatchUpdate, GameMatch> for GameMatchRepository {
                 starts_at = COALESCE($3, starts_at),
                 ends_at = COALESCE($4, ends_at),
                 status = COALESCE($5, status),
+                outcome = COALESCE($6, outcome),
                 edited_at = now()
-            WHERE gm.id = $6
+            WHERE gm.id = $7
             RETURNING
                 id, 
                 game_id, 
@@ -157,10 +170,21 @@ impl DbUpdateOne<GameMatchUpdate, GameMatch> for GameMatchRepository {
             data.starts_at,
             data.ends_at,
             data.status as _,
+            data.outcome as _,
             data.id
         )
         .fetch_one(&mut *tx)
         .await?;
+
+        // TODO: check that status + outcome is valid?
+        // TODO: disallow changing cancelled/finished matches?
+        // TODO: refund users if new status is cancelled
+
+        if let Some(status) = &data.status {
+            if data.outcome.is_some() && *status == GameMatchStatus::Finished {
+                pay_out_match(&game_match, &mut tx).await?;
+            }
+        }
 
         tx.commit().await?;
 

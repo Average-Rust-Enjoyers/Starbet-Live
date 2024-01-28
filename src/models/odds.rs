@@ -70,15 +70,13 @@ impl OddsGetById {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct OddsGetByMatchId {
-    pub match_id: Uuid,
+pub struct OddsGetByBetId {
+    pub bet_id: Uuid,
 }
 
-impl OddsGetByMatchId {
-    pub fn new(match_id: &Uuid) -> Self {
-        Self {
-            match_id: *match_id,
-        }
+impl OddsGetByBetId {
+    pub fn new(bet_id: &Uuid) -> Self {
+        Self { bet_id: *bet_id }
     }
 }
 

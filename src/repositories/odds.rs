@@ -11,13 +11,14 @@ use crate::{
         repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
     },
     models::{
+        bet::BetGetById,
         game_match::GameMatchGetById,
-        odds::{Odds, OddsCreate, OddsGetById},
+        odds::{Odds, OddsCreate, OddsGetByBetId, OddsGetById},
     },
     DbDelete,
 };
 
-use super::game_match::GameMatchRepository;
+use super::{bet::BetRepository, game_match::GameMatchRepository};
 
 #[derive(Clone)]
 pub struct OddsRepository {
@@ -35,7 +36,7 @@ impl OddsRepository {
         params: OddsGetById,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Option<Odds>> {
-        let bet = sqlx::query_as!(
+        let odds = sqlx::query_as!(
             Odds,
             r#"
                 SELECT *
@@ -47,7 +48,7 @@ impl OddsRepository {
         .fetch_optional(transaction_handle.as_mut())
         .await?;
 
-        Ok(bet)
+        Ok(odds)
     }
 
     /// # Errors
@@ -57,6 +58,37 @@ impl OddsRepository {
             Some(_) => Err(BusinessLogicError::new(OddsDeleted).into()),
             None => Err(BusinessLogicError::new(OddsDoNotExist).into()),
         }
+    }
+
+    pub async fn get_closest_odds_for_bet<'a>(
+        params: OddsGetByBetId,
+        transaction_handle: &mut Transaction<'a, Postgres>,
+    ) -> DbResultSingle<Option<Odds>> {
+        let bet = BetRepository::is_correct(
+            BetRepository::get_bet(BetGetById { id: params.bet_id }, transaction_handle).await?,
+        )?;
+
+        let odds = sqlx::query_as!(
+            Odds,
+            r#"
+                SELECT *
+                FROM odds
+                WHERE game_match_id = $1
+                ORDER BY CASE
+                    WHEN $2 > created_at
+                        THEN $2 - created_at
+                        ELSE created_at - $2
+                    END
+                    ASC
+                LIMIT 1
+            "#,
+            bet.game_match_id,
+            bet.created_at
+        )
+        .fetch_optional(transaction_handle.as_mut())
+        .await?;
+
+        Ok(odds)
     }
 }
 
@@ -127,7 +159,7 @@ impl DbReadMany<GameMatchGetById, Odds> for OddsRepository {
             GameMatchRepository::get_game_match(data.clone(), &mut tx).await?,
         )?;
 
-        let bets = sqlx::query_as!(
+        let odds = sqlx::query_as!(
             Odds,
             r#"
                 SELECT *
@@ -140,7 +172,7 @@ impl DbReadMany<GameMatchGetById, Odds> for OddsRepository {
         .fetch_all(&mut *tx)
         .await?;
 
-        Ok(bets)
+        Ok(odds)
     }
 }
 
@@ -151,7 +183,7 @@ impl DbDelete<OddsGetById, Odds> for OddsRepository {
 
         Self::is_correct(Self::get_odds(params.clone(), &mut tx).await?)?;
 
-        let bets = sqlx::query_as!(
+        let odds = sqlx::query_as!(
             Odds,
             r#"
                 UPDATE Odds
@@ -166,6 +198,6 @@ impl DbDelete<OddsGetById, Odds> for OddsRepository {
 
         tx.commit().await?;
 
-        Ok(bets)
+        Ok(odds)
     }
 }

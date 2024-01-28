@@ -1,7 +1,7 @@
 use axum::{
     http::{self, HeaderValue, StatusCode, Uri},
     response::{IntoResponse, Response},
-    routing::{get, post},
+    routing::{get, patch, post},
     Extension, Router,
 };
 
@@ -11,6 +11,7 @@ use crate::{
     app::RedisPool,
     handlers::{
         self,
+        admin::{admin_handler, gamematch_update_handler, new_gamematch_handler},
         bet::{get_bet_handler, place_bet_handler},
         dashboard::dashboard_handler,
         game::game_handler,
@@ -48,7 +49,11 @@ pub fn protected_router() -> Router<()> {
 }
 
 pub fn public_router() -> Router<()> {
-    Router::new().route("/", get(index_handler))
+    Router::new()
+        .route("/", get(index_handler))
+        .route("/admin", get(admin_handler))
+        .route("/admin/match", post(new_gamematch_handler))
+        .route("/admin/match/:id", patch(gamematch_update_handler))
 }
 
 /// Redirect using the `HX-Redirect` header.

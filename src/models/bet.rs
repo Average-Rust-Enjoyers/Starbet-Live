@@ -100,6 +100,11 @@ pub struct BetGetByUserId {
     pub user_id: Uuid,
 }
 
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct BetGetByMatchId {
+    pub match_id: Uuid,
+}
+
 impl BetGetByUserId {
     #[allow(dead_code)]
     pub fn new(user_id: &Uuid) -> Self {

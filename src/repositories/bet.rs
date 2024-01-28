@@ -10,7 +10,9 @@ use crate::{
         repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
         DbUpdateOne,
     },
-    models::bet::{Bet, BetCreate, BetDelete, BetGetById, BetGetByUserId, BetUpdate},
+    models::bet::{
+        Bet, BetCreate, BetDelete, BetGetById, BetGetByMatchId, BetGetByUserId, BetUpdate,
+    },
     DbDelete,
 };
 
@@ -48,6 +50,68 @@ impl BetRepository {
         .await?;
 
         Ok(bet)
+    }
+
+    pub async fn get_bets_for_game<'a>(
+        params: BetGetByMatchId,
+        transaction_handle: &mut Transaction<'a, Postgres>,
+    ) -> DbResultMultiple<Bet> {
+        let bets: Vec<Bet> = sqlx::query_as!(
+            Bet,
+            r#"
+                SELECT
+                    id,
+                    app_user_id,
+                    game_match_id,
+                    amount,
+                    status AS "status: _",
+                    expected_outcome AS "expected_outcome: _",
+                    created_at,
+                    edited_at,
+                    deleted_at
+                FROM Bet
+                WHERE game_match_id = $1
+            "#,
+            params.match_id
+        )
+        .fetch_all(transaction_handle.as_mut())
+        .await?;
+
+        Ok(bets
+            .into_iter()
+            .flat_map(|b| Self::is_correct(Some(b)))
+            .collect())
+    }
+
+    pub async fn update_bet<'a>(
+        params: BetUpdate,
+        transaction_handle: &mut Transaction<'a, Postgres>,
+    ) -> DbResultMultiple<Bet> {
+        let bets = sqlx::query_as!(
+            Bet,
+            r#"
+                UPDATE Bet
+                SET status = $2,
+                    edited_at = now()
+                WHERE id = $1
+                RETURNING
+                    id,
+                    app_user_id,
+                    game_match_id,
+                    amount,
+                    status AS "status: _",
+                    expected_outcome AS "expected_outcome: _",
+                    created_at,
+                    edited_at,
+                    deleted_at
+            "#,
+            params.id,
+            params.status as _,
+        )
+        .fetch_all(transaction_handle.as_mut())
+        .await?;
+
+        Ok(bets)
     }
 
     /// # Errors

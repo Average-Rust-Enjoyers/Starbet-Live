@@ -1,0 +1,48 @@
+<tr hx-target="this" hx-swap="outerHTML">
+    <td>{{ game_match.name_a }}</td>
+    <td>{{ game_match.name_b }}</td>
+    <td>
+        {{ game_match.status }}
+        {% if game_match.status == GameMatchStatus::Finished %}
+            : {{ game_match.outcome.as_ref().unwrap() }}
+        {% endif %}
+    </td>
+    <td>
+        <!--
+            Pending -> Live || Cancelled
+            Live -> Won A or Won B (Finished) || Cancelled
+            Finished, Cancelled -> nothing
+        -->
+        {% if game_match.status == GameMatchStatus::Pending %}
+            <button
+                class="bg-success text-secondary rounded-lg mr-2 px-2"
+                hx-patch="/admin/match/{{ game_match.id }}"
+                name="action" value="start"
+            >Start</span>
+        {% endif %}
+    
+        {% if game_match.status == GameMatchStatus::Live %}
+            <button
+                class="bg-gray-200 mr-2 px-2 rounded-lg"
+                hx-patch="/admin/match/{{ game_match.id }}"
+                style="background-color: #0000ff"
+                name="action" value="win_a"
+            >WIN A</span>
+            <button
+                class="bg-gray-200 mr-2 px-2 rounded-lg"
+                hx-patch="/admin/match/{{ game_match.id }}"
+                style="background-color: #9370db"
+                name="action" value="win_b"
+            >WIN B</span>
+        {% endif %}
+
+        {% if game_match.status == GameMatchStatus::Pending
+            || game_match.status == GameMatchStatus::Live %}
+            <button
+                class="bg-error text-primary rounded-lg mr-2 px-2"
+                hx-patch="/admin/match/{{ game_match.id }}"
+                name="action" value="cancel"
+            >Cancel</span>
+        {% endif %}
+    </td>
+</tr>
