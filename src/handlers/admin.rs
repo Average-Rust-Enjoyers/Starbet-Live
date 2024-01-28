@@ -6,13 +6,14 @@ use crate::{
         game_match_outcome::GameMatchOutcome,
     },
     repositories::game_match::GameMatchRepository,
+    routers::HxRedirect,
     templates::{AdminPanel, AdminPanelMatch},
     DbCreate, DbReadMany, DbReadOne, GameRepository,
 };
 use askama::Template;
 use axum::{
     extract::Path,
-    http::StatusCode,
+    http::{StatusCode, Uri},
     response::{Html, IntoResponse},
     Extension, Form,
 };
@@ -54,11 +55,7 @@ pub async fn new_gamematch_handler(
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     }
 
-    (
-        StatusCode::CREATED,
-        Html("<script>window.location = '/admin'</script>"),
-    )
-        .into_response()
+    HxRedirect(Uri::from_static("/admin")).into_response()
 }
 
 #[derive(Deserialize, Copy, Clone)]
