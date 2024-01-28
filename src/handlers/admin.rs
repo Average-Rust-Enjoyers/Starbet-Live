@@ -44,11 +44,7 @@ pub async fn new_gamematch_handler(
     Form(payload): Form<GameMatchCreate>,
 ) -> impl IntoResponse {
     if payload.ends_at < payload.starts_at {
-        return (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "match end cannot be before start",
-        )
-            .into_response();
+        return (StatusCode::BAD_REQUEST, "match end cannot be before start").into_response();
     }
 
     if game_match_repo.create(&payload).await.is_err() {
@@ -103,11 +99,9 @@ pub async fn gamematch_update_handler(
         .read_one(&GameMatchGetById { id: match_id })
         .await;
 
-    if game_match.is_err() {
+    let Ok(game_match) = game_match else {
         return StatusCode::NOT_FOUND.into_response();
-    }
-
-    let game_match = game_match.unwrap();
+    };
 
     let valid_action = matches!(
         (game_match.status, action),
@@ -122,7 +116,7 @@ pub async fn gamematch_update_handler(
         return StatusCode::BAD_REQUEST.into_response();
     }
 
-    let game_match = game_match_repo
+    let Ok(game_match) = game_match_repo
         .update(&game_match::GameMatchUpdate {
             id: game_match.id,
             name_a: None,
@@ -132,15 +126,12 @@ pub async fn gamematch_update_handler(
             outcome: action.into(),
             status: action.into(),
         })
-        .await;
-
-    if game_match.is_err() {
+        .await
+    else {
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    }
-
-    let template = AdminPanelMatch {
-        game_match: game_match.unwrap(),
     };
+
+    let template = AdminPanelMatch { game_match };
 
     let reply_html = template.render().unwrap();
     (StatusCode::OK, Html(reply_html)).into_response()
