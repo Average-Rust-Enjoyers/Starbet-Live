@@ -1,5 +1,6 @@
 use crate::{
     common::{DbGetLatest, DbReadAll, DbUpdateOne},
+    config::DEFAULT_ODDS_VALUE,
     models::{
         game::GameFilter,
         game_match::{self, GameMatchCreate, GameMatchGetById, GameMatchStatus},
@@ -119,8 +120,8 @@ pub async fn gamematch_random_odds_handler(
         .unwrap_or(Odds {
             id: game_match.id,
             game_match_id: game_match.id,
-            odds_a: 1.9, // TODO: use constant from elsewhere?
-            odds_b: 1.9,
+            odds_a: DEFAULT_ODDS_VALUE,
+            odds_b: DEFAULT_ODDS_VALUE,
             created_at: game_match.created_at,
             deleted_at: None,
         });
