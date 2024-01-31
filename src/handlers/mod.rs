@@ -4,6 +4,7 @@ pub mod dashboard;
 pub mod game;
 pub mod index;
 pub mod login;
+pub mod profile;
 pub mod register;
 pub mod user;
 pub mod validation;
