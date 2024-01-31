@@ -1,0 +1,11 @@
+-- ALTER TYPE GameMatchStatus
+-- RENAME TO GameMatchStatusOld;
+-- CREATE TYPE GameMatchStatus AS ENUM (
+--     'PENDING',
+--     'LIVE',
+--     'FINISHED',
+--     'CANCELED'
+-- );
+-- ALTER TABLE GameMatch
+-- ALTER COLUMN status TYPE GameMatchStatus USING status::text::GameMatchStatus;
+-- TODO: it is nearly impossible to cleanly remove value from type in postgresql

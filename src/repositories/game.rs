@@ -38,6 +38,7 @@ impl GameRepository {
                 SELECT id,
                     name,
                     description,
+                    cloudbet_key,
                     logo,
                     genre AS "genre: _",
                     created_at,
@@ -86,6 +87,7 @@ impl DbCreate<GameCreate, Game> for GameRepository {
                 RETURNING id,
                     name,
                     description,
+                    cloudbet_key,
                     logo,
                     genre AS "genre: _",
                     created_at,
@@ -126,6 +128,7 @@ impl DbUpdateOne<GameUpdate, Game> for GameRepository {
                 RETURNING id,
                     name,
                     description,
+                    cloudbet_key,
                     logo,
                     genre AS "genre: _",
                     created_at,
@@ -172,6 +175,7 @@ impl DbReadMany<GameFilter, Game> for GameRepository {
                 SELECT id,
                     name,
                     description,
+                    cloudbet_key,
                     logo,
                     genre,
                     created_at,
@@ -222,6 +226,7 @@ impl DbDelete<GameDelete, Game> for GameRepository {
                 RETURNING id,
                     name,
                     description,
+                    cloudbet_key,
                     logo,
                     genre AS "genre: _",
                     created_at,
@@ -250,13 +255,14 @@ impl DbReadAll<Game> for GameRepository {
                 SELECT id,
                     name,
                     description,
+                    cloudbet_key,
                     logo,
                     genre AS "genre: _",
                     created_at,
                     edited_at,
                     deleted_at
-                FROM Game
-                WHERE deleted_at IS NULL
+                    FROM Game
+                    WHERE deleted_at IS NULL
             "#,
         )
         .fetch_all(&mut *tx)

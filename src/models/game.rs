@@ -14,6 +14,7 @@ pub struct Game {
     // ----------
     pub name: String,
     pub description: String,
+    pub cloudbet_key: Option<String>,
     pub logo: String,
     pub genre: GameGenre,
     pub created_at: DateTime<Utc>,
