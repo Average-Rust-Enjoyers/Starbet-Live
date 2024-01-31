@@ -90,6 +90,15 @@ impl From<&User> for UserSend {
 pub struct Dashboard {
     pub user: UserSend,
     pub menu: Menu,
+    pub active_bets: ActiveBets,
+    pub user_nav: UserNav,
+}
+
+#[derive(Template)]
+#[template(path = "user/user_nav.html")]
+pub struct UserNav {
+    pub username: String,
+    pub user_balance: UserBalance,
 }
 
 #[derive(Template)]
@@ -110,8 +119,18 @@ pub struct MenuItem {
 #[template(path = "dashboard/game/game.html")]
 pub struct Game {
     pub matches: Vec<Match>,
+    pub upcoming_matches: Vec<UpcomingMatch>,
     pub game_name: String,
     pub game_id: String,
+}
+
+#[derive(Template)]
+#[template(path = "dashboard/match/upcoming_match.html")]
+pub struct UpcomingMatch {
+    pub match_id: Uuid,
+    pub team_a: String,
+    pub team_b: String,
+    pub date: String,
 }
 
 #[derive(Template)]
@@ -124,9 +143,40 @@ pub struct Match {
 }
 
 #[derive(Template)]
+#[template(path = "dashboard/match/game_match_wrapper.html")]
+pub struct GameMatchWrapper {
+    pub match_id: Uuid,
+    pub match_template: Match,
+}
+
+#[derive(Template)]
 #[template(path = "dashboard/bet/place_bet_form.html")]
 pub struct PlaceBetForm {
     pub match_id: Uuid,
     pub predicted_team: String,
     pub prediction: String,
+}
+
+#[derive(Template)]
+#[template(path = "dashboard/bet/bet_card.html")]
+pub struct Bet {
+    pub game_name: String,
+    pub match_id: Uuid,
+    pub team_a: String,
+    pub team_b: String,
+    pub predicted_team: String,
+    pub bet_amount: i32,
+    pub date: String,
+}
+
+#[derive(Template)]
+#[template(path = "dashboard/bet/active_bets.html")]
+pub struct ActiveBets {
+    pub bets: Vec<Bet>,
+}
+
+#[derive(Template)]
+#[template(path = "user/user_balance.html")]
+pub struct UserBalance {
+    pub balance: i32,
 }

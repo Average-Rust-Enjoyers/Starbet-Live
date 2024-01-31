@@ -23,8 +23,30 @@
         <!-- HTMX WebSockets -->
         <script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/ws.js"></script>
     </head>
-
+    <style>
+        .htmx-indicator {
+            display: none;
+        }
+        .htmx-request .htmx-indicator {
+            display: flex;
+            position: absolute;
+            inset: 0;
+            align-items: center;
+            justify-content: center;
+            background-color: #0f172a70;
+        }
+        .htmx-request.htmx-indicator {
+            display: flex;
+            position: absolute;
+            inset: 0;
+            align-items: center;
+            justify-content: center;
+            background-color: #0f172a70;
+        }
+    </style>
     <body>
-        {% block content %}{% endblock %}
+        <!-- prettier-ignore -->
+        {% block content %}{% endblock %} 
+        {% include "indicator.html" %}
     </body>
 </html>

@@ -140,6 +140,22 @@ pub trait DbDelete<Delete, Data> {
 }
 
 #[async_trait]
+pub trait DbGetLatest<ForeignKey, Data> {
+    /// Generic call which gets the latest record from the database based on id input parameters
+    ///
+    /// # Arguments
+    ///
+    /// - `self`: mutable reference to the repository to access the pool handler
+    ///
+    /// # Returns
+    ///
+    /// - `Ok(Data)` on success (the provided structure which represents read data coming
+    ///                          from the database)
+    /// - `sqlx::Error(_)` on any failure (SQL, DB constraints, connection, etc.)
+    async fn get_latest(&mut self, params: &ForeignKey) -> DbResultSingle<Data>;
+}
+
+#[async_trait]
 pub trait DbPoolHandler {
     /// Pool handler constructor
     fn new(pool: Arc<sqlx::PgPool>) -> Self;

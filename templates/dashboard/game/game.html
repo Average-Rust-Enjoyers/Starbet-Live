@@ -9,14 +9,38 @@
         ws-connect="/ws/{{game_name}}"
     >
         <!-- prettier-ignore -->
+        {% if matches.len() == 0 %}
+        <div class="text-center">No live matches</div>
+        <!-- prettier-ignore -->
+        {% else %}
         {% for match in matches %}
-        <!-- The div is here, because when it was in the askama match.html template, the websocket updates weren't working -->
         <div
-            id="{{match.match_id}}" 
+            id="{{match.match_id}}"
             class="bg-primary-lightest flex flex-grow flex-row items-center justify-between gap-10 rounded-sm p-2"
         >
             {{ match|safe }}
         </div>
-        {% endfor %}
+        <!-- prettier-ignore -->
+        {% endfor %} 
+        {% endif %}
+    </div>
+
+    <div id="game_title" class="mt-5 text-3xl font-bold">Upcoming Matches</div>
+
+    <div id="upcoming_matches" class="mt-5 flex flex-col gap-3">
+        {% if matches.len() == 0 %}
+        <div class="text-center">No upcoming matches</div>
+        <!-- prettier-ignore -->
+        {% else %}
+        {% for match in upcoming_matches %}
+        <div
+            id="{{match.match_id}}"
+            class="bg-primary-lightest flex flex-grow flex-row items-center justify-between gap-10 rounded-sm p-2"
+        >
+            {{ match|safe }}
+        </div>
+        <!-- prettier-ignore -->
+        {% endfor %} 
+        {% endif %}
     </div>
 </div>

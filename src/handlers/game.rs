@@ -1,8 +1,8 @@
 use crate::{
-    common::DbReadByForeignKey,
-    models::{game::GameGetById, game_match::GameMatchGetById},
+    common::{helpers::format_date_time_string_without_seconds, DbGetLatest, DbReadByForeignKey},
+    models::{game::GameGetById, game_match::GameMatchStatus, odds::OddsGetByGameMatchId},
     repositories::{game::GameRepository, game_match::GameMatchRepository, odds::OddsRepository},
-    templates::{Game, Match, Menu, MenuItem},
+    templates::{Game, Match, Menu, MenuItem, UpcomingMatch},
 };
 use askama::Template;
 use axum::{
@@ -15,7 +15,7 @@ use axum::{
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::common::repository::{DbReadAll, DbReadMany, DbReadOne};
+use crate::common::repository::{DbReadAll, DbReadOne};
 
 #[derive(Deserialize)]
 pub struct GameId {
@@ -38,24 +38,38 @@ pub async fn game_handler(
     let matches = game_match_repo.get_by_foreign_key(&game.id).await.unwrap();
 
     let mut matches_to_render = Vec::new();
+    let mut upcoming_matches_to_render = Vec::new();
 
     for game_match in matches {
-        let odds = &odds_repo
-            .read_many(&GameMatchGetById { id: game_match.id })
-            .await
-            .unwrap()[0]; // There always will be exactly one active Odd
+        match game_match.status {
+            GameMatchStatus::Live => {
+                let latest_odds = odds_repo
+                    .get_latest(&OddsGetByGameMatchId {
+                        game_match_id: game_match.id,
+                    })
+                    .await
+                    .unwrap();
 
-        matches_to_render.push(Match {
-            match_id: game_match.id,
-            team_a: game_match.name_a,
-            team_b: game_match.name_b,
-            current_odds: odds.to_owned(),
-        });
+                matches_to_render.push(Match {
+                    match_id: game_match.id,
+                    team_a: game_match.name_a,
+                    team_b: game_match.name_b,
+                    current_odds: latest_odds,
+                });
+            }
+            _ => upcoming_matches_to_render.push(UpcomingMatch {
+                match_id: game_match.id,
+                team_a: game_match.name_a,
+                team_b: game_match.name_b,
+                date: format_date_time_string_without_seconds(&game_match.starts_at),
+            }),
+        }
     }
 
     let template = Game {
         game_name: game.name.clone(),
         matches: matches_to_render,
+        upcoming_matches: upcoming_matches_to_render,
         game_id: game_id.clone(),
     };
 

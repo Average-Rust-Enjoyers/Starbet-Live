@@ -1,10 +1,15 @@
 <div class="bg-primary text-secondary flex flex-col items-center gap-2 py-4">
-    <div class="flex min-w-48 flex-col items-center font-bold">Place a bet</div>
     <form
         class="flex flex-col items-center gap-2"
         hx-post="/bet/{{match_id}}/{{prediction}}"
         hx-ext="json-enc"
+        hx-target="#right_side_panel"
+        hx-swap="innerHTML"
+        hx-indicator="#indicator"
     >
+        <div class="flex min-w-48 flex-col items-center font-bold">
+            Place a bet
+        </div>
         <div>Winner: {{predicted_team}}</div>
         <input
             name="bet_amount"

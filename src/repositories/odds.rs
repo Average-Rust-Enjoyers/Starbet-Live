@@ -8,12 +8,14 @@ use crate::{
             BusinessLogicErrorKind::{OddsDeleted, OddsDoNotExist},
             DbResultMultiple, DbResultSingle,
         },
-        repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
+        repository::{
+            DbCreate, DbGetLatest, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler,
+        },
     },
     models::{
         bet::BetGetById,
         game_match::GameMatchGetById,
-        odds::{Odds, OddsCreate, OddsGetByBetId, OddsGetById},
+        odds::{Odds, OddsCreate, OddsGetByBetId, OddsGetByGameMatchId, OddsGetById},
     },
     DbDelete,
 };
@@ -60,7 +62,7 @@ impl OddsRepository {
         }
     }
 
-    pub async fn get_closest_odds_for_bet<'a>(
+    pub async fn get_odds_for_bet<'a>(
         params: OddsGetByBetId,
         transaction_handle: &mut Transaction<'a, Postgres>,
     ) -> DbResultSingle<Option<Odds>> {
@@ -73,17 +75,10 @@ impl OddsRepository {
             r#"
                 SELECT *
                 FROM odds
-                WHERE game_match_id = $1
-                ORDER BY CASE
-                    WHEN $2 > created_at
-                        THEN $2 - created_at
-                        ELSE created_at - $2
-                    END
-                    ASC
+                WHERE id = $1
                 LIMIT 1
             "#,
-            bet.game_match_id,
-            bet.created_at
+            bet.odds_id,
         )
         .fetch_optional(transaction_handle.as_mut())
         .await?;
@@ -193,6 +188,41 @@ impl DbDelete<OddsGetById, Odds> for OddsRepository {
             params.id,
         )
         .fetch_all(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(odds)
+    }
+}
+
+#[async_trait]
+impl DbGetLatest<OddsGetByGameMatchId, Odds> for OddsRepository {
+    async fn get_latest(&mut self, params: &OddsGetByGameMatchId) -> DbResultSingle<Odds> {
+        let mut tx = self.pool_handler.pool.begin().await?;
+
+        GameMatchRepository::is_correct(
+            GameMatchRepository::get_game_match(
+                GameMatchGetById {
+                    id: params.game_match_id,
+                },
+                &mut tx,
+            )
+            .await?,
+        )?;
+
+        let odds = sqlx::query_as!(
+            Odds,
+            r#"
+                SELECT *
+                FROM Odds
+                WHERE game_match_id = $1
+                ORDER BY created_at DESC
+                LIMIT 1
+            "#,
+            params.game_match_id,
+        )
+        .fetch_one(&mut *tx)
         .await?;
 
         tx.commit().await?;

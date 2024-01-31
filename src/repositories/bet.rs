@@ -10,11 +10,14 @@ use crate::{
         repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
         DbUpdateOne,
     },
-    models::bet::{
-        Bet, BetCreate, BetDelete, BetGetById, BetGetByMatchId, BetGetByUserId, BetUpdate,
+    models::{
+        bet::{Bet, BetCreate, BetDelete, BetGetById, BetGetByMatchId, BetGetByUserId, BetUpdate},
+        user::UserUpdateBalance,
     },
     DbDelete,
 };
+
+use super::user::UserRepository;
 
 #[derive(Clone)]
 pub struct BetRepository {
@@ -35,6 +38,7 @@ impl BetRepository {
                     id,
                     app_user_id,
                     game_match_id,
+                    odds_id,
                     amount,
                     status AS "status: _",
                     expected_outcome AS "expected_outcome: _",
@@ -63,6 +67,7 @@ impl BetRepository {
                     id,
                     app_user_id,
                     game_match_id,
+                    odds_id,
                     amount,
                     status AS "status: _",
                     expected_outcome AS "expected_outcome: _",
@@ -98,6 +103,7 @@ impl BetRepository {
                     id,
                     app_user_id,
                     game_match_id,
+                    odds_id,
                     amount,
                     status AS "status: _",
                     expected_outcome AS "expected_outcome: _",
@@ -138,15 +144,18 @@ impl DbRepository for BetRepository {
 #[async_trait]
 impl DbCreate<BetCreate, Bet> for BetRepository {
     async fn create(&mut self, data: &BetCreate) -> DbResultSingle<Bet> {
+        let mut tx = self.pool_handler.pool.begin().await?;
+
         let bet = sqlx::query_as!(
             Bet,
             r#"
-                INSERT INTO Bet (id, app_user_id, game_match_id, amount, expected_outcome)
-                VALUES ($1, $2, $3, $4, $5)
+                INSERT INTO Bet (id, app_user_id, game_match_id, odds_id, amount, expected_outcome)
+                VALUES ($1, $2, $3, $4, $5, $6)
                 RETURNING
                     id,
                     app_user_id,
                     game_match_id,
+                    odds_id,
                     amount,
                     status AS "status: _",
                     expected_outcome AS "expected_outcome: _",
@@ -157,12 +166,23 @@ impl DbCreate<BetCreate, Bet> for BetRepository {
             data.id,
             data.app_user_id,
             data.game_match_id,
+            data.odds_id,
             data.amount,
             data.expected_outcome as _,
         )
         .fetch_one(self.pool_handler.pool.as_ref())
         .await?;
-        // TODO: check if the user has enough money to place the bet, if not error InsufficientFunds
+
+        UserRepository::update_user_balance(
+            UserUpdateBalance {
+                id: data.app_user_id,
+                delta: -bet.amount,
+            },
+            &mut tx,
+        )
+        .await?;
+
+        tx.commit().await?;
         Ok(bet)
     }
 }
@@ -187,6 +207,7 @@ impl DbUpdateOne<BetUpdate, Bet> for BetRepository {
                     id,
                     app_user_id,
                     game_match_id,
+                    odds_id,
                     amount,
                     status AS "status: _",
                     expected_outcome AS "expected_outcome: _",
@@ -233,6 +254,7 @@ impl DbReadMany<BetGetByUserId, Bet> for BetRepository {
                     id,
                     app_user_id,
                     game_match_id,
+                    odds_id,
                     amount,
                     status AS "status: _",
                     expected_outcome AS "expected_outcome: _",
@@ -242,6 +264,7 @@ impl DbReadMany<BetGetByUserId, Bet> for BetRepository {
                 FROM Bet
                 WHERE deleted_at IS NULL
                 AND app_user_id = $1
+                ORDER BY created_at DESC
             "#,
             data.user_id,
         )
@@ -273,6 +296,7 @@ impl DbDelete<BetDelete, Bet> for BetRepository {
                     id,
                     app_user_id,
                     game_match_id,
+                    odds_id,
                     amount,
                     status AS "status: _",
                     expected_outcome AS "expected_outcome: _",

@@ -18,6 +18,7 @@ pub struct Bet {
     // ----------
     pub app_user_id: Uuid,
     pub game_match_id: Uuid,
+    pub odds_id: Uuid,
     // ----------
     pub amount: i32,
     pub status: BetStatus,
@@ -32,6 +33,7 @@ pub struct BetCreate {
     pub id: Uuid,
     pub app_user_id: Uuid,
     pub game_match_id: Uuid,
+    pub odds_id: Uuid,
     pub amount: i32,
     pub expected_outcome: GameMatchOutcome,
 }
@@ -42,6 +44,7 @@ impl BetCreate {
         id: &Uuid,
         app_user_id: &Uuid,
         game_match_id: &Uuid,
+        odds_id: &Uuid,
         amount: i32,
         expected_outcome: GameMatchOutcome,
     ) -> Self {
@@ -51,6 +54,7 @@ impl BetCreate {
             game_match_id: game_match_id.to_owned(),
             amount,
             expected_outcome,
+            odds_id: odds_id.to_owned(),
         }
     }
 }

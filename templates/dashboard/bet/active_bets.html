@@ -1,0 +1,16 @@
+<div
+    class="flex min-w-48 flex-col gap-1"
+    hx-get="bet/active"
+    hx-swap="outerHTML"
+    hx-trigger="every 10s"
+>
+    {% if bets.len() == 0 %}
+    <div class="text-center">You have no live bets</div>
+    {% else %}
+    <div class="text-center font-bold">Your live bets</div>
+    <!-- prettier-ignore -->
+    {% for bet in bets %} 
+        {{ bet|safe }} 
+    {% endfor %} 
+    {% endif %}
+</div>
