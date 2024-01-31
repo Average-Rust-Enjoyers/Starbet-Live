@@ -13,6 +13,7 @@ use super::game_match_outcome::GameMatchOutcome;
 pub enum GameMatchStatus {
     Pending,
     Live,
+    AwaitingResults,
     Finished,
     Canceled,
 }
@@ -25,6 +26,7 @@ impl Display for GameMatchStatus {
             match self {
                 Self::Pending => "PENDING",
                 Self::Live => "LIVE",
+                Self::AwaitingResults => "AWAITING_RESULTS",
                 Self::Finished => "FINISHED",
                 Self::Canceled => "CANCELED",
             }
