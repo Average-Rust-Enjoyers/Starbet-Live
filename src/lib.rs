@@ -7,6 +7,7 @@ pub use common::{
 
 pub use repositories::game::GameRepository;
 
+pub mod api;
 pub mod app;
 pub mod auth;
 pub mod common;

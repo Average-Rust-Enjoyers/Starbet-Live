@@ -2,6 +2,8 @@ use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 use uuid::Uuid;
 
+const DEFAULT_ODDS_VALUE: f64 = 1.9; // TODO: move to config?
+
 use crate::{
     common::{
         error::{
@@ -19,6 +21,7 @@ use crate::{
             GameMatch, GameMatchCreate, GameMatchDelete, GameMatchGetById, GameMatchStatus,
             GameMatchUpdate,
         },
+        odds::Odds,
     },
     GameRepository,
 };
@@ -88,8 +91,8 @@ impl DbRepository for GameMatchRepository {
 }
 
 #[async_trait]
-impl DbCreate<GameMatchCreate, GameMatch> for GameMatchRepository {
-    async fn create(&mut self, data: &GameMatchCreate) -> DbResultSingle<GameMatch> {
+impl DbCreate<GameMatchCreate, Option<GameMatch>> for GameMatchRepository {
+    async fn create(&mut self, data: &GameMatchCreate) -> DbResultSingle<Option<GameMatch>> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
         GameRepository::is_correct(
@@ -100,9 +103,10 @@ impl DbCreate<GameMatchCreate, GameMatch> for GameMatchRepository {
             GameMatch,
             r#"
             INSERT INTO GameMatch 
-            (game_id, name_a, name_b, starts_at, ends_at) 
+            (game_id, cloudbet_id, name_a, name_b, starts_at, ends_at) 
             VALUES 
-            ($1, $2, $3, $4, $5) 
+            ($1, $2, $3, $4, $5, $6) 
+            ON CONFLICT DO NOTHING
             RETURNING 
                  id, 
                  game_id, 
@@ -117,17 +121,40 @@ impl DbCreate<GameMatchCreate, GameMatch> for GameMatchRepository {
                  deleted_at
             "#,
             data.game_id,
+            data.cloudbet_id,
             data.name_a,
             data.name_b,
             data.starts_at,
             data.ends_at
+        )
+        .fetch_optional(&mut *tx)
+        .await?;
+
+        let game_match = if let Some(game_match) = game_match {
+            game_match
+        } else {
+            tx.commit().await?;
+            return Ok(None);
+        };
+
+        sqlx::query_as!(
+            Odds,
+            r#"
+                INSERT INTO Odds (game_match_id, odds_a, odds_b)
+                VALUES ($1, $2, $3)
+                ON CONFLICT DO NOTHING
+                RETURNING *
+            "#,
+            game_match.id,
+            DEFAULT_ODDS_VALUE,
+            DEFAULT_ODDS_VALUE
         )
         .fetch_one(&mut *tx)
         .await?;
 
         tx.commit().await?;
 
-        Ok(game_match)
+        Ok(Some(game_match))
     }
 }
 

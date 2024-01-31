@@ -30,16 +30,14 @@ impl PartialEq for Odds {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct OddsCreate {
-    pub id: Uuid,
     pub game_match_id: Uuid,
     pub odds_a: f64,
     pub odds_b: f64,
 }
 
 impl OddsCreate {
-    pub fn new(id: &Uuid, game_match_id: &Uuid, odds_a: f64, odds_b: f64) -> Self {
+    pub fn new(game_match_id: &Uuid, odds_a: f64, odds_b: f64) -> Self {
         Self {
-            id: id.to_owned(),
             game_match_id: game_match_id.to_owned(),
             odds_a: odds_a.to_owned(),
             odds_b: odds_b.to_owned(),

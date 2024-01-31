@@ -1,0 +1,800 @@
+type Query {
+  """
+  Get list of all available sports offerred
+  """
+  sports: [SportSummary!]
+
+  """
+  Get sport related information by given constraints
+  """
+  sport(
+    sportKey: String!
+    categoryKey: String
+    date: Date
+    from: DateTime
+    to: DateTime
+    eventStatus: EventStatus
+  ): Sport!
+
+  """
+  Shows live and upcoming competitions of a given sport for a given date. Note that a "day" counts as 00:00:00 UTC to 23:59:59 UTC on the requested date.
+  """
+  competitions(sportKey: String!, date: Date, limit: Int): [Competition!]
+
+  """
+  Get compeition for live and upcoming events of the given competiiton key
+  """
+  competition(
+    competitionKey: String!
+    date: Date
+    from: DateTime
+    to: DateTime
+    markets: [String!]
+    limit: Int
+  ): Competition!
+
+  """
+  Get event by id
+  """
+  event(id: ID!): Event!
+
+  """
+  Obtain latest odds for a line based on market key and params. Composed of <event-id>/<market-key>?<params>. e.g. 12118347/tennis.winner. The params are optional, e.g. handicap=1 for handicap market.
+  """
+  line(id: ID!): [Selection!]
+
+  """
+  Obtain latest odds for a selection based on market key, outcome and params. Composed of <event-id>/<market-key>/<outcome>?<params>. e.g. 12118347/tennis.winner/home. The params are optional, e.g. handicap=1 for handicap market.
+  """
+  selection(id: ID!): Selection!
+
+  """
+  List currencies available on the account
+  """
+  accountCurrencies: [String!]
+
+  """
+  Get the account balance by currency
+  """
+  accountBalance(currency: String!): AccountBalance!
+
+  """
+  Get the account balances for all currencies
+  """
+  accountBalances: [AccountBalance!]
+
+  """
+  Show account information
+  """
+  accountInfo: AccountInfo!
+
+  """
+  Get bet by reference id (randomly generated UUID)
+  """
+  bet(referenceId: String!): Bet!
+
+  """
+  Get accepted bet history request with pagination
+  """
+  bets(offset: Int, limit: Int): [Bet!]
+}
+
+type Mutation {
+  """
+  Place bet request
+  """
+  placeBet(input: PlaceBetInput!): PlaceBetResult!
+}
+
+"""
+A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar Date
+
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar DateTime
+
+"""
+SportSummary is used for an individual sport's summary
+"""
+type SportSummary {
+  """
+  Slug for this Sport
+  """
+  key: ID!
+
+  """
+  Name of this Sport
+  """
+  name: String!
+
+  """
+  Number of competitions associated with this Sport, 0 indicates inactive Sport
+  """
+  competitionCount: Int
+
+  """
+  Number of events associated with this Sport, 0 indicates inactive Sport
+  """
+  eventCount: Int
+
+  """
+  List of all categories associated with this Sport
+  """
+  categories: [CategorySummary!]
+}
+
+"""
+CategorySummary is used for an individual category's summary
+"""
+type CategorySummary {
+  """
+  Slug for this Category
+  """
+  key: ID!
+
+  """
+  Name for this Category
+  """
+  name: String!
+}
+
+"""
+Sport is used for an individual sport's details
+"""
+type Sport {
+  """
+  Slug for this Sport
+  """
+  key: ID!
+
+  """
+  Name of this Sport
+  """
+  name: String!
+
+  """
+  Number of competitions associated with this Sport, 0 indicates inactive Sport
+  """
+  competitionCount: Int
+
+  """
+  Number of events associated with this Sport, 0 indicates inactive Sport
+  """
+  eventCount: Int
+
+  """
+  List of all categories associated with this Sport
+  """
+  categories: [Category!]
+}
+
+"""
+Category is used for an individual category's details
+"""
+type Category {
+  """
+  Slug for this Category
+  """
+  key: ID!
+
+  """
+  Name for this Category
+  """
+  name: String!
+
+  """
+  List of all competitions associated with this Category
+  """
+  competitions: [Competition!]
+}
+
+"""
+Competition presents competition with list of events
+"""
+type Competition {
+  """
+  Slug for this Competition. Composed of <sport-key>-<category-key>-<competition-key> as shown in the example value.
+  """
+  key: ID!
+
+  """
+  Name for this Competition
+  """
+  name: String!
+
+  """
+  Identifier for sport
+  """
+  sport: Identifier!
+
+  """
+  Identifier for category
+  """
+  category: Identifier!
+
+  """
+  Number of events associated with this Sport, 0 indicates inactive Sport
+  """
+  eventCount: Int
+
+  """
+  List of all events associated with this competition
+  """
+  events: [Event!]
+}
+
+"""
+Event with markets and submarkets
+"""
+type Event {
+  """
+  Unique ID for this Event
+  """
+  id: ID!
+
+  """
+  Slug for this Event
+  """
+  key: String!
+
+  """
+  Name of this Event
+  """
+  name: String!
+
+  """
+  EventStatus presents the current status for a given Event
+  """
+  status: EventStatus!
+
+  """
+  Identifier for sport
+  """
+  sport: Identifier!
+
+  """
+  Identifier for category
+  """
+  category: Identifier!
+
+  """
+  Identifier for competition
+  """
+  competition: Identifier!
+
+  """
+  Event cutoff time in string format "2006-01-02T15:04:05Z07:00" (RFC3339)
+  """
+  cutoffTime: DateTime!
+
+  """
+  TeamIdentifier identifies a team competitor for a given event
+  """
+  home: TeamIdentifier
+
+  """
+  TeamIdentifier identifies a team competitor for a given event
+  """
+  away: TeamIdentifier
+
+  """
+  Event metadata contains additional event info
+  """
+  metadata: EventMetadata
+
+  """
+  List of all markets for a given Event
+  """
+  markets: [Market!]
+
+  """
+  Sequential update number for this Event
+  """
+  sequence: String!
+}
+
+"""
+Market is used to build a list of all markets for a given Event
+"""
+type Market {
+  """
+  Slug for this market
+  """
+  marketKey: String!
+
+  """
+  All associated submarkets for this Market
+  """
+  submarkets: [Submarket!]
+}
+
+"""
+Submarket contains selections which are inter-dependent on each other and is used as a part of Market
+used to build a map of all submarkets for a given Market
+"""
+type Submarket {
+  """
+  Slug for this submarket
+  """
+  submarketKey: String!
+
+  """
+  List of all associated selections
+  """
+  selections: [Selection!]
+
+  """
+  Sequential update number
+  """
+  sequence: String!
+}
+
+"""
+Selection is used as a part of Submarket
+used to build a list of all selections for a given Submarket
+"""
+type Selection {
+  """
+  Unique ID for this Selection. Composed of <event-id>/<market-key>/<outcome>/<params>. e.g. 9790627/american_football.team_odd_even/odd?team=away
+  """
+  id: ID!
+
+  """
+  MarketUrl is composed from the initial Feed API selection response as marketKey/outcome?params.
+  If no params (empty string) were present in the initial Feed API response, then omit the params query string format the marketUrl as marketKey/outcome
+  Special Note about handicap markets:
+  For handicap markets a line is identified by the same params. Selections can be grouped by market key and params alone. Home and away outcomes then have the same market URL for the same handicap lines. The handicap value is dictated by the home team value and inverted on the away side.
+  """
+  marketUrl: String!
+
+  """
+  Price at which bets can be placed on this Selection
+  """
+  price: String!
+
+  """
+  Probability of this Selection's outcome
+  """
+  probability: String!
+
+  """
+  Minimum stake in EUR which can be placed in bets on this Selection
+  """
+  minStake: String!
+
+  """
+  Maximum stake in EUR which can be placed in bets on this Selection; market liability = selection max stake * (price - 1); minimum stake is 0.01 EUR for all markets
+  """
+  maxStake: String!
+
+  """
+  Side of a selection
+  """
+  side: Side!
+
+  """
+  SelectionStatus presents the current status for a given selection
+  """
+  status: SelectionStatus!
+}
+
+"""
+Event metadata contains additional event info
+"""
+type EventMetadata {
+  """
+  Opinion is an answer to the question "How do players bet on Cloudbet v/s the currently offered odds?"
+  """
+  opinions: [OutcomeProbability!]
+}
+
+"""
+Similar to Selection, but represents opinion (probability) for particular outcome of the market
+"""
+type OutcomeProbability {
+  """
+  MarketUrl is composed from the initial Feed API selection response as marketKey/outcome?params.
+  If no params (empty string) were present in the initial Feed API response, then omit the params query string format the marketUrl as marketKey/outcome
+  Special Note about handicap markets:
+  For handicap markets a line is identified by the same params. Selections can be grouped by market key and params alone. Home and away outcomes then have the same market URL for the same handicap lines. The handicap value is dictated by the home team value and inverted on the away side.
+  """
+  marketUrl: String!
+
+  """
+  Similar to Selection, but represents opinion (probability) for particular outcome of the market
+  """
+  probability: String!
+}
+
+"""
+Identifier represents a name-key tuple which together identify a given entity such as a sport
+"""
+type Identifier {
+  """
+  Slug for this Identifier
+  """
+  key: ID!
+
+  """
+  Name for this Identifier
+  """
+  name: String!
+}
+
+"""
+TeamIdentifier identifies a team competitor for a given event
+"""
+type TeamIdentifier {
+  """
+  Slug for this Identifier
+  """
+  key: ID!
+
+  """
+  Name for this Identifier
+  """
+  name: String!
+
+  """
+  Abbreviation for this team's name
+  """
+  abbreviation: String!
+
+  """
+  Team country code
+  """
+  nationality: String!
+}
+
+"""
+Account Info
+"""
+type AccountInfo {
+  """
+  Email of this account
+  """
+  email: String!
+
+  """
+  Nickname of this account
+  """
+  nickname: String!
+
+  """
+  UUID of this account
+  """
+  uuid: String!
+}
+
+"""
+Request to place bet
+"""
+input PlaceBetInput {
+  """
+  Reference ID, randomly generated request id to allow idempotent calls. Required to be in the UUID format.
+  """
+  referenceId: ID!
+
+  """
+  Event ID
+  """
+  eventId: String!
+
+  """
+  Market URL, is compiled from the feed data as marketKey/outcome?params, if no params (empty string) are present omit the query string and format as marketKey/outcome
+  Special Note about handicap markets:
+  For handicap markets a line is identified by the same params. Selections can be grouped by market key and params alone. Home and away outcomes then have the same market URL for the same handicap lines. The handicap value is dictated by the home team value and inverted on the away side.
+  """
+  marketUrl: String!
+
+  """
+  Currency for given stake
+  """
+  currency: String!
+
+  """
+  Price placed on this Selection
+  """
+  price: String!
+
+  """
+  Stake placed on this Selection
+  """
+  stake: String!
+
+  """
+  Side of a selection (default: BACK)
+  """
+  side: Side
+
+  """
+  Accept price changes when placing bet (default: NONE)
+  """
+  acceptPriceChange: AcceptPriceChange
+}
+
+"""
+Place Bet Result
+"""
+type PlaceBetResult {
+  """
+  Reference ID, randomly generated request id to allow idempotent calls. Required to be in the UUID format.
+  """
+  referenceId: ID!
+
+  """
+  Event ID
+  """
+  eventId: String!
+
+  """
+  Market URL, is compiled from the feed data as marketKey/outcome?params, if no params (empty string) are present omit the query string and format as marketKey/outcome
+  Special Note about handicap markets:
+  For handicap markets a line is identified by the same params. Selections can be grouped by market key and params alone. Home and away outcomes then have the same market URL for the same handicap lines. The handicap value is dictated by the home team value and inverted on the away side.
+  """
+  marketUrl: String!
+
+  """
+  Currency for given stake
+  """
+  currency: String!
+
+  """
+  Price placed on this Selection
+  """
+  price: String!
+
+  """
+  Stake placed on this Selection
+  """
+  stake: String!
+
+  """
+  Side of a selection signals whether a selection
+  is available for back or lay side betting
+  """
+  side: Side!
+
+  """
+  Bet status to indicate bet acceptance and settlement result
+  """
+  betStatus: BetStatus!
+
+  """
+  Bet error code if any
+  """
+  betErrorCode: BetErrorCode
+}
+
+"""
+Bet Detail
+"""
+type Bet {
+  """
+  Reference ID, randomly generated request id to allow idempotent calls. Required to be in the UUID format.
+  """
+  referenceId: ID!
+
+  """
+  Slug for this Sport
+  """
+  sportsKey: String!
+
+  """
+  Slug for this Category
+  """
+  categoryKey: String!
+
+  """
+  Event ID
+  """
+  eventId: String!
+
+  """
+  Name of this event
+  """
+  eventName: String!
+
+  """
+  Market URL, is compiled from the feed data as marketKey/outcome?params, if no params (empty string) are present omit the query string and format as marketKey/outcome
+  Special Note about handicap markets:
+  For handicap markets a line is identified by the same params. Selections can be grouped by market key and params alone. Home and away outcomes then have the same market URL for the same handicap lines. The handicap value is dictated by the home team value and inverted on the away side.
+  """
+  marketUrl: String!
+
+  """
+  Currency for given stake
+  """
+  currency: String!
+
+  """
+  Price placed on this Selection
+  """
+  price: String!
+
+  """
+  Stake placed on this Selection
+  """
+  stake: String!
+
+  """
+  Side of a selection signals whether a selection
+  is available for back or lay side betting
+  """
+  side: Side!
+
+  """
+  Return Amount as number, pending bets will have 0
+  """
+  returnAmount: String!
+
+  """
+  Bet status to indicate bet acceptance and settlement result
+  """
+  betStatus: BetStatus!
+
+  """
+  Bet error code if any
+  """
+  betErrorCode: BetErrorCode
+}
+
+"""
+Account Balance
+"""
+type AccountBalance {
+  """
+  Currency
+  """
+  currency: String!
+
+  """
+  The account balance
+  """
+  amount: String!
+}
+
+enum AcceptPriceChange {
+  NONE
+  BETTER
+}
+
+enum BetErrorCode {
+  """
+  Unexpected error at server side. Our engineering team is informed of the issue. Please try again or contact our customer support if this problem persists
+  """
+  INTERNAL_SERVER_ERROR
+
+  """
+  Duplicated request with same Reference ID was posted, this is due to idempotent request handling. If you want to resubmit this bet. Please add a new Reference ID
+  """
+  DUPLICATE_REQUEST
+
+  """
+  The request was not sent as per the expected request structure
+  """
+  MALFORMED_REQUEST
+
+  """
+  Bet price requested was above the current market price. Please reference price from response payload about the corrected value for retry
+  """
+  PRICE_ABOVE_MARKET
+
+  """
+  Account doesn't have sufficient funds in the requested currency
+  """
+  INSUFFICIENT_FUNDS
+
+  """
+  Stake requested was above the current maximum stake on a selection. Please reference stake from response payload about the corrected value for retry
+  """
+  STAKE_ABOVE_MAX
+
+  """
+  Stake requested was below the current minimum stake on a selection. Please reference stake from response payload about the corrected value for retry
+  """
+  STAKE_BELOW_MIN
+
+  """
+  Your current liability limit on this event was exceeded. Please reference stake from response payload about the corrected value for retry
+  """
+  LIABILITY_LIMIT_EXCEEDED
+
+  """
+  You attempted to bet on an inactive selection
+  """
+  MARKET_SUSPENDED
+
+  """
+  Your current account settings don't allow you to bet on this event. Restrictions will be lifted automatically as your account attains tenure and trust. Please contact customer support if you believe you qualify and we will review your account.
+  """
+  RESTRICTED
+
+  """
+  Your account needs to be verified using our KYC procedures. Please contact customer support for more details.
+  """
+  VERIFICATION_REQUIRED
+}
+
+"""
+Bet Status
+"""
+enum BetStatus {
+  """
+  Your bet was accepted successfully
+  """
+  ACCEPTED
+
+  """
+  Your bet was rejected
+  """
+  REJECTED
+
+  """
+  Your bet is being processed by the system. Please check the bet status again periodically to get bet status updates
+  """
+  PENDING_ACCEPTANCE
+
+  """
+  You won the bet
+  """
+  WIN
+
+  """
+  You lost the bet
+  """
+  LOSS
+
+  """
+  Market not applicable to result, e.g. draw on 2way, handicap
+  """
+  PUSH
+
+  """
+  Half win, e.g. on a handicap market
+  """
+  HALF_WIN
+
+  """
+  Half loss, e.g. on a handicap market
+  """
+  HALF_LOSS
+
+  """
+  Partial win, including dead heat result
+  """
+  PARTIAL
+}
+
+"""
+Event Status
+"""
+enum EventStatus {
+  PRE_TRADING
+  TRADING
+  TRADING_LIVE
+  RESULTED
+  INTERRUPTED
+  AWAITING_RESULTS
+  POST_TRADING
+  CANCELLED
+}
+
+"""
+Selection status
+"""
+enum SelectionStatus {
+  SELECTION_ENABLED
+  SELECTION_DISABLED
+}
+
+"""
+Side of a selection signals whether a selection is available for back or lay side betting
+"""
+enum Side {
+  BACK
+  LAY
+}

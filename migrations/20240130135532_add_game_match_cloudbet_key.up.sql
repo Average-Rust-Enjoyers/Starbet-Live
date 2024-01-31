@@ -1,0 +1,2 @@
+ALTER TABLE GameMatch
+ADD COLUMN cloudbet_id text NOT NULL UNIQUE;

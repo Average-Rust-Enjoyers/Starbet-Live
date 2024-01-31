@@ -123,7 +123,6 @@ async fn create_new_odds(
     odds_repository
         .create(&OddsCreate {
             game_match_id: match_uuid,
-            id: Uuid::new_v4(),
             odds_a: new_odds_a,
             odds_b: new_odds_b,
         })

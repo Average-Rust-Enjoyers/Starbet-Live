@@ -187,3 +187,29 @@ pub type DbResult<T> = Result<T, DbError>;
 pub type DbResultSingle<T> = DbResult<T>;
 /// Syntax sugar type denoting multiple results from the database
 pub type DbResultMultiple<T> = DbResult<Vec<T>>;
+
+// TODO: make it generic, graphql is now hardcoded for cloudbet
+#[derive(Debug)]
+pub enum ExternalApiError {
+    DbError(DbError),
+    Error(String),
+    GraphQl(Vec<cynic::GraphQlError>),
+}
+
+impl From<&str> for ExternalApiError {
+    fn from(err: &str) -> Self {
+        Self::Error(err.to_owned())
+    }
+}
+
+impl From<DbError> for ExternalApiError {
+    fn from(err: DbError) -> Self {
+        Self::DbError(err)
+    }
+}
+
+impl From<Vec<cynic::GraphQlError>> for ExternalApiError {
+    fn from(err: Vec<cynic::GraphQlError>) -> Self {
+        Self::GraphQl(err)
+    }
+}
