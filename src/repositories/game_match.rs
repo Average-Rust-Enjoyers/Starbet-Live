@@ -100,9 +100,9 @@ impl DbCreate<GameMatchCreate, GameMatch> for GameMatchRepository {
             GameMatch,
             r#"
             INSERT INTO GameMatch 
-            (game_id, name_a, name_b, starts_at, ends_at) 
+            (game_id, cloudbet_id, name_a, name_b, starts_at, ends_at) 
             VALUES 
-            ($1, $2, $3, $4, $5) 
+            ($1, $2, $3, $4, $5, $6) 
             RETURNING 
                  id, 
                  game_id, 
@@ -117,6 +117,7 @@ impl DbCreate<GameMatchCreate, GameMatch> for GameMatchRepository {
                  deleted_at
             "#,
             data.game_id,
+            data.cloudbet_id,
             data.name_a,
             data.name_b,
             data.starts_at,
