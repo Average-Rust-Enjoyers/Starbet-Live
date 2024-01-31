@@ -41,8 +41,10 @@ pub async fn admin_handler(
 
 pub async fn new_gamematch_handler(
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
-    Form(payload): Form<GameMatchCreate>,
+    Form(mut payload): Form<GameMatchCreate>,
 ) -> impl IntoResponse {
+    payload.cloudbet_id = None;
+
     if payload.ends_at < payload.starts_at {
         return (StatusCode::BAD_REQUEST, "match end cannot be before start").into_response();
     }

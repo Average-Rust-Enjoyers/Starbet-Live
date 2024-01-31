@@ -126,7 +126,11 @@ impl ExternalApiIntegration<self::GameMatch> for CloudbetApi {
         self,
         game: &Game,
     ) -> Result<Vec<self::GameMatch>, ExternalApiError> {
-        match self.run_query(&game.cloudbet_key.clone().unwrap()).await {
+        let Some(cloudbet_key) = &game.cloudbet_key.clone() else {
+            return Ok(vec![]);
+        };
+
+        match self.run_query(cloudbet_key).await {
             cynic::GraphQlResponse {
                 data: Some(self::GameMatches { competitions }),
                 errors: None,
@@ -154,7 +158,7 @@ impl ExternalApiIntegration<self::GameMatch> for CloudbetApi {
 
         Ok(GameMatchCreate {
             game_id: game.id,
-            cloudbet_id: event.id.into_inner(),
+            cloudbet_id: Some(event.id.into_inner()),
             name_a: team_a.name,
             name_b: team_b.name,
             starts_at: event.cutoff_time.clone().into(),

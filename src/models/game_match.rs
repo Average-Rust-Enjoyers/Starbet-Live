@@ -54,7 +54,7 @@ pub struct GameMatch {
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize)]
 pub struct GameMatchCreate {
     pub game_id: Uuid,
-    pub cloudbet_id: String,
+    pub cloudbet_id: Option<String>,
     pub name_a: String,
     pub name_b: String,
     pub starts_at: DateTime<Utc>,
@@ -64,7 +64,7 @@ pub struct GameMatchCreate {
 impl GameMatchCreate {
     pub fn new(
         game_id: &Uuid,
-        cloudbet_id: &str,
+        cloudbet_id: Option<&str>,
         name_a: &str,
         name_b: &str,
         starts_at: DateTime<Utc>,
@@ -72,7 +72,7 @@ impl GameMatchCreate {
     ) -> Self {
         Self {
             game_id: game_id.to_owned(),
-            cloudbet_id: cloudbet_id.to_owned(),
+            cloudbet_id: cloudbet_id.map(|s| s.to_owned()),
             name_a: name_a.to_owned(),
             name_b: name_b.to_owned(),
             starts_at,
