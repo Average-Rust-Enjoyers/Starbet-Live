@@ -12,6 +12,7 @@ services:
       - postgres-db
       - redis
     environment:
+      - CLOUDBET_API_KEY=${CLOUDBET_API_KEY}
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
       - STARBET_PORT=${STARBET_PORT}
