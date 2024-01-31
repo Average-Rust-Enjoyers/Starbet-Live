@@ -24,6 +24,12 @@
         {% if game_match.status == GameMatchStatus::Live %}
             <button
                 class="bg-gray-200 mr-2 px-2 rounded-lg"
+                hx-patch="/admin/match/{{ game_match.id }}/odds"
+                style="background-color: #70c4db"
+                name="action" value="win_b"
+            >RANDOMIZE ODDS</span>
+            <button
+                class="bg-gray-200 mr-2 px-2 rounded-lg"
                 hx-patch="/admin/match/{{ game_match.id }}"
                 style="background-color: #0000ff"
                 name="action" value="win_a"

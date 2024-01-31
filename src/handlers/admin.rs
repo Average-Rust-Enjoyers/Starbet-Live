@@ -1,11 +1,12 @@
 use crate::{
-    common::{DbReadAll, DbUpdateOne},
+    common::{DbGetLatest, DbReadAll, DbUpdateOne},
     models::{
         game::GameFilter,
         game_match::{self, GameMatchCreate, GameMatchGetById, GameMatchStatus},
         game_match_outcome::GameMatchOutcome,
+        odds::{Odds, OddsCreate, OddsGetByGameMatchId},
     },
-    repositories::game_match::GameMatchRepository,
+    repositories::{game_match::GameMatchRepository, odds::OddsRepository},
     routers::HxRedirect,
     templates::{AdminPanel, AdminPanelMatch},
     DbCreate, DbReadMany, DbReadOne, GameRepository,
@@ -17,6 +18,7 @@ use axum::{
     response::{Html, IntoResponse},
     Extension, Form,
 };
+use rand::Rng;
 use serde::Deserialize;
 use uuid::Uuid;
 
@@ -90,6 +92,72 @@ impl From<GameMatchUpdateAction> for Option<GameMatchOutcome> {
 #[derive(Deserialize)]
 pub struct GameMatchUpdateData {
     action: GameMatchUpdateAction,
+}
+
+pub async fn gamematch_random_odds_handler(
+    Path(match_id): Path<Uuid>,
+    Extension(mut game_match_repo): Extension<GameMatchRepository>,
+    Extension(mut odds_repo): Extension<OddsRepository>,
+) -> impl IntoResponse {
+    let game_match = game_match_repo
+        .read_one(&GameMatchGetById { id: match_id })
+        .await;
+
+    let Ok(game_match) = game_match else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+
+    if game_match.status != GameMatchStatus::Live {
+        return StatusCode::BAD_REQUEST.into_response();
+    }
+
+    let odds = odds_repo
+        .get_latest(&OddsGetByGameMatchId {
+            game_match_id: game_match.id,
+        })
+        .await
+        .unwrap_or(Odds {
+            id: game_match.id,
+            game_match_id: game_match.id,
+            odds_a: 1.9, // TODO: use constant from elsewhere?
+            odds_b: 1.9,
+            created_at: game_match.created_at,
+            deleted_at: None,
+        });
+
+    let mut odds_a = odds.odds_a;
+    let mut odds_b = odds.odds_b;
+
+    let odds_max = f64::max(1.1f64, f64::max(odds_a, odds_b));
+    let rng = rand::thread_rng().gen_range(0.1..=odds_max - 1f64);
+
+    if odds_b - rng > 1f64 {
+        odds_a += rng;
+        odds_b -= rng;
+    } else if odds_a - rng > 1f64 {
+        odds_a -= rng;
+        odds_b += rng;
+    } else {
+        odds_a += rng;
+        odds_b += rng;
+    }
+
+    if odds_repo
+        .create(&OddsCreate {
+            game_match_id: game_match.id,
+            odds_a,
+            odds_b,
+        })
+        .await
+        .is_err()
+    {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    }
+
+    let template = AdminPanelMatch { game_match };
+
+    let reply_html = template.render().unwrap();
+    (StatusCode::OK, Html(reply_html)).into_response()
 }
 
 pub async fn gamematch_update_handler(

@@ -7,7 +7,10 @@ use axum::{
 
 use crate::handlers::{
     self,
-    admin::{admin_handler, gamematch_update_handler, new_gamematch_handler},
+    admin::{
+        admin_handler, gamematch_random_odds_handler, gamematch_update_handler,
+        new_gamematch_handler,
+    },
     bet::{get_active_bets_handler, get_bet_handler, place_bet_handler},
     dashboard::dashboard_handler,
     game::game_handler,
@@ -51,6 +54,10 @@ pub fn public_router() -> Router<()> {
         .route("/admin", get(admin_handler))
         .route("/admin/match", post(new_gamematch_handler))
         .route("/admin/match/:id", patch(gamematch_update_handler))
+        .route(
+            "/admin/match/:id/odds",
+            patch(gamematch_random_odds_handler),
+        )
 }
 
 /// Redirect using the `HX-Redirect` header.

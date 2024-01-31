@@ -34,6 +34,7 @@ time = "0.3.31"
 barrage = "0.2.3"
 reqwest = "0.11.23"
 futures = "0.3.30"
+rand = "0.8.5"
 cynic = { version = "3.4.3", features = ["http-reqwest"] }
 cynic-codegen = { version = "3.4.3" }
 
