@@ -187,3 +187,20 @@ pub type DbResult<T> = Result<T, DbError>;
 pub type DbResultSingle<T> = DbResult<T>;
 /// Syntax sugar type denoting multiple results from the database
 pub type DbResultMultiple<T> = DbResult<Vec<T>>;
+#[derive(Debug)]
+pub enum ExternalApiError {
+    DbError(DbError),
+    Error(String),
+}
+
+impl From<&str> for ExternalApiError {
+    fn from(err: &str) -> Self {
+        Self::Error(err.to_owned())
+    }
+}
+
+impl From<DbError> for ExternalApiError {
+    fn from(err: DbError) -> Self {
+        Self::DbError(err)
+    }
+}
