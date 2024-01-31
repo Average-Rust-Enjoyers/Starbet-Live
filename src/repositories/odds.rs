@@ -121,11 +121,10 @@ impl DbCreate<OddsCreate, Odds> for OddsRepository {
         let odds = sqlx::query_as!(
             Odds,
             r#"
-                INSERT INTO Odds
-                VALUES ($1, $2, $3, $4)
+                INSERT INTO Odds (game_match_id, odds_a, odds_b)
+                VALUES ($1, $2, $3)
                 RETURNING *
             "#,
-            data.id,
             data.game_match_id,
             data.odds_a,
             data.odds_b
