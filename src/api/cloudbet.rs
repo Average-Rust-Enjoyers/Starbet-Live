@@ -153,7 +153,7 @@ impl ExternalApiIntegration<self::GameMatch> for CloudbetApi {
         let Some(team_a) = event.clone().home else {
             return Err(ExternalApiError::from("No home team"));
         };
-        let Some(team_b) = event.home else {
+        let Some(team_b) = event.away else {
             return Err(ExternalApiError::from("No away team"));
         };
 
