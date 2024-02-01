@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use axum_login::AuthUser;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
