@@ -1,25 +1,20 @@
 use axum::{
-    http::{self, HeaderValue, StatusCode, Uri},
+    http::{HeaderValue, StatusCode, Uri},
     response::{IntoResponse, Response},
     routing::{get, patch, post},
-    Extension, Router,
+    Router,
 };
 
-use bb8_redis::redis::AsyncCommands;
-
-use crate::{
-    app::RedisPool,
-    handlers::{
-        self,
-        admin::{admin_handler, gamematch_update_handler, new_gamematch_handler},
-        bet::{get_active_bets_handler, get_bet_handler, place_bet_handler},
-        dashboard::dashboard_handler,
-        game::game_handler,
-        index::index_handler,
-        register::register_submission_handler,
-        user::user_balance_handler,
-        ws::ws_handler,
-    },
+use crate::handlers::{
+    self,
+    admin::{admin_handler, gamematch_update_handler, new_gamematch_handler},
+    bet::{get_active_bets_handler, get_bet_handler, place_bet_handler},
+    dashboard::dashboard_handler,
+    game::game_handler,
+    index::index_handler,
+    register::register_submission_handler,
+    user::user_balance_handler,
+    ws::ws_handler,
 };
 
 pub fn auth_router() -> Router<()> {
@@ -41,7 +36,6 @@ pub fn auth_router() -> Router<()> {
 
 pub fn protected_router() -> Router<()> {
     Router::new()
-        .route("/redis", get(redis_ok))
         .route("/dashboard", get(dashboard_handler))
         .route("/games/:game_id", post(game_handler))
         .route("/ws/:game_name", get(ws_handler))
@@ -77,17 +71,4 @@ impl IntoResponse for HxRedirect {
         )
             .into_response()
     }
-}
-
-// TODO: remove after first actual handler with redis is implemented
-/// # Panics
-pub async fn redis_ok(Extension(redis_pool): Extension<RedisPool>) -> http::StatusCode {
-    let mut conn = redis_pool.get().await.unwrap();
-    let value = 42;
-    let my_key = "my_key";
-
-    let _: () = conn.set(my_key, value).await.unwrap();
-    let return_value: i64 = conn.get(my_key).await.unwrap();
-    assert_eq!(value, return_value);
-    http::StatusCode::OK
 }
