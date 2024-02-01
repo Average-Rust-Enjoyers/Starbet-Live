@@ -107,6 +107,15 @@ pub struct BetHistory {
     pub bets: Vec<BetHistoryBet>,
 }
 
+#[derive(Template)]
+#[template(path = "profile/edit_profile.html")]
+pub struct EditProfilePage<'a> {
+    pub username: TextField<'a>,
+    pub email: TextField<'a>,
+    pub first_name: TextField<'a>,
+    pub last_name: TextField<'a>,
+}
+
 pub struct UserSend {
     pub username: String,
     pub email: String,

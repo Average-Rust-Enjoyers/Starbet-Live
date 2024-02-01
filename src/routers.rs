@@ -15,7 +15,7 @@ use crate::handlers::{
     dashboard::dashboard_handler,
     game::game_handler,
     index::index_handler,
-    profile::{bet_history_handler, profile_handler},
+    profile::{bet_history_handler, get_edit_profile_handler, profile_handler},
     register::register_submission_handler,
     user::user_balance_handler,
     ws::ws_handler,
@@ -48,6 +48,7 @@ pub fn protected_router() -> Router<()> {
         .route("/bet/active", get(get_active_bets_handler))
         .route("/user/balance", get(user_balance_handler))
         .route("/user/bet-history", get(bet_history_handler))
+        .route("/user/edit-profile", get(get_edit_profile_handler))
         .route("/profile", get(profile_handler))
 }
 pub fn public_router() -> Router<()> {
