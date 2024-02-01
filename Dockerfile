@@ -16,9 +16,14 @@ RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 RUN cargo build --release --bin starbet-live
 
+# Certificates
+FROM alpine:latest as certs
+RUN apk --update add ca-certificates
+
 # We do not need the Rust toolchain to run the binary!
 FROM ubuntu AS runtime
 WORKDIR /app
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /app/target/release/starbet-live /usr/local/bin
 ENTRYPOINT ["/usr/local/bin/starbet-live"]
 EXPOSE 6969
