@@ -39,11 +39,11 @@ impl AuthnBackend for Auth {
         let user = UserRepository::new(self.pool_handler.clone())
             .read_one(&credentials)
             .await?;
-        Ok(Some(user))
+        Ok(Some(user)) // Always returning Some. If user is not found UserRepository.read_one returns DbError
     }
 
     async fn get_user(&self, id: &UserId<Self>) -> Result<Option<Self::User>, Self::Error> {
-        let mut tx: Transaction<'_, Postgres> = self.pool_handler.pool.begin().await?; // TODO: try to avoid transaction
+        let mut tx: Transaction<'_, Postgres> = self.pool_handler.pool.begin().await?;
         let user = UserRepository::get_user(GetByUserId { id: *id }, &mut tx).await;
         tx.commit().await?;
 
