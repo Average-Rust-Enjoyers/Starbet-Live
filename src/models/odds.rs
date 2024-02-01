@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use chrono::{DateTime, Utc};
 use float_cmp::approx_eq;
 use uuid::Uuid;

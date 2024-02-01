@@ -31,7 +31,6 @@ pub struct GameCreate {
 }
 
 impl GameCreate {
-    #![allow(dead_code)]
     pub fn new(name: &str, description: &str, logo: &str, genre: GameGenre) -> Self {
         Self {
             name: name.to_owned(),
@@ -52,7 +51,6 @@ pub struct GameUpdate {
 }
 
 impl GameUpdate {
-    #![allow(dead_code)]
     pub fn new(
         id: &Uuid,
         name: Option<&str>,
@@ -83,7 +81,6 @@ pub struct GameDelete {
 }
 
 impl GameDelete {
-    #![allow(dead_code)]
     pub fn new(id: &Uuid) -> Self {
         Self { id: *id }
     }
@@ -95,7 +92,6 @@ pub struct GameGetById {
 }
 
 impl GameGetById {
-    #![allow(dead_code)]
     pub fn new(id: &Uuid) -> Self {
         Self { id: *id }
     }
