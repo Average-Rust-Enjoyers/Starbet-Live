@@ -11,6 +11,7 @@ pub mod api;
 pub mod app;
 pub mod auth;
 pub mod common;
+pub mod config;
 pub mod filters;
 pub mod handlers;
 pub mod helpers;
