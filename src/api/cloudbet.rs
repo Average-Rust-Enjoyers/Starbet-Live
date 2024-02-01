@@ -117,7 +117,16 @@ impl CloudbetApi {
             .header("X-API-KEY", self.api_key)
             .run_graphql(query)
             .await
-            .unwrap()
+            .unwrap_or(cynic::GraphQlResponse {
+                data: None,
+                errors: Some(vec![cynic::GraphQlError {
+                    message: "Cynic reqwest error. Error fetching game matches from Cloudbet"
+                        .to_string(),
+                    locations: None,
+                    path: None,
+                    extensions: None,
+                }]),
+            })
     }
 }
 
