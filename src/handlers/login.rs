@@ -31,7 +31,6 @@ pub mod get {
 }
 
 pub mod post {
-
     use super::*;
 
     pub async fn login(
@@ -40,28 +39,34 @@ pub mod post {
     ) -> impl IntoResponse {
         let user = match auth_session.authenticate(creds.clone()).await {
             Ok(Some(user)) => user,
-            // TODO: this can not happen at the moment because we always send Some()
             Ok(None) => {
-                const LOGIN_URL: &str = "/login";
-                match creds.next {
-                    Some(next) => {
-                        let l: &str = &format!("{}?next={}", LOGIN_URL, next.clone());
-                        match Uri::from_str(l) {
-                            Ok(uri) => {
-                                return HxRedirect(uri).into_response();
+                return StatusCode::INTERNAL_SERVER_ERROR.into_response(); // authenticate always returns Some
+            }
+            Err(e) => {
+                match e {
+                    axum_login::Error::Session(_) => {
+                        return StatusCode::INTERNAL_SERVER_ERROR.into_response()
+                    }
+                    axum_login::Error::Backend(_error_info) => {
+                        const LOGIN_URL: &str = "/login";
+                        match creds.next {
+                            Some(next) => {
+                                let l: &str = &format!("{}?next={}", LOGIN_URL, next.clone());
+                                match Uri::from_str(l) {
+                                    Ok(uri) => {
+                                        return HxRedirect(uri).into_response();
+                                    }
+                                    Err(_) => {
+                                        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+                                    }
+                                }
                             }
-                            Err(_) => {
-                                return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+                            None => {
+                                return HxRedirect(Uri::from_static(LOGIN_URL)).into_response();
                             }
                         }
                     }
-                    None => {
-                        return HxRedirect(Uri::from_static(LOGIN_URL)).into_response();
-                    }
-                }
-            }
-            Err(_) => {
-                return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+                };
             }
         };
 

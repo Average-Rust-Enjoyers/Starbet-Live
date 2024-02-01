@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 use crate::common::error::{BusinessLogicError, DbResultSingle};
 use crate::common::error::{BusinessLogicErrorKind, DbResultMultiple};
 use crate::common::repository::{
