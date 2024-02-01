@@ -2,6 +2,7 @@ use crate::{
     common::{DbGetLatest, DbReadAll, DbUpdateOne},
     config::DEFAULT_ODDS_VALUE,
     models::{
+        extension_web_socket::ExtensionWebSocket,
         game::GameFilter,
         game_match::{self, GameMatchCreate, GameMatchGetById, GameMatchStatus},
         game_match_outcome::GameMatchOutcome,
@@ -9,7 +10,7 @@ use crate::{
     },
     repositories::{game::GameRepository, game_match::GameMatchRepository, odds::OddsRepository},
     routers::HxRedirect,
-    templates::{AdminPanel, AdminPanelMatch},
+    templates::{AdminPanel, AdminPanelMatch, Match},
     DbCreate, DbReadMany, DbReadOne,
 };
 use askama::Template;
@@ -99,6 +100,7 @@ pub async fn gamematch_random_odds_handler(
     Path(match_id): Path<Uuid>,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Extension(mut odds_repo): Extension<OddsRepository>,
+    Extension(web_socket): Extension<ExtensionWebSocket>,
 ) -> impl IntoResponse {
     let game_match = game_match_repo
         .read_one(&GameMatchGetById { id: match_id })
@@ -143,17 +145,27 @@ pub async fn gamematch_random_odds_handler(
         odds_b += rng;
     }
 
-    if odds_repo
+    let Ok(new_odds) = odds_repo
         .create(&OddsCreate {
             game_match_id: game_match.id,
             odds_a,
             odds_b,
         })
         .await
-        .is_err()
-    {
+    else {
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
+
+    let match_send = Match {
+        match_id: game_match.id,
+        team_a: game_match.name_a.clone(),
+        team_b: game_match.name_b.clone(),
+        current_odds: new_odds.clone(),
     }
+    .render()
+    .unwrap();
+
+    let _ = web_socket.tx.send_async(match_send).await;
 
     let template = AdminPanelMatch { game_match };
 
