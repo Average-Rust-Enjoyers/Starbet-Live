@@ -15,6 +15,7 @@ use crate::handlers::{
     dashboard::dashboard_handler,
     game::game_handler,
     index::index_handler,
+    profile::profile_handler,
     register::register_submission_handler,
     user::user_balance_handler,
     ws::ws_handler,
@@ -46,6 +47,7 @@ pub fn protected_router() -> Router<()> {
         .route("/bet/:match_id/:prediction", get(get_bet_handler))
         .route("/bet/active", get(get_active_bets_handler))
         .route("/user/balance", get(user_balance_handler))
+        .route("/profile", get(profile_handler))
 }
 
 pub fn public_router() -> Router<()> {

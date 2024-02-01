@@ -1,6 +1,11 @@
 <script>
     tailwind.config = {
         theme: {
+            extend: {
+                height: {
+                    "screen-minus-navbar": "calc(100vh - 64px)",
+                },
+            },
             colors: {
                 primary: {
                     DEFAULT: "#0f172a",

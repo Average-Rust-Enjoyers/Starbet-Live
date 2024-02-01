@@ -64,7 +64,7 @@ impl TextField<'_> {
 }
 
 #[derive(Template)]
-#[template(path = "profile.html")]
+#[template(path = "edit_profile.html")]
 pub struct ProfilePage {}
 
 pub struct UserSend {

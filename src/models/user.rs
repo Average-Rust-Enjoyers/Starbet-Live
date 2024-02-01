@@ -58,11 +58,11 @@ impl UserCreate {
 impl From<RegisterFormData> for UserCreate {
     fn from(register_form_data: RegisterFormData) -> Self {
         Self {
-            username: register_form_data.username,
+            username: register_form_data.username.clone(),
             email: register_form_data.email,
             name: register_form_data.first_name,
             surname: register_form_data.last_name,
-            profile_picture: "httpsdi://i.imgur.com/4oQWZ0e.png".to_string(), // TODO: change this to a default image
+            profile_picture: format!("https://robohash.org/{}.png", register_form_data.username),
             password_hash: hash_password(register_form_data.password.as_bytes()),
         }
     }
