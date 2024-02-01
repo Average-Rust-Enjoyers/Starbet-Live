@@ -1,0 +1,82 @@
+<!-- prettier-ignore -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-secondary bg-primary flex min-h-screen flex-col">
+    <header class="flex items-center justify-between px-6 py-4">
+        <a hx-boost="true" href="/profile" class="flex items-center space-x-4">
+            {% include "logo.html" %}
+            <h1 class="text-2xl font-bold">User Profile</h1>
+        </a>
+        <nav hx-boost="true" class="space-x-4">
+            <a
+                class="hover:text-secondary text-secondary-darkest"
+                href="/dashboard"
+                >Games</a
+            ><a
+                class="hover:text-secondary text-secondary-darkest"
+                href="/logout"
+                >Logout</a
+            >
+        </nav>
+    </header>
+    <main
+        class="h-screen-minus-navbar mt-auto flex flex-grow justify-between px-6 pb-4"
+    >
+        <div id="main-content" class="flex flex-grow">
+            <ul
+                class="bg-primary-lighter flex flex-col gap-4 rounded p-4 text-center"
+            >
+                <li class="px-2">
+                    <button
+                        hx-get="/user/bet-history"
+                        hx-target="#main-content"
+                    >
+                        Bet History
+                    </button>
+                </li>
+                <li class="px-2">
+                    <button
+                        hx-get="/user/edit-profile"
+                        hx-target="#main-content"
+                    >
+                        Edit Profile
+                    </button>
+                </li>
+                <li class="px-2">
+                    <button
+                        hx-get="/user/deposit-withdrawl"
+                        hx-target="#main-content"
+                    >
+                        Deposit/Withdrawl
+                    </button>
+                </li>
+                <li class="mt-auto px-2">
+                    <button hx-get="/user/settings" hx-target="#main-content">
+                        Settings
+                    </button>
+                </li>
+            </ul>
+            <p
+                class="text-secondary-darkest flex flex-grow items-center justify-center overflow-y-auto text-lg"
+            >
+                See your bet history, edit information or perform transactions
+            </p>
+        </div>
+        <div
+            class="bg-primary-lighter flex w-1/5 flex-col items-center justify-center gap-6 rounded"
+        >
+            <p class="font-bold">{{ username }}</p>
+            <img
+                src="{{ profile_picture }}"
+                alt="profile-picture"
+                width="200"
+                height="200"
+            />
+            <p class="text-lg">{{ first_name }} {{ last_name }}</p>
+            <p class="text-secondary-darkest">{{ email }}</p>
+            <p>Current Balance: {{ balance }} EUR</p>
+        </div>
+    </main>
+</div>
+{% endblock %}

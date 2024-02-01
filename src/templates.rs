@@ -64,8 +64,28 @@ impl TextField<'_> {
 }
 
 #[derive(Template)]
-#[template(path = "edit_profile.html")]
-pub struct ProfilePage {}
+#[template(path = "profile.html")]
+pub struct ProfilePage {
+    pub username: String,
+    pub email: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub profile_picture: String,
+    pub balance: i32,
+}
+
+impl From<User> for ProfilePage {
+    fn from(user: User) -> Self {
+        Self {
+            username: user.username,
+            email: user.email,
+            first_name: user.name,
+            last_name: user.surname,
+            profile_picture: user.profile_picture,
+            balance: user.balance,
+        }
+    }
+}
 
 pub struct UserSend {
     pub username: String,

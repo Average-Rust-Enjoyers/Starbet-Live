@@ -1,20 +1,24 @@
-<!-- prettier-ignore -->
-{% extends "layout_profile.html" %}
-
-{% block main_content %}
 <div id="main-content" class="flex flex-grow">
     <ul class="bg-primary-lighter flex flex-col gap-4 rounded p-4 text-center">
         <li class="bg-primary w-full rounded px-2">
-            <button hx-get="/user/bet-history">Bet History</button>
+            <button hx-get="/user/bet-history" hx-target="#main-content">
+                Bet History
+            </button>
         </li>
         <li class="px-2">
-            <button hx-get="/user/edit-profile">Edit Profile</button>
+            <button hx-get="/user/edit-profile" hx-target="#main-content">
+                Edit Profile
+            </button>
         </li>
         <li class="px-2">
-            <button hx-get="/user/deposit-withdrawl">Deposit/Withdrawl</button>
+            <button hx-get="/user/deposit-withdrawl" hx-target="#main-content">
+                Deposit/Withdrawl
+            </button>
         </li>
         <li class="mt-auto px-2">
-            <button hx-get="/user/settings">Settings</button>
+            <button hx-get="/user/settings" hx-target="#main-content">
+                Settings
+            </button>
         </li>
     </ul>
     <div class="flex-grow overflow-y-auto">
@@ -80,4 +84,3 @@
         </div>
     </div>
 </div>
-{% endblock %}
