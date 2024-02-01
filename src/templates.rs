@@ -64,7 +64,7 @@ impl TextField<'_> {
 }
 
 #[derive(Template)]
-#[template(path = "profile.html")]
+#[template(path = "profile/index.html")]
 pub struct ProfilePage {
     pub username: String,
     pub email: String,
@@ -85,6 +85,26 @@ impl From<User> for ProfilePage {
             balance: user.balance,
         }
     }
+}
+
+#[derive(Template)]
+#[template(path = "profile/bet_history_bet.html")]
+pub struct BetHistoryBet {
+    pub game_name: String,
+    pub team_a: String,
+    pub team_b: String,
+    pub predicted_team: String,
+    pub bet_amount: i32,
+    pub multiplier: f64,
+    pub won_amount: i32,
+    pub won: bool,
+    pub date: String,
+}
+
+#[derive(Template)]
+#[template(path = "profile/bet_history.html")]
+pub struct BetHistory {
+    pub bets: Vec<BetHistoryBet>,
 }
 
 pub struct UserSend {

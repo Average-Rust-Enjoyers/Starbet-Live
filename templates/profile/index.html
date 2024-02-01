@@ -25,9 +25,11 @@
     >
         <div id="main-content" class="flex flex-grow">
             <ul
-                class="bg-primary-lighter flex flex-col gap-4 rounded p-4 text-center"
+                class="bg-primary-lighter flex w-1/5 flex-col gap-4 rounded p-4 text-center"
             >
-                <li class="px-2">
+                <li
+                    class="hover:text-primary hover:bg-secondary-darker rounded px-2"
+                >
                     <button
                         hx-get="/user/bet-history"
                         hx-target="#main-content"
@@ -35,7 +37,9 @@
                         Bet History
                     </button>
                 </li>
-                <li class="px-2">
+                <li
+                    class="hover:text-primary hover:bg-secondary-darker rounded px-2"
+                >
                     <button
                         hx-get="/user/edit-profile"
                         hx-target="#main-content"
@@ -43,7 +47,9 @@
                         Edit Profile
                     </button>
                 </li>
-                <li class="px-2">
+                <li
+                    class="hover:text-primary hover:bg-secondary-darker rounded px-2"
+                >
                     <button
                         hx-get="/user/deposit-withdrawl"
                         hx-target="#main-content"
@@ -51,7 +57,9 @@
                         Deposit/Withdrawl
                     </button>
                 </li>
-                <li class="mt-auto px-2">
+                <li
+                    class="hover:text-primary hover:bg-secondary-darker mt-auto rounded px-2"
+                >
                     <button hx-get="/user/settings" hx-target="#main-content">
                         Settings
                     </button>
