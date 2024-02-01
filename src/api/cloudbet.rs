@@ -1,5 +1,6 @@
 use super::connector::ExternalApiIntegration;
 use crate::common::error::ExternalApiError;
+use crate::config::CLOUDBET_API_GRAPHQL_URL;
 use crate::models::{game::Game, game_match::GameMatchCreate};
 
 #[cynic::schema("cloudbet")]
@@ -112,7 +113,7 @@ impl CloudbetApi {
         let query = Self::build_query(game_key);
 
         reqwest::Client::new()
-            .post("https://sports-api-graphql.cloudbet.com/graphql") // TODO: move to config
+            .post(CLOUDBET_API_GRAPHQL_URL)
             .header("X-API-KEY", self.api_key)
             .run_graphql(query)
             .await

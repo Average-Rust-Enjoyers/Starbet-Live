@@ -2,8 +2,6 @@ use async_trait::async_trait;
 use sqlx::{Postgres, Transaction};
 use uuid::Uuid;
 
-const DEFAULT_ODDS_VALUE: f64 = 1.9; // TODO: move to config?
-
 use crate::{
     common::{
         error::{
@@ -15,6 +13,7 @@ use crate::{
         DbCreate, DbDelete, DbPoolHandler, DbReadAll, DbReadByForeignKey, DbReadOne, DbRepository,
         DbUpdateOne, PoolHandler,
     },
+    config::DEFAULT_ODDS_VALUE,
     models::{
         game::GameGetById,
         game_match::{
