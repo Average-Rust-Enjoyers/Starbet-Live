@@ -1,0 +1,2 @@
+ALTER TABLE GameMatch
+ALTER COLUMN cloudbet_id DROP NOT NULL;
