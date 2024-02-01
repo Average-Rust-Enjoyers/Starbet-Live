@@ -74,11 +74,6 @@ pub mod post {
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
 
-        let hx_redirect_uri = match creds.next {
-            Some(ref next) => Uri::from_str(next.as_str()).unwrap(),
-            None => Uri::from_static("/dashboard"),
-        };
-
-        HxRedirect(hx_redirect_uri).into_response()
+        HxRedirect(Uri::from_static("/dashboard")).into_response()
     }
 }

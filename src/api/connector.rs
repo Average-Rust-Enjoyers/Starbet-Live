@@ -15,7 +15,6 @@ pub trait ExternalApiIntegration<T> {
     fn into(game_match: T, game: &Game) -> Result<GameMatchCreate, ExternalApiError>;
 }
 
-// TODO: better name?
 #[derive(Clone)]
 pub struct ApiConnector {
     pub game_match_repo: GameMatchRepository,
@@ -40,13 +39,11 @@ impl ApiConnector {
         for game in games {
             let game_matches: Vec<T> = api.clone().fetch_game_matches(&game).await?;
 
-            // TODO: collecting to handle erroros after the stage. might be better to use try_for_each or something else
             let game_matches_extracted_data = game_matches
                 .into_iter()
                 .map(|game_match| F::into(game_match, &game))
                 .collect::<Result<Vec<GameMatchCreate>, ExternalApiError>>()?;
 
-            // TODO: fix ugly data manipulation
             let mut stored_game_matches = vec![];
             for game_match_data in game_matches_extracted_data {
                 let stored_game_match = self.clone().store_game_match(game_match_data).await;
