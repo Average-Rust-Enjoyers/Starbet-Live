@@ -1,9 +1,8 @@
 use crate::{
     auth::AuthSession,
     common::DbReadAll,
-    repositories::{bet::BetRepository, game_match::GameMatchRepository},
+    repositories::{bet::BetRepository, game::GameRepository, game_match::GameMatchRepository},
     templates::{ActiveBets, Dashboard, Menu, MenuItem, UserBalance, UserNav, UserSend},
-    GameRepository,
 };
 use askama::Template;
 use axum::{

@@ -6,7 +6,8 @@ pub mod game_repo_tests {
         common::repository::{DbReadMany, DbRepository, PoolHandler},
         error::DbResultSingle,
         models::game::{Game, GameFilter, GameGenre},
-        DbPoolHandler, GameRepository,
+        repositories::game::GameRepository,
+        DbPoolHandler,
     };
     use std::sync::Arc;
     use uuid::Uuid;

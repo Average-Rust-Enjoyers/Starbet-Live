@@ -2,7 +2,6 @@ use askama::Template;
 use uuid::Uuid;
 
 use crate::{
-    filters,
     models::game_match::GameMatchStatus,
     models::{odds::Odds, user::User},
 };
@@ -143,13 +142,6 @@ pub struct Match {
 }
 
 #[derive(Template)]
-#[template(path = "dashboard/match/game_match_wrapper.html")]
-pub struct GameMatchWrapper {
-    pub match_id: Uuid,
-    pub match_template: Match,
-}
-
-#[derive(Template)]
 #[template(path = "dashboard/bet/place_bet_form.html")]
 pub struct PlaceBetForm {
     pub match_id: Uuid,
@@ -179,4 +171,24 @@ pub struct ActiveBets {
 #[template(path = "user/user_balance.html")]
 pub struct UserBalance {
     pub balance: i32,
+}
+
+pub mod filters {
+    use std::fmt::Display;
+
+    // Custom Askama filter
+    #[allow(clippy::unnecessary_wraps)]
+    pub fn split_and_capitalize<T: Display>(s: T) -> askama::Result<String> {
+        Ok(s.to_string()
+            .split('-')
+            .map(|word| {
+                let mut chars = word.chars();
+                match chars.next() {
+                    None => String::new(),
+                    Some(first_char) => first_char.to_uppercase().chain(chars).collect(),
+                }
+            })
+            .collect::<Vec<String>>()
+            .join(" "))
+    }
 }

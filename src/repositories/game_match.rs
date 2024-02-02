@@ -22,8 +22,9 @@ use crate::{
         },
         odds::Odds,
     },
-    GameRepository,
 };
+
+use super::game::GameRepository;
 
 #[derive(Clone)]
 pub struct GameMatchRepository {

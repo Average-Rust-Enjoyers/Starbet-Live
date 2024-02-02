@@ -2,16 +2,15 @@ use anyhow::Error;
 use axum::Extension;
 
 use crate::{
-    auth::Auth,
+    auth::{session_store::RedisStore, Auth},
     common::{DbPoolHandler, PoolHandler},
     models::extension_web_socket::ExtensionWebSocket,
     repositories::{
-        bet::BetRepository, game_match::GameMatchRepository, odds::OddsRepository,
-        user::UserRepository,
+        bet::BetRepository, game::GameRepository, game_match::GameMatchRepository,
+        odds::OddsRepository, user::UserRepository,
     },
     routers::{auth_router, protected_router, public_router},
-    session_store::RedisStore,
-    DbRepository, GameRepository,
+    DbRepository,
 };
 use axum_login::{login_required, AuthManagerLayerBuilder};
 use bb8_redis::RedisConnectionManager;
@@ -21,7 +20,6 @@ use time::Duration;
 
 use tower_sessions::{Expiry, SessionManagerLayer};
 
-// TODO: move to more appropriate place
 pub type RedisPool = bb8::Pool<RedisConnectionManager>;
 
 pub struct App {
@@ -43,6 +41,8 @@ impl App {
 
         let redis_manager = RedisConnectionManager::new(redis_url.clone())?;
         let redis_pool = bb8::Pool::builder().build(redis_manager).await?;
+
+        redis_pool.get().await?; // checks if redis connection is working
 
         let app = App {
             redis_pool,

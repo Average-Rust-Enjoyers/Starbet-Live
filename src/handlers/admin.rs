@@ -7,10 +7,10 @@ use crate::{
         game_match_outcome::GameMatchOutcome,
         odds::{Odds, OddsCreate, OddsGetByGameMatchId},
     },
-    repositories::{game_match::GameMatchRepository, odds::OddsRepository},
+    repositories::{game::GameRepository, game_match::GameMatchRepository, odds::OddsRepository},
     routers::HxRedirect,
     templates::{AdminPanel, AdminPanelMatch},
-    DbCreate, DbReadMany, DbReadOne, GameRepository,
+    DbCreate, DbReadMany, DbReadOne,
 };
 use askama::Template;
 use axum::{
