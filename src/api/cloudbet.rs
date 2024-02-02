@@ -1,7 +1,8 @@
 use super::connector::ExternalApiIntegration;
 use crate::common::error::ExternalApiError;
 use crate::config::CLOUDBET_API_GRAPHQL_URL;
-use crate::models::{game::Game, game_match::GameMatchCreate};
+use crate::models::game::Game;
+use crate::models::game_match::GameMatchCreateOrUpdate;
 
 #[cynic::schema("cloudbet")]
 mod schema {}
@@ -158,7 +159,10 @@ impl ExternalApiIntegration<self::GameMatch> for CloudbetApi {
         }
     }
 
-    fn into(event: self::GameMatch, game: &Game) -> Result<GameMatchCreate, ExternalApiError> {
+    fn into(
+        event: self::GameMatch,
+        game: &Game,
+    ) -> Result<GameMatchCreateOrUpdate, ExternalApiError> {
         let Some(team_a) = event.clone().home else {
             return Err(ExternalApiError::from("No home team"));
         };
@@ -166,13 +170,14 @@ impl ExternalApiIntegration<self::GameMatch> for CloudbetApi {
             return Err(ExternalApiError::from("No away team"));
         };
 
-        Ok(GameMatchCreate {
+        Ok(GameMatchCreateOrUpdate {
             game_id: game.id,
-            cloudbet_id: Some(event.id.into_inner()),
-            name_a: team_a.name,
-            name_b: team_b.name,
-            starts_at: event.cutoff_time.clone().into(),
-            ends_at: event.cutoff_time.clone().into(),
+            cloudbet_id: event.id.into_inner(),
+            status: Some(event.status.into()),
+            starts_at: Some(event.cutoff_time.clone().into()),
+            ends_at: None,
+            name_a: Some(team_a.name),
+            name_b: Some(team_b.name),
         })
     }
 }

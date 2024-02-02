@@ -30,6 +30,7 @@ pub mod game_match_tests {
         let mut pending_game_match = GameMatch {
             id: pending_game_match_id,
             game_id,
+            cloudbet_id: None,
             name_a: "Sialum".to_string(),
             name_b: "Oklahoma City".to_string(),
             starts_at: DateTime::parse_from_rfc3339("2023-09-05 10:29:35+00:00")
@@ -54,6 +55,7 @@ pub mod game_match_tests {
         let mut finished_game_match = GameMatch {
             id: finished_game_match_id,
             game_id,
+            cloudbet_id: Some("cloudbet-id-14".to_string()),
             name_a: "Arua".to_string(),
             name_b: "Sorriso".to_string(),
             starts_at: DateTime::parse_from_rfc3339("2023-06-11 02:31:09+00:00")
@@ -131,6 +133,7 @@ pub mod game_match_tests {
         let cs2_match1 = GameMatch {
             id: Uuid::parse_str("33b93500-a4ac-46fe-9b11-d3ebe78cbba1").unwrap(),
             game_id: cs2_game_id,
+            cloudbet_id: Some("cloudbet-id-1".to_string()),
             name_a: "Kamiraba".to_string(),
             name_b: "Stephens Island".to_string(),
             starts_at: DateTime::parse_from_rfc3339("2023-02-23 05:34:16+00:00")

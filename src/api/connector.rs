@@ -1,18 +1,18 @@
 use crate::{
     common::error::ExternalApiError,
-    common::DbReadAll,
+    common::{DbCreateOrUpdate, DbReadAll},
     models::{
         game::Game,
-        game_match::{GameMatch, GameMatchCreate},
+        game_match::{GameMatch, GameMatchCreateOrUpdate},
     },
     repositories::{game::GameRepository, game_match::GameMatchRepository},
-    DbCreate, DbRepository, PoolHandler,
+    DbRepository, PoolHandler,
 };
 
 #[async_trait::async_trait]
 pub trait ExternalApiIntegration<T> {
     async fn fetch_game_matches(self, game: &Game) -> Result<Vec<T>, ExternalApiError>;
-    fn into(game_match: T, game: &Game) -> Result<GameMatchCreate, ExternalApiError>;
+    fn into(game_match: T, game: &Game) -> Result<GameMatchCreateOrUpdate, ExternalApiError>;
 }
 
 #[derive(Clone)]
@@ -42,14 +42,15 @@ impl ApiConnector {
             let game_matches_extracted_data = game_matches
                 .into_iter()
                 .map(|game_match| F::into(game_match, &game))
-                .collect::<Result<Vec<GameMatchCreate>, ExternalApiError>>()?;
+                .collect::<Result<Vec<GameMatchCreateOrUpdate>, ExternalApiError>>()?;
 
             let mut stored_game_matches = vec![];
             for game_match_data in game_matches_extracted_data {
-                let stored_game_match = self.clone().store_game_match(game_match_data).await;
-                if let Some(stored_game_match) = stored_game_match.transpose() {
-                    stored_game_matches.push(stored_game_match)
-                }
+                let stored_game_match = self
+                    .clone()
+                    .store_or_update_game_match(game_match_data)
+                    .await;
+                stored_game_matches.push(stored_game_match);
             }
 
             stored_game_matches
@@ -60,12 +61,12 @@ impl ApiConnector {
         Ok(())
     }
 
-    async fn store_game_match(
+    async fn store_or_update_game_match(
         &mut self,
-        game_match_data: GameMatchCreate,
-    ) -> Result<Option<GameMatch>, ExternalApiError> {
+        game_match_data: GameMatchCreateOrUpdate,
+    ) -> Result<GameMatch, ExternalApiError> {
         self.game_match_repo
-            .create(&game_match_data)
+            .create_or_update(&game_match_data)
             .await
             .map_err(ExternalApiError::DbError)
     }
