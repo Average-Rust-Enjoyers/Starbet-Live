@@ -37,6 +37,7 @@ pub struct GameMatch {
     pub id: Uuid,
     // ----------
     pub game_id: Uuid,
+    pub cloudbet_id: Option<String>,
     // ----------
     pub name_a: String,
     pub name_b: String,
@@ -48,6 +49,33 @@ pub struct GameMatch {
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
+
+impl From<GameMatch> for GameMatchCreate {
+    fn from(game_match: GameMatch) -> Self {
+        GameMatchCreate {
+            game_id: game_match.game_id,
+            cloudbet_id: game_match.cloudbet_id,
+            name_a: game_match.name_a,
+            name_b: game_match.name_b,
+            starts_at: game_match.starts_at,
+            ends_at: game_match.ends_at,
+        }
+    }
+}
+
+// impl From<GameMatch> for GameMatchUpdateByCloudbetKey {
+//     fn from(game_match: GameMatch) -> Result<Self, Error> {
+//         GameMatchUpdateByCloudbetKey {
+//             cloudbet_key: game_match.cloudbet_key,
+//             name_a: Some(game_match.name_a),
+//             name_b: Some(game_match.name_b),
+//             starts_at: Some(game_match.starts_at),
+//             ends_at: Some(game_match.ends_at),
+//             status: Some(game_match.status),
+//             outcome: game_match.outcome,
+//         }
+//     }
+// }
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize)]
 pub struct GameMatchCreate {
@@ -77,6 +105,17 @@ impl GameMatchCreate {
             ends_at,
         }
     }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct GameMatchCreateOrUpdate {
+    pub cloudbet_id: String,
+    pub game_id: Uuid,
+    pub name_a: Option<String>,
+    pub name_b: Option<String>,
+    pub starts_at: Option<DateTime<Utc>>,
+    pub ends_at: Option<DateTime<Utc>>,
+    pub status: Option<GameMatchStatus>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -166,10 +205,10 @@ impl From<&GameMatchDelete> for GameMatchGetById {
     }
 }
 
-impl From<&GameMatchUpdate> for GameMatchGetById {
-    fn from(game_match_update: &GameMatchUpdate) -> Self {
-        Self {
-            id: game_match_update.id,
-        }
-    }
-}
+// impl From<&GameMatchUpdate> for GameMatchGetById {
+//     fn from(game_match_update: &GameMatchUpdate) -> Self {
+//         Self {
+//             id: game_match_update.id,
+//         }
+//     }
+// }

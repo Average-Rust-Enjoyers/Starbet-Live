@@ -13,6 +13,7 @@ use crate::{
             PoolHandler,
         },
     },
+    config::DEFAULT_ODDS_VALUE,
     models::{
         bet::BetGetById,
         game_match::GameMatchGetById,
@@ -83,6 +84,31 @@ impl OddsRepository {
         .fetch_optional(transaction_handle.as_mut())
         .await?;
 
+        Ok(odds)
+    }
+
+    pub async fn create_default_odds<'a>(
+        params: GameMatchGetById,
+        transaction_handle: &mut Transaction<'a, Postgres>,
+    ) -> DbResultSingle<Odds> {
+        GameMatchRepository::is_correct(
+            GameMatchRepository::get_game_match(params.clone(), transaction_handle).await?,
+        )?;
+
+        let odds = sqlx::query_as!(
+            Odds,
+            r#"
+                INSERT INTO Odds (game_match_id, odds_a, odds_b)
+                VALUES ($1, $2, $3)
+                ON CONFLICT DO NOTHING
+                RETURNING *
+            "#,
+            params.id,
+            DEFAULT_ODDS_VALUE,
+            DEFAULT_ODDS_VALUE
+        )
+        .fetch_one(transaction_handle.as_mut())
+        .await?;
         Ok(odds)
     }
 }

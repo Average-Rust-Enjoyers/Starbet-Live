@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            UPDATE GameMatch gm SET \n                name_a = COALESCE($1, name_a),\n                name_b = COALESCE($2, name_b),\n                starts_at = COALESCE($3, starts_at),\n                ends_at = COALESCE($4, ends_at),\n                status = COALESCE($5, status),\n                outcome = COALESCE($6, outcome),\n                edited_at = now()\n            WHERE gm.id = $7\n            RETURNING\n                id, \n                game_id, \n                name_a, \n                name_b, \n                starts_at, \n                ends_at, \n                outcome AS \"outcome: _\", \n                status AS \"status: _\", \n                created_at, \n                edited_at, \n                deleted_at\n            ",
+  "query": "\n            UPDATE GameMatch gm SET \n                name_a = COALESCE($1, name_a),\n                name_b = COALESCE($2, name_b),\n                starts_at = COALESCE($3, starts_at),\n                ends_at = COALESCE($4, ends_at),\n                status = COALESCE($5, status),\n                outcome = COALESCE($6, outcome),\n                edited_at = now()\n            WHERE gm.id = $7\n            RETURNING\n                id, \n                game_id,\n                cloudbet_id, \n                name_a, \n                name_b, \n                starts_at, \n                ends_at, \n                outcome AS \"outcome: _\", \n                status AS \"status: _\", \n                created_at, \n                edited_at, \n                deleted_at\n            ",
   "describe": {
     "columns": [
       {
@@ -15,26 +15,31 @@
       },
       {
         "ordinal": 2,
-        "name": "name_a",
+        "name": "cloudbet_id",
         "type_info": "Text"
       },
       {
         "ordinal": 3,
-        "name": "name_b",
+        "name": "name_a",
         "type_info": "Text"
       },
       {
         "ordinal": 4,
+        "name": "name_b",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
         "name": "starts_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 5,
+        "ordinal": 6,
         "name": "ends_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 6,
+        "ordinal": 7,
         "name": "outcome: _",
         "type_info": {
           "Custom": {
@@ -50,7 +55,7 @@
         }
       },
       {
-        "ordinal": 7,
+        "ordinal": 8,
         "name": "status: _",
         "type_info": {
           "Custom": {
@@ -68,17 +73,17 @@
         }
       },
       {
-        "ordinal": 8,
+        "ordinal": 9,
         "name": "created_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 9,
+        "ordinal": 10,
         "name": "edited_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 10,
+        "ordinal": 11,
         "name": "deleted_at",
         "type_info": "Timestamptz"
       }
@@ -121,6 +126,7 @@
     "nullable": [
       false,
       false,
+      true,
       false,
       false,
       false,
@@ -132,5 +138,5 @@
       true
     ]
   },
-  "hash": "ec973ebb7e1ea24370857bdcf3dbee28dd4633842aef9e2eb66fae123aa711a5"
+  "hash": "7052162539b7512921b68c389e50042645a32f3b927550a5476d41daf4507e6a"
 }

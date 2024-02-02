@@ -122,6 +122,24 @@ pub trait DbUpdateMany<UpdateMany, Data> {
     /// - `sqlx::Error(_)` on any failure (SQL, DB constraints, connection, etc.)
     async fn update(&mut self, params: &UpdateMany) -> DbResultMultiple<Data>;
 }
+
+#[async_trait]
+pub trait DbCreateOrUpdate<CreateOrUpdate, Data> {
+    /// Generic call which creates a new record or updates the record if it is already present in the database and creating resulted in conflict.
+    ///
+    /// # Arguments
+    ///
+    /// - `self`: mutable reference to the repository to access the pool handler
+    /// - `params`: the structure which passes parameters for the update operation
+    ///
+    /// # Returns
+    ///
+    /// - `Ok(Data)` on success (structure which represent updated or created data from the
+    ///                               database)
+    /// - `sqlx::Error(_)` on any failure (SQL, DB constraints, connection, etc.)
+    async fn create_or_update(&mut self, params: &CreateOrUpdate) -> DbResultSingle<Data>;
+}
+
 #[async_trait]
 pub trait DbDelete<Delete, Data> {
     /// Generic call which deletes record(s) present in the database

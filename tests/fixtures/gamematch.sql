@@ -78,7 +78,7 @@ VALUES (
     (
         'de9e51a5-4f35-44c6-a9ee-7a3fb2fd1954',
         '1f4642df-3d91-4303-902a-cec021694c13',
-        'cloudbet-id-6',
+        NULL,
         'Sialum',
         'Oklahoma City',
         '2023-09-05 10:29:35',

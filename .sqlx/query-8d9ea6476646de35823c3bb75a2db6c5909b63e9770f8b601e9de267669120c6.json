@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            INSERT INTO GameMatch \n            (game_id, cloudbet_id, name_a, name_b, starts_at, ends_at) \n            VALUES \n            ($1, $2, $3, $4, $5, $6) \n            ON CONFLICT DO NOTHING\n            RETURNING \n                 id, \n                 game_id, \n                 name_a, \n                 name_b, \n                 starts_at, \n                 ends_at, \n                 outcome AS \"outcome: _\", \n                 status AS \"status: _\", \n                 created_at, \n                 edited_at, \n                 deleted_at\n            ",
+  "query": "\n            INSERT INTO GameMatch \n            (game_id, cloudbet_id, name_a, name_b, starts_at, ends_at, status) \n            VALUES \n            ($1, $2, $3, $4, $5, $6, $7)\n            ON CONFLICT (cloudbet_id) DO UPDATE SET\n                game_id = EXCLUDED.game_id,\n                name_a = EXCLUDED.name_a,\n                name_b = EXCLUDED.name_b,\n                status =  EXCLUDED.status,\n                starts_at = EXCLUDED.starts_at,\n                ends_at = EXCLUDED.ends_at,\n                edited_at = NOW()\n            RETURNING \n                id, \n                game_id,\n                cloudbet_id, \n                name_a, \n                name_b,\n                starts_at, \n                ends_at, \n                outcome AS \"outcome: _\", \n                status AS \"status: _\", \n                created_at, \n                edited_at, \n                deleted_at\n            ",
   "describe": {
     "columns": [
       {
@@ -15,26 +15,31 @@
       },
       {
         "ordinal": 2,
-        "name": "name_a",
+        "name": "cloudbet_id",
         "type_info": "Text"
       },
       {
         "ordinal": 3,
-        "name": "name_b",
+        "name": "name_a",
         "type_info": "Text"
       },
       {
         "ordinal": 4,
+        "name": "name_b",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
         "name": "starts_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 5,
+        "ordinal": 6,
         "name": "ends_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 6,
+        "ordinal": 7,
         "name": "outcome: _",
         "type_info": {
           "Custom": {
@@ -50,7 +55,7 @@
         }
       },
       {
-        "ordinal": 7,
+        "ordinal": 8,
         "name": "status: _",
         "type_info": {
           "Custom": {
@@ -68,17 +73,17 @@
         }
       },
       {
-        "ordinal": 8,
+        "ordinal": 9,
         "name": "created_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 9,
+        "ordinal": 10,
         "name": "edited_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 10,
+        "ordinal": 11,
         "name": "deleted_at",
         "type_info": "Timestamptz"
       }
@@ -90,12 +95,27 @@
         "Text",
         "Text",
         "Timestamptz",
-        "Timestamptz"
+        "Timestamptz",
+        {
+          "Custom": {
+            "name": "gamematchstatus",
+            "kind": {
+              "Enum": [
+                "PENDING",
+                "LIVE",
+                "FINISHED",
+                "CANCELED",
+                "AWAITING_RESULTS"
+              ]
+            }
+          }
+        }
       ]
     },
     "nullable": [
       false,
       false,
+      true,
       false,
       false,
       false,
@@ -107,5 +127,5 @@
       true
     ]
   },
-  "hash": "6ba14ae6488f5d40ebc2b03ab8a078c0e3bd580d5bc32689beaff721047cc445"
+  "hash": "8d9ea6476646de35823c3bb75a2db6c5909b63e9770f8b601e9de267669120c6"
 }

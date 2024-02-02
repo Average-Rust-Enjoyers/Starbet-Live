@@ -10,21 +10,19 @@ use crate::{
             DbResultMultiple, DbResultSingle,
         },
         logic::pay_out_match,
-        DbCreate, DbDelete, DbPoolHandler, DbReadAll, DbReadByForeignKey, DbReadOne, DbRepository,
-        DbUpdateOne, PoolHandler,
+        DbCreate, DbCreateOrUpdate, DbDelete, DbPoolHandler, DbReadAll, DbReadByForeignKey,
+        DbReadOne, DbRepository, DbUpdateOne, PoolHandler,
     },
-    config::DEFAULT_ODDS_VALUE,
     models::{
         game::GameGetById,
         game_match::{
-            GameMatch, GameMatchCreate, GameMatchDelete, GameMatchGetById, GameMatchStatus,
-            GameMatchUpdate,
+            GameMatch, GameMatchCreate, GameMatchCreateOrUpdate, GameMatchDelete, GameMatchGetById,
+            GameMatchStatus, GameMatchUpdate,
         },
-        odds::Odds,
     },
 };
 
-use super::game::GameRepository;
+use super::{game::GameRepository, odds::OddsRepository};
 
 #[derive(Clone)]
 pub struct GameMatchRepository {
@@ -47,7 +45,8 @@ impl GameMatchRepository {
             r#"
             SELECT 
                 id, 
-                game_id, 
+                game_id,
+                cloudbet_id, 
                 name_a, 
                 name_b, 
                 starts_at, 
@@ -109,7 +108,8 @@ impl DbCreate<GameMatchCreate, Option<GameMatch>> for GameMatchRepository {
             ON CONFLICT DO NOTHING
             RETURNING 
                  id, 
-                 game_id, 
+                 game_id,
+                 cloudbet_id,
                  name_a, 
                  name_b, 
                  starts_at, 
@@ -137,20 +137,8 @@ impl DbCreate<GameMatchCreate, Option<GameMatch>> for GameMatchRepository {
             return Ok(None);
         };
 
-        sqlx::query_as!(
-            Odds,
-            r#"
-                INSERT INTO Odds (game_match_id, odds_a, odds_b)
-                VALUES ($1, $2, $3)
-                ON CONFLICT DO NOTHING
-                RETURNING *
-            "#,
-            game_match.id,
-            DEFAULT_ODDS_VALUE,
-            DEFAULT_ODDS_VALUE
-        )
-        .fetch_one(&mut *tx)
-        .await?;
+        OddsRepository::create_default_odds(GameMatchGetById { id: game_match.id }, &mut tx)
+            .await?;
 
         tx.commit().await?;
 
@@ -181,7 +169,8 @@ impl DbUpdateOne<GameMatchUpdate, GameMatch> for GameMatchRepository {
             WHERE gm.id = $7
             RETURNING
                 id, 
-                game_id, 
+                game_id,
+                cloudbet_id, 
                 name_a, 
                 name_b, 
                 starts_at, 
@@ -254,8 +243,9 @@ impl DbDelete<GameMatchDelete, GameMatch> for GameMatchRepository {
             WHERE gm.id = $1
             RETURNING
                 id, 
-                game_id, 
-                name_a, 
+                game_id,
+                cloudbet_id, 
+                name_a,
                 name_b, 
                 starts_at, 
                 ends_at, 
@@ -286,8 +276,9 @@ impl DbReadAll<GameMatch> for GameMatchRepository {
             r#"
             SELECT 
                 id, 
-                game_id, 
-                name_a, 
+                game_id,
+                cloudbet_id, 
+                name_a,
                 name_b, 
                 starts_at, 
                 ends_at, 
@@ -318,9 +309,10 @@ impl DbReadByForeignKey<Uuid, GameMatch> for GameMatchRepository {
             r#"
             SELECT 
                 id, 
+                cloudbet_id,
                 game_id, 
                 name_a, 
-                name_b, 
+                name_b,
                 starts_at, 
                 ends_at, 
                 outcome AS "outcome: _", 
@@ -341,5 +333,66 @@ impl DbReadByForeignKey<Uuid, GameMatch> for GameMatchRepository {
         tx.commit().await?;
 
         Ok(matches)
+    }
+}
+
+#[async_trait]
+impl DbCreateOrUpdate<GameMatchCreateOrUpdate, GameMatch> for GameMatchRepository {
+    async fn create_or_update(
+        &mut self,
+        data: &GameMatchCreateOrUpdate,
+    ) -> DbResultSingle<GameMatch> {
+        let mut tx = self.pool_handler.pool.begin().await?;
+
+        GameRepository::is_correct(
+            GameRepository::get_game(GameGetById { id: data.game_id }, &mut tx).await?,
+        )?;
+
+        let game_match = sqlx::query_as!(
+            GameMatch,
+            r#"
+            INSERT INTO GameMatch 
+            (game_id, cloudbet_id, name_a, name_b, starts_at, ends_at, status) 
+            VALUES 
+            ($1, $2, $3, $4, $5, $6, $7)
+            ON CONFLICT (cloudbet_id) DO UPDATE SET
+                game_id = EXCLUDED.game_id,
+                name_a = EXCLUDED.name_a,
+                name_b = EXCLUDED.name_b,
+                status =  EXCLUDED.status,
+                starts_at = EXCLUDED.starts_at,
+                ends_at = EXCLUDED.ends_at,
+                edited_at = NOW()
+            RETURNING 
+                id, 
+                game_id,
+                cloudbet_id, 
+                name_a, 
+                name_b,
+                starts_at, 
+                ends_at, 
+                outcome AS "outcome: _", 
+                status AS "status: _", 
+                created_at, 
+                edited_at, 
+                deleted_at
+            "#,
+            data.game_id,
+            data.cloudbet_id,
+            data.name_a,
+            data.name_b,
+            data.starts_at,
+            data.ends_at,
+            data.status as _,
+        )
+        .fetch_one(&mut *tx)
+        .await?;
+
+        OddsRepository::create_default_odds(GameMatchGetById { id: game_match.id }, &mut tx)
+            .await?;
+
+        tx.commit().await?;
+
+        Ok(game_match)
     }
 }
