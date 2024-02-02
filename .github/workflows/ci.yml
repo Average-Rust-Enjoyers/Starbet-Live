@@ -44,5 +44,7 @@ jobs:
       - docker
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: SQLx Prepare
         run: cargo install sqlx-cli --no-default-features --features native-tls,postgres && cargo sqlx prepare --check
