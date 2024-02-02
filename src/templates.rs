@@ -212,6 +212,12 @@ impl ProfileMenuItem {
     }
 }
 
+#[derive(Template)]
+#[template(path = "profile/balance_fragment.html")]
+pub struct ProfileBalanceFragment {
+    pub balance: i32,
+}
+
 pub struct UserSend {
     pub username: String,
     pub email: String,

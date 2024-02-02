@@ -7,7 +7,7 @@
     {% let active_classes = "hover:text-primary hover:bg-secondary-darker" %}
 {% endif %}
 
-<li class="{{ active_classes }} {{ custom_classes }} rounded px-2">
+<li class="{{ active_classes }} {{ custom_classes }} rounded">
     <button
         hx-get="/user/{{ name }}"
         hx-target="#main-content"

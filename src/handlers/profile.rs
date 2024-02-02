@@ -1,9 +1,6 @@
 use crate::{
     auth::{self, AuthSession},
-    common::{
-        helpers::{format_date_time_string_with_seconds, user_update_all_none},
-        DbUpdateOne,
-    },
+    common::{helpers::format_date_time_string_with_seconds, DbUpdateOne},
     models::{
         bet::{BetGetByUserId, BetStatus},
         game::GameGetById,
@@ -16,7 +13,10 @@ use crate::{
         bet::BetRepository, game_match::GameMatchRepository, odds::OddsRepository,
         user::UserRepository,
     },
-    templates::{BetHistory, BetHistoryBet, EditProfilePage, ProfileInfoFragment, ProfilePage},
+    templates::{
+        BetHistory, BetHistoryBet, DepositWithdrawalPage, EditProfilePage, ProfileBalanceFragment,
+        ProfileInfoFragment, ProfilePage,
+    },
     DbReadMany, DbReadOne, GameRepository,
 };
 use askama::Template;
@@ -25,6 +25,7 @@ use axum::{
     response::{Html, IntoResponse},
     Extension, Form,
 };
+use serde::Deserialize;
 
 use super::validation::{validate_and_build, RegisterFormData};
 
@@ -185,8 +186,7 @@ pub async fn post_edit_profile_handler(
         );
     }
 
-    if !user_update_all_none(&user_update) && (user_repository.update(&user_update).await).is_err()
-    {
+    if !user_update.update_fields_none() && (user_repository.update(&user_update).await).is_err() {
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     }
 
@@ -198,21 +198,87 @@ pub async fn deposit_withdrawal_handler(auth_session: AuthSession) -> impl IntoR
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
 
-    StatusCode::OK.into_response()
+    (
+        StatusCode::OK,
+        Html(DepositWithdrawalPage::new().render().unwrap()),
+    )
+        .into_response()
 }
 
-pub async fn deposit_handler(auth_session: AuthSession) -> impl IntoResponse {
-    let Some(_) = auth_session.user else {
+#[derive(Deserialize)]
+pub struct DepositWithdrawalForm {
+    pub amount: i32,
+}
+
+pub async fn handle_transaction<F>(
+    auth_session: AuthSession,
+    Extension(mut user_repository): Extension<UserRepository>,
+    Form(payload): Form<DepositWithdrawalForm>,
+    transaction: F,
+) -> impl IntoResponse
+where
+    F: Fn(i32, i32) -> Result<i32, StatusCode>,
+{
+    let Some(user) = auth_session.user else {
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
 
-    StatusCode::OK.into_response()
-}
-
-pub async fn withdrawal_handler(auth_session: AuthSession) -> impl IntoResponse {
-    let Some(_) = auth_session.user else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    let new_balance = match transaction(user.balance, payload.amount) {
+        Ok(balance) => balance,
+        Err(status) => return status.into_response(),
     };
 
-    StatusCode::OK.into_response()
+    if user_repository
+        .update(&UserUpdate {
+            id: user.id,
+            balance: Some(new_balance),
+            ..Default::default()
+        })
+        .await
+        .is_err()
+    {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    }
+
+    (
+        StatusCode::OK,
+        Html(
+            ProfileBalanceFragment {
+                balance: new_balance,
+            }
+            .render()
+            .unwrap(),
+        ),
+    )
+        .into_response()
+}
+
+pub async fn deposit_handler(
+    auth_session: AuthSession,
+    user_repository: Extension<UserRepository>,
+    form: Form<DepositWithdrawalForm>,
+) -> impl IntoResponse {
+    handle_transaction(auth_session, user_repository, form, |balance, amount| {
+        if amount <= 0 {
+            Err(StatusCode::BAD_REQUEST)
+        } else {
+            Ok(balance + amount * 100)
+        }
+    })
+    .await
+}
+
+pub async fn withdrawal_handler(
+    auth_session: AuthSession,
+    user_repository: Extension<UserRepository>,
+    form: Form<DepositWithdrawalForm>,
+) -> impl IntoResponse {
+    handle_transaction(auth_session, user_repository, form, |balance, amount| {
+        if amount <= 0 || amount * 100 > balance {
+            Err(StatusCode::BAD_REQUEST)
+        } else {
+            Ok(balance - amount * 100)
+        }
+    })
+    .await
 }

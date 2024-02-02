@@ -87,7 +87,7 @@ impl Credentials {
 }
 
 /// Structure passed to the repository when trying to update a user
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct UserUpdate {
     pub id: Uuid,
     pub username: Option<String>,
@@ -126,6 +126,19 @@ impl UserUpdate {
             profile_picture: profile_picture.and_then(change_to_owned),
             password_hash: password_hash.and_then(change_to_owned),
             balance,
+        }
+    }
+
+    pub fn default(id: &Uuid) -> Self {
+        Self {
+            id: *id,
+            username: None,
+            email: None,
+            name: None,
+            surname: None,
+            profile_picture: None,
+            password_hash: None,
+            balance: None,
         }
     }
 
