@@ -1,6 +1,8 @@
 <tr hx-target="this" hx-swap="outerHTML">
     <td>{{ game_match.name_a }}</td>
     <td>{{ game_match.name_b }}</td>
+    <td>{{ game_match.starts_at }}</td>
+    <td>{{ game_match.ends_at }}</td>
     <td>
         {{ game_match.status }}
         {% if game_match.status == GameMatchStatus::Finished %}
