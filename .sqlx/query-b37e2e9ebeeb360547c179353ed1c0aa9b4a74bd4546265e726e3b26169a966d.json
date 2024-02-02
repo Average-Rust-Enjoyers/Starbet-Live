@@ -1,0 +1,104 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE MoneyTransaction\n                SET edited_at = now(),\n                    status = $1\n                WHERE id = $2\n                RETURNING \n                    id,\n                    app_user_id,\n                    status AS \"status: _\",\n                    amount_tokens,\n                    amount_currency,\n                    currency AS \"currency: _\",\n                    deposit,\n                    created_at,\n                    edited_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "app_user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "status: _",
+        "type_info": {
+          "Custom": {
+            "name": "moneytransactionstatus",
+            "kind": {
+              "Enum": [
+                "PENDING",
+                "COMPLETED",
+                "CANCELED"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "amount_tokens",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "amount_currency",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 5,
+        "name": "currency: _",
+        "type_info": {
+          "Custom": {
+            "name": "currency",
+            "kind": {
+              "Enum": [
+                "CZK",
+                "EUR",
+                "USD"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "deposit",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "edited_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "moneytransactionstatus",
+            "kind": {
+              "Enum": [
+                "PENDING",
+                "COMPLETED",
+                "CANCELED"
+              ]
+            }
+          }
+        },
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "b37e2e9ebeeb360547c179353ed1c0aa9b4a74bd4546265e726e3b26169a966d"
+}
