@@ -1,9 +1,11 @@
+use argon2::{password_hash::SaltString, Argon2, PasswordHasher};
 use axum_login::AuthUser;
 use chrono::{DateTime, Utc};
+use rand::rngs::OsRng;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{handlers::validation::RegisterFormData, helpers::hash_password};
+use crate::handlers::validation::RegisterFormData;
 
 /// User structure which is serialized from the database, containing full information
 /// about the user. Only obtainable when you have the right email and the right password hash
@@ -62,10 +64,24 @@ impl From<RegisterFormData> for UserCreate {
             email: register_form_data.email,
             name: register_form_data.first_name,
             surname: register_form_data.last_name,
-            profile_picture: format!("https://robohash.org/{}.png", register_form_data.username),
+            profile_picture: format!(
+                "https://robohash.org/{}.png?set=set2",
+                register_form_data.username
+            ),
             password_hash: hash_password(register_form_data.password.as_bytes()),
         }
     }
+}
+
+/// For verification check example: <https://docs.rs/argon2/latest/argon2>
+fn hash_password(password: &[u8]) -> String {
+    let salt = SaltString::generate(&mut OsRng);
+    let argon2 = Argon2::default();
+
+    argon2
+        .hash_password(password, &salt)
+        .expect("Password hashing failed")
+        .to_string()
 }
 
 /// Structure passed to the repository when trying to log in (read one == login)

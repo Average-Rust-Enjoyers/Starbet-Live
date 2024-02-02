@@ -5,8 +5,8 @@ use crate::{
         game::Game,
         game_match::{GameMatch, GameMatchCreate},
     },
-    repositories::game_match::GameMatchRepository,
-    DbCreate, DbRepository, GameRepository, PoolHandler,
+    repositories::{game::GameRepository, game_match::GameMatchRepository},
+    DbCreate, DbRepository, PoolHandler,
 };
 
 #[async_trait::async_trait]

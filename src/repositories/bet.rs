@@ -91,8 +91,8 @@ impl BetRepository {
     pub async fn update_bet<'a>(
         params: BetUpdate,
         transaction_handle: &mut Transaction<'a, Postgres>,
-    ) -> DbResultMultiple<Bet> {
-        let bets = sqlx::query_as!(
+    ) -> DbResultSingle<Bet> {
+        let bet = sqlx::query_as!(
             Bet,
             r#"
                 UPDATE Bet
@@ -114,10 +114,10 @@ impl BetRepository {
             params.id,
             params.status as _,
         )
-        .fetch_all(transaction_handle.as_mut())
+        .fetch_one(transaction_handle.as_mut())
         .await?;
 
-        Ok(bets)
+        Ok(bet)
     }
 
     /// # Errors
@@ -192,37 +192,10 @@ impl DbUpdateOne<BetUpdate, Bet> for BetRepository {
     async fn update(&mut self, data: &BetUpdate) -> DbResultSingle<Bet> {
         let mut tx = self.pool_handler.pool.begin().await?;
 
-        BetRepository::is_correct(
-            BetRepository::get_bet(BetGetById { id: data.id }, &mut tx).await?,
-        )?;
-
-        let bet = sqlx::query_as!(
-            Bet,
-            r#"
-                UPDATE Bet
-                SET status = COALESCE($2, status),
-                    edited_at = now()
-                WHERE id = $1
-                RETURNING
-                    id,
-                    app_user_id,
-                    game_match_id,
-                    odds_id,
-                    amount,
-                    status AS "status: _",
-                    expected_outcome AS "expected_outcome: _",
-                    created_at,
-                    edited_at,
-                    deleted_at
-            "#,
-            data.id,
-            data.status as _,
-        )
-        .fetch_one(&mut *tx)
-        .await?;
+        Self::is_correct(Self::get_bet(BetGetById { id: data.id }, &mut tx).await?)?;
+        let bet = Self::update_bet(data.clone(), &mut tx).await?;
 
         tx.commit().await?;
-
         Ok(bet)
     }
 }

@@ -81,9 +81,9 @@ impl From<GameMatchStatus> for crate::models::game_match::GameMatchStatus {
 pub struct DateTime(pub String);
 
 impl From<DateTime> for chrono::DateTime<chrono::Utc> {
-    fn from(val: DateTime) -> Self {
-        chrono::DateTime::parse_from_rfc3339(&val.0)
-            .unwrap() // TODO: find out how to fix, seems quite hard. default value?
+    fn from(rfc3339_datetime: DateTime) -> Self {
+        chrono::DateTime::parse_from_rfc3339(&rfc3339_datetime.0)
+            .unwrap_or_default()
             .with_timezone(&chrono::Utc)
     }
 }

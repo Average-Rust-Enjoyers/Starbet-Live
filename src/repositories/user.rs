@@ -11,12 +11,11 @@ use crate::{
             },
             DbError, DbResultMultiple, DbResultSingle,
         },
-        DbUpdateOne, PoolHandler,
+        DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository, DbUpdateOne, PoolHandler,
     },
     models::user::{
         Credentials, GetByUserId, User, UserCreate, UserDelete, UserUpdate, UserUpdateBalance,
     },
-    DbCreate, DbDelete, DbPoolHandler, DbReadOne, DbRepository,
 };
 
 pub enum Field {

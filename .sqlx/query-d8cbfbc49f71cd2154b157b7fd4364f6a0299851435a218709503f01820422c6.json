@@ -1,0 +1,78 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT id,\n                    name,\n                    description,\n                    cloudbet_key,\n                    logo,\n                    genre AS \"genre: _\",\n                    created_at,\n                    edited_at,\n                    deleted_at\n                    FROM Game\n                    WHERE deleted_at IS NULL\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "cloudbet_key",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "logo",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "genre: _",
+        "type_info": {
+          "Custom": {
+            "name": "gamegenre",
+            "kind": {
+              "Enum": [
+                "MOBA",
+                "FPS"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "edited_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "d8cbfbc49f71cd2154b157b7fd4364f6a0299851435a218709503f01820422c6"
+}

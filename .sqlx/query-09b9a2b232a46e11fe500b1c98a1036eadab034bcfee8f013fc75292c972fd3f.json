@@ -1,0 +1,112 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE Bet\n                SET status = $2,\n                    edited_at = now()\n                WHERE id = $1\n                RETURNING\n                    id,\n                    app_user_id,\n                    game_match_id,\n                    odds_id,\n                    amount,\n                    status AS \"status: _\",\n                    expected_outcome AS \"expected_outcome: _\",\n                    created_at,\n                    edited_at,\n                    deleted_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "app_user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "game_match_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 3,
+        "name": "odds_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 4,
+        "name": "amount",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "status: _",
+        "type_info": {
+          "Custom": {
+            "name": "betstatus",
+            "kind": {
+              "Enum": [
+                "PENDING",
+                "WON",
+                "LOST",
+                "CANCELED"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "expected_outcome: _",
+        "type_info": {
+          "Custom": {
+            "name": "gamematchoutcome",
+            "kind": {
+              "Enum": [
+                "WIN_A",
+                "WIN_B",
+                "DRAW"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "edited_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        {
+          "Custom": {
+            "name": "betstatus",
+            "kind": {
+              "Enum": [
+                "PENDING",
+                "WON",
+                "LOST",
+                "CANCELED"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "09b9a2b232a46e11fe500b1c98a1036eadab034bcfee8f013fc75292c972fd3f"
+}
