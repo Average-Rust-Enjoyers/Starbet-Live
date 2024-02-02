@@ -58,6 +58,7 @@ pub async fn dashboard_handler(
 
     let user_nav = UserNav {
         username: user.username,
+        profile_picture: user.profile_picture,
         user_balance,
     };
 

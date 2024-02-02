@@ -1,72 +1,26 @@
-<div
-    class="bg-primary text-secondary flex flex-row items-center justify-between p-2"
+<header
+    class="bg-primary text-secondary flex items-center justify-between px-6 py-4"
 >
-    <div class="flex flex-row items-center gap-2 text-3xl font-bold">
-        <svg
-            id="etXrbcyABMI1"
-            xmlns="http://www.w3.org/2000/svg"
-            xmlns:xlink="http://www.w3.org/1999/xlink"
-            viewBox="0 0 300 300"
-            shape-rendering="geometricPrecision"
-            text-rendering="geometricPrecision"
-            width="50px"
-            height="50px"
+    <a hx-boost="true" href="/dashboard" class="flex items-center space-x-4">
+        {% include "logo.html" %}
+        <h1 class="text-2xl font-bold">Starbet-Live: Games</h1>
+    </a>
+    <nav hx-boost="true" class="flex items-center justify-center space-x-4">
+        <a
+            class="hover:text-secondary text-secondary-darkest flex items-center justify-center space-x-2"
+            href="/profile"
         >
-            <ellipse
-                rx="30"
-                ry="30"
-                transform="matrix(1.356765 0 0 1.400633 109.29705 229.122622)"
-                fill="#fff"
-                stroke-width="0"
+            <img
+                src="{{ profile_picture }}"
+                alt="profile-picture"
+                class="max-h-8 max-w-8 rounded-full object-contain"
             />
-            <ellipse
-                rx="30"
-                ry="30"
-                transform="matrix(1.356765 0 0 1.400633 190.70295 229.122622)"
-                fill="#fff"
-                stroke-width="0"
-            />
-            <ellipse
-                rx="30"
-                ry="30"
-                transform="matrix(.988901 0 0 1.400633 150 72.93869)"
-                fill="#fff"
-                stroke-width="0"
-            />
-            <rect
-                width="59.334028"
-                height="156.183933"
-                rx="0"
-                ry="0"
-                transform="translate(120.332986 72.93869)"
-                fill="#fff"
-                stroke-width="0"
-            />
-            <line
-                x1="-29.667022"
-                y1="0"
-                x2="29.667022"
-                y2="0"
-                transform="translate(149.999992 72.93869)"
-                fill="none"
-                stroke="#0f172a"
-                stroke-width="3"
-            />
-            <line
-                x1="-0.000004"
-                y1="-8.324525"
-                x2="0.000004"
-                y2="8.324524"
-                transform="translate(149.999988 38.816813)"
-                fill="none"
-                stroke="#0f172a"
-                stroke-width="3"
-            />
-        </svg>
-        <div>STARBET-LIVE</div>
-    </div>
-    <div class="flex flex-col px-2">
-        <div>{{username}}</div>
-        {{ user_balance|safe }}
-    </div>
-</div>
+            <div class="flex gap-2">
+                <p>{{ username }}:</p>
+                {{ user_balance|safe }}
+            </div> </a
+        ><a class="hover:text-secondary text-secondary-darkest" href="/logout"
+            >Logout</a
+        >
+    </nav>
+</header>

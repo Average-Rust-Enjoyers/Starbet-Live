@@ -278,6 +278,7 @@ pub struct Dashboard {
 #[template(path = "user/user_nav.html")]
 pub struct UserNav {
     pub username: String,
+    pub profile_picture: String,
     pub user_balance: UserBalance,
 }
 
