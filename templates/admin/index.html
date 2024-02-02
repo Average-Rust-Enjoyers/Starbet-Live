@@ -57,6 +57,8 @@
                         <tr>
                             <th>Name A</th>
                             <th>Name B</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -67,6 +69,19 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                <script>
+                    const localize_dates = () => {
+                        [
+                            ...document.querySelectorAll('tbody tr td:nth-of-type(3)'),
+                            ...document.querySelectorAll('tbody tr td:nth-of-type(4)')
+                        ].forEach(elem => {
+                            elem.textContent = new Date(elem.textContent).toLocaleString();
+                        })
+                    }
+
+                    document.addEventListener('htmx:afterRequest', localize_dates);
+                    localize_dates();
+                </script>
             </div>
         </div>
     </main>
