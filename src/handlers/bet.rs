@@ -9,9 +9,11 @@ use crate::{
         game_match_outcome::GameMatchOutcome,
         odds::{Odds, OddsCreate, OddsGetByGameMatchId},
     },
-    repositories::{bet::BetRepository, game_match::GameMatchRepository, odds::OddsRepository},
+    repositories::{
+        bet::BetRepository, game::GameRepository, game_match::GameMatchRepository,
+        odds::OddsRepository,
+    },
     templates::{ActiveBets, Bet, GameMatchWrapper, Match, PlaceBetForm},
-    GameRepository,
 };
 
 use crate::common::repository::{DbCreate, DbGetLatest, DbReadMany, DbReadOne};

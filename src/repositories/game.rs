@@ -9,11 +9,12 @@ use crate::{
             BusinessLogicError, BusinessLogicErrorKind::GameDeleted,
             BusinessLogicErrorKind::GameDoesNotExist, DbResultMultiple, DbResultSingle,
         },
-        repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
-        DbReadAll, DbUpdateOne,
+        repository::{
+            DbCreate, DbDelete, DbPoolHandler, DbReadAll, DbReadMany, DbReadOne, DbRepository,
+            DbUpdateOne, PoolHandler,
+        },
     },
     models::game::{Game, GameCreate, GameDelete, GameFilter, GameGenre, GameGetById, GameUpdate},
-    DbDelete,
 };
 
 #[derive(Clone)]

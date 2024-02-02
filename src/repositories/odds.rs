@@ -9,7 +9,8 @@ use crate::{
             DbResultMultiple, DbResultSingle,
         },
         repository::{
-            DbCreate, DbGetLatest, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler,
+            DbCreate, DbDelete, DbGetLatest, DbPoolHandler, DbReadMany, DbReadOne, DbRepository,
+            PoolHandler,
         },
     },
     models::{
@@ -17,7 +18,6 @@ use crate::{
         game_match::GameMatchGetById,
         odds::{Odds, OddsCreate, OddsGetByBetId, OddsGetByGameMatchId, OddsGetById},
     },
-    DbDelete,
 };
 
 use super::{bet::BetRepository, game_match::GameMatchRepository};
