@@ -1,54 +1,31 @@
-<div id="main-content" class="flex flex-grow">
-    <ul
-        class="bg-primary-lighter flex w-1/5 flex-col gap-4 rounded p-4 text-center"
-    >
-        <li class="hover:text-primary hover:bg-secondary-darker rounded px-2">
-            <button hx-get="/user/bet-history" hx-target="#main-content">
-                Bet History
-            </button>
-        </li>
-        <li class="bg-primary hover:bg-primary-lightest rounded px-2">
-            <button hx-get="/user/edit-profile" hx-target="#main-content">
-                Edit Profile
-            </button>
-        </li>
-        <li class="hover:text-primary hover:bg-secondary-darker rounded px-2">
-            <button hx-get="/user/deposit-withdrawl" hx-target="#main-content">
-                Deposit/Withdrawal
-            </button>
-        </li>
-        <li
-            class="hover:text-primary hover:bg-secondary-darker mt-auto rounded px-2"
-        >
-            <button hx-get="/user/settings" hx-target="#main-content">
-                Settings
-            </button>
-        </li>
-    </ul>
-    <div class="flex flex-grow items-center justify-center overflow-y-auto">
-        <div class="w-80 text-center">
-            <p class="text-secondary-darkest mb-8 text-lg">
-                Update your account information
-            </p>
-            <form hx-post="user/edit-profile" hx-swap="none" class="text-left">
-                <!-- prettier-ignore -->
-                {{ username|safe }}
-                {{ first_name|safe }} 
-                {{ last_name|safe }}
-                {{ email|safe }}
+<ul
+    class="bg-primary-lighter flex w-1/5 flex-col gap-4 rounded p-4 text-center"
+>
+    {% for item in menu %} {{ item|safe }} {% endfor %}
+</ul>
+<div class="flex flex-grow items-center justify-center overflow-y-auto">
+    <div class="w-80 text-center">
+        <p class="text-secondary-darkest mb-8 text-lg">
+            Update your account information
+        </p>
+        <form hx-post="user/edit-profile" hx-swap="none" class="text-left">
+            <!-- prettier-ignore -->
+            {{ username|safe }}
+            {{ first_name|safe }} 
+            {{ last_name|safe }}
+            {{ email|safe }}
 
-                <!-- hidden, but sent so that the form is processable -->
-                <input class="hidden" type="password" name="password" />
-                <input class="hidden" type="password" name="confirm-password" />
-                <div class="flex justify-center">
-                    <button
-                        type="submit"
-                        class="border-secondary text-secondary hover:bg-primary-lighter mt-4 h-10 rounded-md border bg-transparent px-8 text-sm font-medium transition-colors"
-                    >
-                        Update Profile
-                    </button>
-                </div>
-            </form>
-        </div>
+            <!-- hidden, but sent so that the form is processable -->
+            <input class="hidden" type="password" name="password" />
+            <input class="hidden" type="password" name="confirm-password" />
+            <div class="flex justify-center">
+                <button
+                    type="submit"
+                    class="border-secondary text-secondary hover:bg-primary-lighter mt-4 h-10 rounded-md border bg-transparent px-8 text-sm font-medium transition-colors"
+                >
+                    Update Profile
+                </button>
+            </div>
+        </form>
     </div>
 </div>

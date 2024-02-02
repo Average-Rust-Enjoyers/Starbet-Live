@@ -1,0 +1,19 @@
+<!-- prettier-ignore -->
+{% let active_classes %}
+
+{% if active %}
+    {% let active_classes = "bg-primary hover:bg-primary-lightest" %}
+{% else %}
+    {% let active_classes = "hover:text-primary hover:bg-secondary-darker" %}
+{% endif %}
+
+<li class="{{ active_classes }} {{ custom_classes }} rounded px-2">
+    <button
+        hx-get="/user/{{ name }}"
+        hx-target="#main-content"
+        hx-indicator="#indicator"
+        class="w-full"
+    >
+        {{ name|split_and_capitalize }}
+    </button>
+</li>

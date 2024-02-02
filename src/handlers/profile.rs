@@ -16,9 +16,7 @@ use crate::{
         bet::BetRepository, game_match::GameMatchRepository, odds::OddsRepository,
         user::UserRepository,
     },
-    templates::{
-        BetHistory, BetHistoryBet, EditProfilePage, ProfileInfoFragment, ProfilePage, TextField,
-    },
+    templates::{BetHistory, BetHistoryBet, EditProfilePage, ProfileInfoFragment, ProfilePage},
     DbReadMany, DbReadOne, GameRepository,
 };
 use askama::Template;
@@ -122,12 +120,10 @@ pub async fn bet_history_handler(
 
     (
         StatusCode::OK,
-        Html(BetHistory { bets: bet_history }.render().unwrap()),
+        Html(BetHistory::new(bet_history).render().unwrap()),
     )
         .into_response()
 }
-
-const FIELDS: [&str; 4] = ["username", "first-name", "last-name", "email"];
 
 pub async fn get_edit_profile_handler(auth_session: AuthSession) -> impl IntoResponse {
     let Some(_) = auth_session.user else {
@@ -136,19 +132,12 @@ pub async fn get_edit_profile_handler(auth_session: AuthSession) -> impl IntoRes
 
     (
         StatusCode::OK,
-        Html(
-            EditProfilePage {
-                username: TextField::new(FIELDS[0]),
-                first_name: TextField::new(FIELDS[1]),
-                last_name: TextField::new(FIELDS[2]),
-                email: TextField::new(FIELDS[3]),
-            }
-            .render()
-            .unwrap(),
-        ),
+        Html(EditProfilePage::new().render().unwrap()),
     )
         .into_response()
 }
+
+const FIELDS: [&str; 4] = ["username", "first-name", "last-name", "email"];
 
 pub async fn post_edit_profile_handler(
     auth_session: AuthSession,
@@ -202,4 +191,28 @@ pub async fn post_edit_profile_handler(
     }
 
     (StatusCode::OK, Html(response)).into_response()
+}
+
+pub async fn deposit_withdrawal_handler(auth_session: AuthSession) -> impl IntoResponse {
+    let Some(_) = auth_session.user else {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
+
+    StatusCode::OK.into_response()
+}
+
+pub async fn deposit_handler(auth_session: AuthSession) -> impl IntoResponse {
+    let Some(_) = auth_session.user else {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
+
+    StatusCode::OK.into_response()
+}
+
+pub async fn withdrawal_handler(auth_session: AuthSession) -> impl IntoResponse {
+    let Some(_) = auth_session.user else {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
+
+    StatusCode::OK.into_response()
 }

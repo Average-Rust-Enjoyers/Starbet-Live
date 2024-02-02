@@ -66,6 +66,7 @@ impl TextField<'_> {
 #[derive(Template)]
 #[template(path = "profile/index.html")]
 pub struct ProfilePage {
+    pub menu: Vec<ProfileMenuItem>,
     pub username: String,
     pub email: String,
     pub first_name: String,
@@ -77,6 +78,12 @@ pub struct ProfilePage {
 impl From<User> for ProfilePage {
     fn from(user: User) -> Self {
         Self {
+            menu: vec![
+                ProfileMenuItem::new("bet-history", false, ""),
+                ProfileMenuItem::new("edit-profile", false, ""),
+                ProfileMenuItem::new("deposit-withdrawal", false, ""),
+                ProfileMenuItem::new("settings", false, "mt-auto"),
+            ],
             username: user.username,
             email: user.email,
             first_name: user.name,
@@ -104,23 +111,105 @@ pub struct BetHistoryBet {
 #[derive(Template)]
 #[template(path = "profile/bet_history.html")]
 pub struct BetHistory {
+    pub menu: Vec<ProfileMenuItem>,
     pub bets: Vec<BetHistoryBet>,
+}
+
+impl BetHistory {
+    pub fn new(bets: Vec<BetHistoryBet>) -> Self {
+        Self {
+            menu: vec![
+                ProfileMenuItem::new("bet-history", true, ""),
+                ProfileMenuItem::new("edit-profile", false, ""),
+                ProfileMenuItem::new("deposit-withdrawal", false, ""),
+                ProfileMenuItem::new("settings", false, "mt-auto"),
+            ],
+            bets,
+        }
+    }
 }
 
 #[derive(Template)]
 #[template(path = "profile/edit_profile.html")]
 pub struct EditProfilePage<'a> {
+    pub menu: Vec<ProfileMenuItem>,
     pub username: TextField<'a>,
     pub email: TextField<'a>,
     pub first_name: TextField<'a>,
     pub last_name: TextField<'a>,
 }
 
+impl EditProfilePage<'_> {
+    pub fn new() -> Self {
+        Self {
+            menu: vec![
+                ProfileMenuItem::new("bet-history", false, ""),
+                ProfileMenuItem::new("edit-profile", true, ""),
+                ProfileMenuItem::new("deposit-withdrawal", false, ""),
+                ProfileMenuItem::new("settings", false, "mt-auto"),
+            ],
+            username: TextField::new("username"),
+            email: TextField::new("email"),
+            first_name: TextField::new("first-name"),
+            last_name: TextField::new("last-name"),
+        }
+    }
+}
+
+impl Default for EditProfilePage<'_> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Template)]
-#[template(path = "profile/profile_info_fragment.html")]
+#[template(path = "profile/info_fragment.html")]
 pub struct ProfileInfoFragment {
     pub name: String,
     pub value: String,
+}
+
+#[derive(Template)]
+#[template(path = "profile/deposit_withdrawal.html")]
+pub struct DepositWithdrawalPage {
+    pub menu: Vec<ProfileMenuItem>,
+}
+
+impl DepositWithdrawalPage {
+    pub fn new() -> Self {
+        Self {
+            menu: vec![
+                ProfileMenuItem::new("bet-history", false, ""),
+                ProfileMenuItem::new("edit-profile", false, ""),
+                ProfileMenuItem::new("deposit-withdrawal", true, ""),
+                ProfileMenuItem::new("settings", false, "mt-auto"),
+            ],
+        }
+    }
+}
+
+impl Default for DepositWithdrawalPage {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[derive(Template)]
+#[template(path = "profile/menu_item.html")]
+pub struct ProfileMenuItem {
+    pub name: String,
+    pub active: bool,
+    pub custom_classes: String,
+}
+
+impl ProfileMenuItem {
+    pub fn new(name: &str, active: bool, custom_classes: &str) -> ProfileMenuItem {
+        ProfileMenuItem {
+            name: name.to_string(),
+            active,
+            custom_classes: custom_classes.to_owned(),
+        }
+    }
 }
 
 pub struct UserSend {
