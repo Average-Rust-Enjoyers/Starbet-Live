@@ -37,3 +37,12 @@ jobs:
           rustflags: "-Awarnings"
       - name: Test
         run: cargo test --verbose
+  sqlx-prepare:
+    name: Check SQLx queries
+    runs-on:
+      - self-hosted
+      - docker
+    steps:
+      - uses: actions/checkout@v4
+      - name: SQLx Prepare
+        run: cargo install sqlx-cli --no-default-features --features native-tls,postgres && cargo sqlx prepare --check
