@@ -1,16 +1,21 @@
-use crate::common::error::{BusinessLogicError, DbResultSingle};
-use crate::common::error::{BusinessLogicErrorKind, DbResultMultiple};
-use crate::common::repository::{
-    DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler,
+use crate::{
+    common::{
+        error::{BusinessLogicError, BusinessLogicErrorKind, DbResultMultiple, DbResultSingle},
+        repository::{DbCreate, DbPoolHandler, DbReadMany, DbReadOne, DbRepository, PoolHandler},
+        DbUpdateOne,
+    },
+    models::{
+        money_transaction::{
+            MoneyTransaction, MoneyTransactionCreate, MoneyTransactionGetById,
+            MoneyTransactionUpdateStatus,
+        },
+        user::GetByUserId,
+    },
+    repositories::{
+        money_transaction::BusinessLogicErrorKind::MoneyTransactionDoesNotExist,
+        user::UserRepository,
+    },
 };
-use crate::common::DbUpdateOne;
-use crate::models::money_transaction::{
-    MoneyTransaction, MoneyTransactionCreate, MoneyTransactionGetById, MoneyTransactionUpdateStatus,
-};
-use crate::models::user::GetByUserId;
-use crate::repositories::money_transaction::BusinessLogicErrorKind::MoneyTransactionDoesNotExist;
-use crate::repositories::user::UserRepository;
-
 use async_trait::async_trait;
 use sqlx::{Acquire, Postgres, Transaction};
 

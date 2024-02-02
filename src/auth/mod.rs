@@ -13,6 +13,7 @@ use crate::{
     },
 };
 
+pub mod session_store;
 pub type AuthSession = axum_login::AuthSession<Auth>;
 
 #[derive(Clone)]
