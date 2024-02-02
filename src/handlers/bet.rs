@@ -13,7 +13,7 @@ use crate::{
         bet::BetRepository, game::GameRepository, game_match::GameMatchRepository,
         odds::OddsRepository,
     },
-    templates::{ActiveBets, Bet, GameMatchWrapper, Match, PlaceBetForm},
+    templates::{ActiveBets, Bet, Match, PlaceBetForm},
 };
 
 use crate::common::repository::{DbCreate, DbGetLatest, DbReadMany, DbReadOne};
@@ -75,16 +75,15 @@ pub async fn place_bet_handler(
         team_a: game_match.name_a,
         team_b: game_match.name_b,
         current_odds: new_odds.clone(),
-    };
-
-    let match_send = GameMatchWrapper {
-        match_id: Uuid::parse_str(&match_id).unwrap(),
-        match_template: updated_match_template,
     }
     .render()
     .unwrap();
 
-    web_socket.tx.send_async(match_send).await.unwrap();
+    web_socket
+        .tx
+        .send_async(updated_match_template)
+        .await
+        .unwrap();
 
     bet_repo
         .create(&BetCreate {

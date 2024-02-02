@@ -1,0 +1,54 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO Odds (game_match_id, odds_a, odds_b)\n                VALUES ($1, $2, $3)\n                ON CONFLICT DO NOTHING\n                RETURNING *\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "game_match_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "odds_a",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "odds_b",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 4,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Float8",
+        "Float8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "78f7c6f696af8c4e496d95e729ddd198f3f999d09e39b6eef5a66836a391c4ad"
+}
