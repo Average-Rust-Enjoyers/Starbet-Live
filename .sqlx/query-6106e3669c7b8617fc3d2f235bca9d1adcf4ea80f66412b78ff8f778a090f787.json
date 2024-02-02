@@ -1,0 +1,93 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO Game (name, description, logo, genre)\n                VALUES ($1, $2, $3, $4)\n                RETURNING id,\n                    name,\n                    description,\n                    cloudbet_key,\n                    logo,\n                    genre AS \"genre: _\",\n                    created_at,\n                    edited_at,\n                    deleted_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "cloudbet_key",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "logo",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "genre: _",
+        "type_info": {
+          "Custom": {
+            "name": "gamegenre",
+            "kind": {
+              "Enum": [
+                "MOBA",
+                "FPS"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "edited_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        {
+          "Custom": {
+            "name": "gamegenre",
+            "kind": {
+              "Enum": [
+                "MOBA",
+                "FPS"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "6106e3669c7b8617fc3d2f235bca9d1adcf4ea80f66412b78ff8f778a090f787"
+}

@@ -1,0 +1,115 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO Bet (id, app_user_id, game_match_id, odds_id, amount, expected_outcome)\n                VALUES ($1, $2, $3, $4, $5, $6)\n                RETURNING\n                    id,\n                    app_user_id,\n                    game_match_id,\n                    odds_id,\n                    amount,\n                    status AS \"status: _\",\n                    expected_outcome AS \"expected_outcome: _\",\n                    created_at,\n                    edited_at,\n                    deleted_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "app_user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "game_match_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 3,
+        "name": "odds_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 4,
+        "name": "amount",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "status: _",
+        "type_info": {
+          "Custom": {
+            "name": "betstatus",
+            "kind": {
+              "Enum": [
+                "PENDING",
+                "WON",
+                "LOST",
+                "CANCELED"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "expected_outcome: _",
+        "type_info": {
+          "Custom": {
+            "name": "gamematchoutcome",
+            "kind": {
+              "Enum": [
+                "WIN_A",
+                "WIN_B",
+                "DRAW"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "edited_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Int4",
+        {
+          "Custom": {
+            "name": "gamematchoutcome",
+            "kind": {
+              "Enum": [
+                "WIN_A",
+                "WIN_B",
+                "DRAW"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "500f57319056b22268f282aca79193b70c70831364f0f1c49c2a5037e952a9d2"
+}
