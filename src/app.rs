@@ -4,6 +4,7 @@ use axum::Extension;
 use crate::{
     auth::{session_store::RedisStore, Auth},
     common::{DbPoolHandler, PoolHandler},
+    handlers::error::handler_404,
     models::extension_web_socket::ExtensionWebSocket,
     repositories::{
         bet::BetRepository, game::GameRepository, game_match::GameMatchRepository,
@@ -48,6 +49,7 @@ impl App {
             redis_pool,
             pg_pool_handler,
         };
+
         Ok(app)
     }
 
@@ -84,6 +86,7 @@ impl App {
             .route_layer(login_required!(Auth, login_url = "/login"))
             .merge(auth_router())
             .merge(public_router())
+            .fallback(handler_404)
             .layer(auth_layer)
             .layer(Extension(user_repo))
             .layer(Extension(bets_repo))

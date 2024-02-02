@@ -1,6 +1,7 @@
 pub mod admin;
 pub mod bet;
 pub mod dashboard;
+pub mod error;
 pub mod game;
 pub mod index;
 pub mod login;
