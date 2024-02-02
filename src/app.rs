@@ -42,6 +42,8 @@ impl App {
         let redis_manager = RedisConnectionManager::new(redis_url.clone())?;
         let redis_pool = bb8::Pool::builder().build(redis_manager).await?;
 
+        redis_pool.get().await?; // checks if redis connection is working
+
         let app = App {
             redis_pool,
             pg_pool_handler,
