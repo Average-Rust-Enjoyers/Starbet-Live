@@ -3,28 +3,27 @@ use crate::models::user::Credentials;
 use crate::routers::HxRedirect;
 use crate::templates::LoginPage;
 use askama::Template;
-use axum::http::Uri;
-use axum::Form;
 use axum::{
     http::StatusCode,
+    http::Uri,
     response::{Html, IntoResponse, Redirect},
+    Form,
 };
 use std::str::FromStr;
 
 pub mod get {
-
     use super::*;
 
     pub async fn login(auth_session: AuthSession) -> impl IntoResponse {
         if auth_session.user.is_some() {
-            return Redirect::to("/dashboard").into_response(); // TODO: do we need hx redirect here?
+            return HxRedirect(Uri::from_static("/dashboard")).into_response();
         }
         Html(LoginPage {}.render().unwrap()).into_response()
     }
 
     pub async fn logout(mut auth_session: AuthSession) -> impl IntoResponse {
         match auth_session.logout().await {
-            Ok(_) => Redirect::to("/").into_response(), // TODO: do we need hx redirect here?
+            Ok(_) => Redirect::to("/").into_response(),
             Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
         }
     }
