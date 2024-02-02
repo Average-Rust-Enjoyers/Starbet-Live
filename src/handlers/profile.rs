@@ -10,15 +10,15 @@ use crate::{
         user::{UserDelete, UserUpdate},
     },
     repositories::{
-        bet::BetRepository, game_match::GameMatchRepository, odds::OddsRepository,
-        user::UserRepository,
+        bet::BetRepository, game::GameRepository, game_match::GameMatchRepository,
+        odds::OddsRepository, user::UserRepository,
     },
     routers::HxRedirect,
     templates::{
         BetHistory, BetHistoryBet, DepositWithdrawalPage, EditProfilePage, ProfileBalanceFragment,
         ProfileInfoFragment, ProfilePage, SettingsPage,
     },
-    DbDelete, DbReadMany, DbReadOne, GameRepository,
+    DbDelete, DbReadMany, DbReadOne,
 };
 use askama::Template;
 use axum::{
