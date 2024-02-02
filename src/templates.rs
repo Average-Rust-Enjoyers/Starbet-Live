@@ -143,13 +143,6 @@ pub struct Match {
 }
 
 #[derive(Template)]
-#[template(path = "dashboard/match/game_match_wrapper.html")]
-pub struct GameMatchWrapper {
-    pub match_id: Uuid,
-    pub match_template: Match,
-}
-
-#[derive(Template)]
 #[template(path = "dashboard/bet/place_bet_form.html")]
 pub struct PlaceBetForm {
     pub match_id: Uuid,
