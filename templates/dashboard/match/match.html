@@ -13,7 +13,7 @@
             hx-indicator="#indicator"
         >
             <div>Win A</div>
-            <div>{{current_odds.odds_a}}</div>
+            <div>{{ "{:.3}"|format(current_odds.odds_a) }}</div>
         </div>
         <div
             id="odds_b"
@@ -24,7 +24,7 @@
             hx-indicator="#indicator"
         >
             <div>Win B</div>
-            <div>{{current_odds.odds_b}}</div>
+            <div>{{ "{:.3}"|format(current_odds.odds_b) }}</div>
         </div>
     </div>
 </div>
