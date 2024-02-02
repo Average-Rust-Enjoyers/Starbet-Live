@@ -1,4 +1,7 @@
+use askama::Template;
 use chrono::{DateTime, Datelike, Timelike, Utc};
+
+use crate::templates::ErrorMessage;
 
 pub fn format_date_time_string_with_seconds(date_time: &DateTime<Utc>) -> String {
     format!(
@@ -21,4 +24,12 @@ pub fn format_date_time_string_without_seconds(date_time: &DateTime<Utc>) -> Str
         date_time.hour(),
         date_time.minute()
     )
+}
+
+pub fn generate_error_message_template(message: &str) -> String {
+    ErrorMessage {
+        message: message.to_string(),
+    }
+    .render()
+    .unwrap()
 }

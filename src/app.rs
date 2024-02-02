@@ -5,7 +5,7 @@ use crate::{
     auth::{session_store::RedisStore, Auth},
     common::{DbPoolHandler, PoolHandler},
     handlers::error::handler_404,
-    models::extension_web_socket::ExtensionWebSocket,
+    models::extension_web_socket::{ExtensionWebSocketError, ExtensionWebSocketMatch},
     repositories::{
         bet::BetRepository, game::GameRepository, game_match::GameMatchRepository,
         odds::OddsRepository, user::UserRepository,
@@ -79,8 +79,17 @@ impl App {
         let auth_backend = Auth::new(self.pg_pool_handler);
         let auth_layer = AuthManagerLayerBuilder::new(auth_backend, session_layer).build();
 
-        let (tx, rx) = barrage::unbounded();
-        let web_socket = ExtensionWebSocket { tx, rx };
+        let (tx_match, rx_match) = barrage::unbounded();
+        let web_socket_match = ExtensionWebSocketMatch {
+            tx: tx_match,
+            rx: rx_match,
+        };
+
+        let (tx_error, rx_error) = barrage::unbounded();
+        let web_socket_error = ExtensionWebSocketError {
+            tx: tx_error,
+            rx: rx_error,
+        };
 
         let app = protected_router()
             .route_layer(login_required!(Auth, login_url = "/login"))
@@ -93,7 +102,8 @@ impl App {
             .layer(Extension(game_match_repo))
             .layer(Extension(game_repo))
             .layer(Extension(odds_repo))
-            .layer(Extension(web_socket))
+            .layer(Extension(web_socket_match))
+            .layer(Extension(web_socket_error))
             .layer(Extension(self.redis_pool));
 
         let listener = tokio::net::TcpListener::bind(address).await?;

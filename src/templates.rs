@@ -373,3 +373,9 @@ pub mod filters {
             .join(" "))
     }
 }
+
+#[derive(Template)]
+#[template(path = "error/error_message.html")]
+pub struct ErrorMessage {
+    pub message: String,
+}
