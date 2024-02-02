@@ -1,7 +1,7 @@
 use axum::{
     http::{HeaderValue, StatusCode, Uri},
     response::{IntoResponse, Response},
-    routing::{get, patch, post},
+    routing::{delete, get, patch, post},
     Router,
 };
 
@@ -16,8 +16,9 @@ use crate::handlers::{
     game::game_handler,
     index::index_handler,
     profile::{
-        bet_history_handler, deposit_handler, deposit_withdrawal_handler, get_edit_profile_handler,
-        post_edit_profile_handler, profile_handler, withdrawal_handler,
+        bet_history_handler, delete_profile_handler, deposit_handler, deposit_withdrawal_handler,
+        get_edit_profile_handler, post_edit_profile_handler, profile_handler, settings_handler,
+        withdrawal_handler,
     },
     register::register_submission_handler,
     user::user_balance_handler,
@@ -56,6 +57,8 @@ pub fn protected_router() -> Router<()> {
         .route("/user/deposit-withdrawal", get(deposit_withdrawal_handler))
         .route("/user/deposit", post(deposit_handler))
         .route("/user/withdrawal", post(withdrawal_handler))
+        .route("/user/settings", get(settings_handler))
+        .route("/user", delete(delete_profile_handler))
         .route("/profile", get(profile_handler))
 }
 pub fn public_router() -> Router<()> {

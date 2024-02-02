@@ -218,6 +218,31 @@ pub struct ProfileBalanceFragment {
     pub balance: i32,
 }
 
+#[derive(Template)]
+#[template(path = "profile/settings.html")]
+pub struct SettingsPage {
+    pub menu: Vec<ProfileMenuItem>,
+}
+
+impl SettingsPage {
+    pub fn new() -> Self {
+        Self {
+            menu: vec![
+                ProfileMenuItem::new("bet-history", false, ""),
+                ProfileMenuItem::new("edit-profile", false, ""),
+                ProfileMenuItem::new("deposit-withdrawal", false, ""),
+                ProfileMenuItem::new("settings", true, "mt-auto"),
+            ],
+        }
+    }
+}
+
+impl Default for SettingsPage {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub struct UserSend {
     pub username: String,
     pub email: String,

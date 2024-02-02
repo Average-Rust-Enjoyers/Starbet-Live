@@ -7,21 +7,22 @@ use crate::{
         game_match,
         game_match_outcome::GameMatchOutcome,
         odds,
-        user::UserUpdate,
+        user::{UserDelete, UserUpdate},
     },
     repositories::{
         bet::BetRepository, game_match::GameMatchRepository, odds::OddsRepository,
         user::UserRepository,
     },
+    routers::HxRedirect,
     templates::{
         BetHistory, BetHistoryBet, DepositWithdrawalPage, EditProfilePage, ProfileBalanceFragment,
-        ProfileInfoFragment, ProfilePage,
+        ProfileInfoFragment, ProfilePage, SettingsPage,
     },
-    DbReadMany, DbReadOne, GameRepository,
+    DbDelete, DbReadMany, DbReadOne, GameRepository,
 };
 use askama::Template;
 use axum::{
-    http::StatusCode,
+    http::{StatusCode, Uri},
     response::{Html, IntoResponse},
     Extension, Form,
 };
@@ -281,4 +282,31 @@ pub async fn withdrawal_handler(
         }
     })
     .await
+}
+
+pub async fn settings_handler(auth_session: AuthSession) -> impl IntoResponse {
+    let Some(_) = auth_session.user else {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
+
+    (StatusCode::OK, Html(SettingsPage::new().render().unwrap())).into_response()
+}
+
+pub async fn delete_profile_handler(
+    auth_session: AuthSession,
+    Extension(mut user_repository): Extension<UserRepository>,
+) -> impl IntoResponse {
+    let Some(user) = auth_session.user else {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
+
+    if user_repository
+        .delete(&UserDelete::new(&user.id))
+        .await
+        .is_err()
+    {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    }
+
+    HxRedirect(Uri::from_static("/logout")).into_response()
 }
