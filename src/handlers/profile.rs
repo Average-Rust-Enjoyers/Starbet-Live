@@ -1,23 +1,34 @@
 use crate::{
-    auth,
-    common::helpers::format_date_time_string_with_seconds,
+    auth::{self, AuthSession},
+    common::{
+        helpers::{format_date_time_string_with_seconds, user_update_all_none},
+        DbUpdateOne,
+    },
     models::{
         bet::{BetGetByUserId, BetStatus},
         game::GameGetById,
         game_match,
         game_match_outcome::GameMatchOutcome,
         odds,
+        user::UserUpdate,
     },
-    repositories::{bet::BetRepository, game_match::GameMatchRepository, odds::OddsRepository},
-    templates::{BetHistory, BetHistoryBet, EditProfilePage, ProfilePage, TextField},
+    repositories::{
+        bet::BetRepository, game_match::GameMatchRepository, odds::OddsRepository,
+        user::UserRepository,
+    },
+    templates::{
+        BetHistory, BetHistoryBet, EditProfilePage, ProfileInfoFragment, ProfilePage, TextField,
+    },
     DbReadMany, DbReadOne, GameRepository,
 };
 use askama::Template;
 use axum::{
     http::StatusCode,
     response::{Html, IntoResponse},
-    Extension,
+    Extension, Form,
 };
+
+use super::validation::{validate_and_build, RegisterFormData};
 
 pub async fn profile_handler(auth_session: auth::AuthSession) -> impl IntoResponse {
     let Some(user) = auth_session.user else {
@@ -32,7 +43,7 @@ pub async fn profile_handler(auth_session: auth::AuthSession) -> impl IntoRespon
 }
 
 pub async fn bet_history_handler(
-    auth_session: auth::AuthSession,
+    auth_session: AuthSession,
     Extension(mut bet_repo): Extension<BetRepository>,
     Extension(mut match_repo): Extension<GameMatchRepository>,
     Extension(mut game_repo): Extension<GameRepository>,
@@ -118,8 +129,8 @@ pub async fn bet_history_handler(
 
 const FIELDS: [&str; 4] = ["username", "first-name", "last-name", "email"];
 
-pub async fn get_edit_profile_handler(auth_session: auth::AuthSession) -> impl IntoResponse {
-    let Some(user) = auth_session.user else {
+pub async fn get_edit_profile_handler(auth_session: AuthSession) -> impl IntoResponse {
+    let Some(_) = auth_session.user else {
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
 
@@ -137,4 +148,58 @@ pub async fn get_edit_profile_handler(auth_session: auth::AuthSession) -> impl I
         ),
     )
         .into_response()
+}
+
+pub async fn post_edit_profile_handler(
+    auth_session: AuthSession,
+    Extension(mut user_repository): Extension<UserRepository>,
+    Form(payload): Form<RegisterFormData>,
+) -> impl IntoResponse {
+    let Some(user) = auth_session.user else {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
+
+    let mut user_update = UserUpdate::new(
+        &user.id,
+        Some(&payload.username),
+        Some(&payload.email),
+        Some(&payload.first_name),
+        Some(&payload.last_name),
+        None,
+        None,
+        None,
+    );
+
+    let mut response = String::new();
+
+    for field in &FIELDS {
+        let (valid, textfield) = validate_and_build(field, &payload, &mut user_repository).await;
+
+        if !valid {
+            match *field {
+                "username" => user_update.username = None,
+                "first-name" => user_update.name = None,
+                "last-name" => user_update.surname = None,
+                "email" => user_update.email = None,
+                _ => {}
+            }
+            continue;
+        }
+
+        response.push_str(
+            &ProfileInfoFragment {
+                name: (*field).to_string(),
+                value: textfield.value,
+            }
+            .render()
+            .unwrap(),
+        );
+    }
+
+    if !user_update_all_none(&user_update) && (user_repository.update(&user_update).await).is_err()
+    {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    }
+
+    (StatusCode::OK, Html(response)).into_response()
 }

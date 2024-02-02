@@ -116,6 +116,13 @@ pub struct EditProfilePage<'a> {
     pub last_name: TextField<'a>,
 }
 
+#[derive(Template)]
+#[template(path = "profile/profile_info_fragment.html")]
+pub struct ProfileInfoFragment {
+    pub name: String,
+    pub value: String,
+}
+
 pub struct UserSend {
     pub username: String,
     pub email: String,

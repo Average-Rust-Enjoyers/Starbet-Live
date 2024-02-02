@@ -30,7 +30,7 @@
             <p class="text-secondary-darkest mb-8 text-lg">
                 Update your account information
             </p>
-            <form hx-post="user/edit-profile" class="text-left">
+            <form hx-post="user/edit-profile" hx-swap="none" class="text-left">
                 <!-- prettier-ignore -->
                 {{ username|safe }}
                 {{ first_name|safe }} 

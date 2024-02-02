@@ -74,16 +74,19 @@
         <div
             class="bg-primary-lighter flex w-1/5 flex-col items-center justify-center gap-6 rounded"
         >
-            <p class="font-bold">{{ username }}</p>
+            <p id="username-profile" class="font-bold">{{ username }}</p>
             <img
                 src="{{ profile_picture }}"
                 alt="profile-picture"
                 width="200"
                 height="200"
             />
-            <p class="text-lg">{{ first_name }} {{ last_name }}</p>
-            <p class="text-secondary-darkest">{{ email }}</p>
-            <p>Current Balance: {{ balance }} SBT</p>
+            <div class="text-lg">
+                <p id="first-name-profile" class="inline">{{ first_name }}</p>
+                <p id="last-name-profile" class="inline">{{ last_name }}</p>
+            </div>
+            <p id="email-profile" class="text-secondary-darkest">{{ email }}</p>
+            <p id="balance">Current Balance: {{ balance }} SBT</p>
         </div>
     </main>
 </div>
