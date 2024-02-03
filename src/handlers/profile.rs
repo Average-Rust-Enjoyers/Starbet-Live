@@ -61,7 +61,7 @@ pub async fn bet_history_handler(
     let mut bet_history = Vec::new();
 
     for bet in &user_bets {
-        if bet.status != BetStatus::Won && bet.status != BetStatus::Lost {
+        if bet.status == BetStatus::Pending {
             continue;
         }
 
