@@ -9,7 +9,6 @@ use crate::handlers::validation::RegisterFormData;
 
 /// User structure which is serialized from the database, containing full information
 /// about the user. Only obtainable when you have the right email and the right password hash
-/// (auth is not the scope of this iteration, this would be done way differently if it was).
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
 pub struct User {
     pub id: Uuid,
