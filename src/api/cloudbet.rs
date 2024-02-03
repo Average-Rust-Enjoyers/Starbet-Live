@@ -170,12 +170,15 @@ impl ExternalApiIntegration<self::GameMatch> for CloudbetApi {
             return Err(ExternalApiError::from("No away team"));
         };
 
+        let ending_time =
+            chrono::DateTime::from(event.cutoff_time.clone()) + chrono::Duration::hours(2);
+
         Ok(GameMatchCreateOrUpdate {
             game_id: game.id,
             cloudbet_id: event.id.into_inner(),
             status: Some(event.status.into()),
             starts_at: Some(event.cutoff_time.clone().into()),
-            ends_at: None,
+            ends_at: Some(ending_time),
             name_a: Some(team_a.name),
             name_b: Some(team_b.name),
         })
