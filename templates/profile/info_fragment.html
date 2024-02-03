@@ -1,0 +1,11 @@
+<!-- prettier-ignore -->
+{% let class %}
+{% if name == "username" %}
+    {% let class = "font-bold" %}
+{% else if name == "email" %}
+    {% let class = "text-secondary-darkest" %}
+{% else %}
+    {% let class = "inline" %}
+{% endif %}
+
+<p hx-swap-oob="true" id="{{ name }}-profile" class="{{ class }}">{{value}}</p>
