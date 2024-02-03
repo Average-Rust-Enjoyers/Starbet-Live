@@ -22,7 +22,7 @@ use crate::handlers::{
     },
     register::register_submission_handler,
     user::user_balance_handler,
-    ws::ws_handler,
+    ws::{ws_handler, ws_handler_error},
 };
 
 pub fn auth_router() -> Router<()> {
@@ -63,6 +63,7 @@ pub fn protected_router() -> Router<()> {
         .route("/admin", get(admin_handler))
         .route("/admin/match", post(new_gamematch_handler))
         .route("/admin/match/:id", patch(gamematch_update_handler))
+        .route("/ws/error", get(ws_handler_error))
         .route(
             "/admin/match/:id/odds",
             patch(gamematch_random_odds_handler),
