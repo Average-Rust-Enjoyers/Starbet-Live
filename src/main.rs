@@ -31,12 +31,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cloudbet = CloudbetApi::new(cloudbet_api_key);
 
     println!("Starting server. Listening on http://{socket_addr}");
-    // TODO: find out how to handle errors here? is it needed?
-    // Expected behavior is to panic on app error, continue (and notify) on api error
-    let _ = tokio::join!(
-        app.serve(socket_addr, SESSION_EXPIRY),
-        api.serve(cloudbet, API_POLL_INTERVAL),
-    );
+
+    let app_handle = tokio::spawn(async move { app.serve(socket_addr, SESSION_EXPIRY).await });
+    let api_handle = tokio::spawn(async move { api.serve(cloudbet, API_POLL_INTERVAL).await });
+
+    let _ = tokio::try_join!(app_handle, api_handle)?;
 
     Ok(())
 }
