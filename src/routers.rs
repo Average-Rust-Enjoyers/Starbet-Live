@@ -46,11 +46,6 @@ pub fn protected_router() -> Router<()> {
         .route("/bet/:match_id/:prediction", get(get_bet_handler))
         .route("/bet/active", get(get_active_bets_handler))
         .route("/user/balance", get(user_balance_handler))
-}
-
-pub fn public_router() -> Router<()> {
-    Router::new()
-        .route("/", get(index_handler))
         .route("/admin", get(admin_handler))
         .route("/admin/match", post(new_gamematch_handler))
         .route("/admin/match/:id", patch(gamematch_update_handler))
@@ -58,6 +53,11 @@ pub fn public_router() -> Router<()> {
             "/admin/match/:id/odds",
             patch(gamematch_random_odds_handler),
         )
+}
+
+pub fn public_router() -> Router<()> {
+    Router::new()
+        .route("/", get(index_handler))
 }
 
 /// Redirect using the `HX-Redirect` header.
