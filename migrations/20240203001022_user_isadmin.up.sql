@@ -1,0 +1,2 @@
+ALTER TABLE AppUser
+ADD is_admin boolean NOT NULL DEFAULT FALSE;

@@ -57,6 +57,11 @@
         "ordinal": 10,
         "name": "deleted_at",
         "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 11,
+        "name": "is_admin",
+        "type_info": "Bool"
       }
     ],
     "parameters": {
@@ -75,7 +80,8 @@
       false,
       false,
       false,
-      true
+      true,
+      false
     ]
   },
   "hash": "f4bc68c63f32f5bea4a2c2c320b38b55b02847e508c5bc7be7909133a724018c"

@@ -1,4 +1,5 @@
 use crate::{
+    auth::AuthSession,
     common::{DbGetLatest, DbReadAll, DbUpdateOne},
     config::DEFAULT_ODDS_VALUE,
     models::{
@@ -25,28 +26,51 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 pub async fn admin_handler(
+    auth_session: AuthSession,
     Extension(mut game_repo): Extension<GameRepository>,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
 ) -> impl IntoResponse {
-    let games = game_repo
+    let Some(user) = auth_session.user else {
+        return StatusCode::FORBIDDEN.into_response();
+    };
+
+    if !user.is_admin {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    let Ok(games) = game_repo
         .read_many(&GameFilter {
             name: None,
             genre: None,
         })
         .await
-        .unwrap();
-    let matches = game_match_repo.read_all().await.unwrap();
+    else {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
+
+    let Ok(matches) = game_match_repo.read_all().await else {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
 
     let template = AdminPanel { games, matches };
 
     let reply_html = template.render().unwrap();
-    (StatusCode::OK, Html(reply_html).into_response())
+    (StatusCode::OK, Html(reply_html)).into_response()
 }
 
 pub async fn new_gamematch_handler(
+    auth_session: AuthSession,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Form(mut payload): Form<GameMatchCreate>,
 ) -> impl IntoResponse {
+    let Some(user) = auth_session.user else {
+        return StatusCode::FORBIDDEN.into_response();
+    };
+
+    if !user.is_admin {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
     payload.cloudbet_id = None;
 
     if payload.ends_at < payload.starts_at {
@@ -97,11 +121,20 @@ pub struct GameMatchUpdateData {
 }
 
 pub async fn gamematch_random_odds_handler(
+    auth_session: AuthSession,
     Path(match_id): Path<Uuid>,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Extension(mut odds_repo): Extension<OddsRepository>,
     Extension(web_socket): Extension<ExtensionWebSocket>,
 ) -> impl IntoResponse {
+    let Some(user) = auth_session.user else {
+        return StatusCode::FORBIDDEN.into_response();
+    };
+
+    if !user.is_admin {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
     let game_match = game_match_repo
         .read_one(&GameMatchGetById { id: match_id })
         .await;
@@ -174,10 +207,19 @@ pub async fn gamematch_random_odds_handler(
 }
 
 pub async fn gamematch_update_handler(
+    auth_session: AuthSession,
     Path(match_id): Path<Uuid>,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Form(GameMatchUpdateData { action }): Form<GameMatchUpdateData>,
 ) -> impl IntoResponse {
+    let Some(user) = auth_session.user else {
+        return StatusCode::FORBIDDEN.into_response();
+    };
+
+    if !user.is_admin {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
     let game_match = game_match_repo
         .read_one(&GameMatchGetById { id: match_id })
         .await;
