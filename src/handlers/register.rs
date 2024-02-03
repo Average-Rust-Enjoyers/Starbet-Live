@@ -9,10 +9,11 @@ use super::validation::{validate_and_build, RegisterFormData};
 use crate::{
     auth::AuthSession,
     common::repository::DbCreate,
+    error::AppError,
     models::user::Credentials,
     repositories::user::UserRepository,
     routers::HxRedirect,
-    templates::{RegisterPage, ServerErrorPage, TextField},
+    templates::{RegisterPage, TextField},
 };
 
 const FIELDS: [&str; 6] = [
@@ -24,7 +25,7 @@ const FIELDS: [&str; 6] = [
     "confirm-password",
 ];
 
-pub async fn register_page_handler() -> impl IntoResponse {
+pub async fn register_page_handler() -> Result<Html<String>, AppError> {
     let form = RegisterPage {
         username: TextField::new(FIELDS[0]),
         first_name: TextField::new(FIELDS[1]),
@@ -34,14 +35,14 @@ pub async fn register_page_handler() -> impl IntoResponse {
         confirm_password: TextField::new(FIELDS[5]),
     };
 
-    (StatusCode::OK, Html(form.render().unwrap()).into_response())
+    Ok(Html(form.render()?))
 }
 
 pub async fn register_submission_handler(
     mut auth_session: AuthSession,
     Extension(mut user_repository): Extension<UserRepository>,
     Form(payload): Form<RegisterFormData>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, AppError> {
     let (mut all_valid, mut form_fields) = (true, Vec::new());
 
     for field in &FIELDS {
@@ -59,9 +60,8 @@ pub async fn register_submission_handler(
             password: form_fields[4].clone(),
             confirm_password: form_fields[5].clone(),
         }
-        .render()
-        .unwrap();
-        return (StatusCode::OK, Html(form).into_response()).into_response();
+        .render()?;
+        return Ok((StatusCode::OK, Html(form).into_response()).into_response());
     }
 
     let credentials = Credentials {
@@ -70,23 +70,12 @@ pub async fn register_submission_handler(
         next: None,
     };
 
-    match user_repository.create(&payload.into()).await {
-        Ok(_) => {
-            match auth_session.authenticate(credentials).await {
-                Ok(Some(user)) => {
-                    if auth_session.login(&user).await.is_err() {
-                        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-                    }
-                }
-                _ => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-            };
+    user_repository.create(&payload.into()).await?;
 
-            HxRedirect(Uri::from_static("/dashboard")).into_response()
-        }
-        Err(_) => (
-            StatusCode::OK,
-            Html(ServerErrorPage {}.render().unwrap()).into_response(),
-        )
-            .into_response(),
+    let user = auth_session.authenticate(credentials).await?;
+    if let Some(user) = user {
+        auth_session.login(&user).await?;
     }
+
+    Ok(HxRedirect(Uri::from_static("/dashboard")).into_response())
 }

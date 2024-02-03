@@ -1,16 +1,12 @@
 use crate::{
     common::{helpers::format_date_time_string_without_seconds, DbGetLatest, DbReadByForeignKey},
+    error::AppError,
     models::{game::GameGetById, game_match::GameMatchStatus, odds::OddsGetByGameMatchId},
     repositories::{game::GameRepository, game_match::GameMatchRepository, odds::OddsRepository},
     templates::{Game, Match, Menu, MenuItem, UpcomingMatch},
 };
 use askama::Template;
-use axum::{
-    extract::Path,
-    http::StatusCode,
-    response::{Html, IntoResponse},
-    Extension,
-};
+use axum::{extract::Path, response::Html, Extension};
 
 use serde::Deserialize;
 use uuid::Uuid;
@@ -27,15 +23,14 @@ pub async fn game_handler(
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Extension(mut odds_repo): Extension<OddsRepository>,
     Path(GameId { game_id }): Path<GameId>,
-) -> impl IntoResponse {
+) -> Result<Html<String>, AppError> {
     let game = game_repository
         .read_one(&GameGetById {
-            id: Uuid::parse_str(&game_id.clone()).unwrap(),
+            id: Uuid::parse_str(&game_id.clone())?,
         })
-        .await
-        .unwrap();
+        .await?;
 
-    let matches = game_match_repo.get_by_foreign_key(&game.id).await.unwrap();
+    let matches = game_match_repo.get_by_foreign_key(&game.id).await?;
 
     let mut matches_to_render = Vec::new();
     let mut upcoming_matches_to_render = Vec::new();
@@ -47,8 +42,7 @@ pub async fn game_handler(
                     .get_latest(&OddsGetByGameMatchId {
                         game_match_id: game_match.id,
                     })
-                    .await
-                    .unwrap();
+                    .await?;
 
                 matches_to_render.push(Match {
                     match_id: game_match.id,
@@ -75,8 +69,7 @@ pub async fn game_handler(
 
     let menu_items = game_repository
         .read_all()
-        .await
-        .unwrap()
+        .await?
         .iter()
         .map(|game| MenuItem {
             name: game.name.clone(),
@@ -85,9 +78,9 @@ pub async fn game_handler(
         })
         .collect();
 
-    let menu = Menu { games: menu_items }.render().unwrap();
-    let game = template.render().unwrap();
+    let menu = Menu { games: menu_items }.render()?;
+    let game = template.render()?;
 
     let response = format!("{menu}{game}");
-    (StatusCode::OK, Html(response).into_response())
+    Ok(Html(response))
 }

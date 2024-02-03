@@ -1,6 +1,7 @@
 use crate::{
-    auth::AuthSession,
+    auth::{self, AuthSession},
     common::helpers::format_date_time_string_with_seconds,
+    error::AppError,
     models::{
         bet::{BetCreate, BetGetByUserId},
         extension_web_socket::ExtensionWebSocket,
@@ -21,7 +22,7 @@ use askama::Template;
 use axum::{
     extract::{Json, Path},
     http::StatusCode,
-    response::{Html, IntoResponse},
+    response::Html,
     Extension,
 };
 
@@ -43,16 +44,13 @@ pub async fn place_bet_handler(
     Extension(game_repo): Extension<GameRepository>,
     Path((match_id, prediction)): Path<(String, String)>,
     Json(bet_amount): Json<BetAmount>,
-) -> impl IntoResponse {
-    let bet_amount = bet_amount.bet_amount.parse::<i32>().unwrap();
+) -> Result<Html<String>, AppError> {
+    let bet_amount = bet_amount.bet_amount.parse::<i32>()?;
 
-    let user = match auth_session.user {
-        Some(user) => user,
-        None => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-    };
+    let user = auth::is_logged_in(auth_session)?;
 
     if user.balance < bet_amount {
-        return StatusCode::PRECONDITION_FAILED.into_response();
+        return Err(AppError::StatusCode(StatusCode::PRECONDITION_FAILED));
     }
 
     let new_odds = create_new_odds(
@@ -61,14 +59,13 @@ pub async fn place_bet_handler(
         bet_amount,
         odds_repo.clone(),
     )
-    .await;
+    .await?;
 
     let game_match = match_repo
         .read_one(&GameMatchGetById {
-            id: Uuid::parse_str(&match_id).unwrap(),
+            id: Uuid::parse_str(&match_id)?,
         })
-        .await
-        .unwrap();
+        .await?;
 
     let updated_match_template = Match {
         match_id: new_odds.game_match_id,
@@ -76,14 +73,9 @@ pub async fn place_bet_handler(
         team_b: game_match.name_b,
         current_odds: new_odds.clone(),
     }
-    .render()
-    .unwrap();
+    .render()?;
 
-    web_socket
-        .tx
-        .send_async(updated_match_template)
-        .await
-        .unwrap();
+    web_socket.tx.send_async(updated_match_template).await?;
 
     bet_repo
         .create(&BetCreate {
@@ -97,8 +89,7 @@ pub async fn place_bet_handler(
             amount: bet_amount,
             odds_id: new_odds.id,
         })
-        .await
-        .unwrap();
+        .await?;
 
     let bets = get_active_bets_by_user_id(
         bet_repo.clone(),
@@ -106,22 +97,21 @@ pub async fn place_bet_handler(
         game_repo.clone(),
         user.id,
     )
-    .await;
+    .await?;
 
-    let bets_history_template = ActiveBets { bets }.render().unwrap();
+    let bets_history_template = ActiveBets { bets }.render()?;
 
-    (StatusCode::OK, Html(bets_history_template)).into_response()
+    Ok(Html(bets_history_template))
 }
 
 pub async fn get_bet_handler(
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Path((match_id, prediction)): Path<(String, String)>,
-) -> impl IntoResponse {
-    let match_id = Uuid::parse_str(&match_id).unwrap();
+) -> Result<Html<String>, AppError> {
+    let match_id = Uuid::parse_str(&match_id)?;
     let game_match = game_match_repo
         .read_one(&GameMatchGetById { id: match_id })
-        .await
-        .unwrap();
+        .await?;
 
     let predicted_team = match prediction.as_str() {
         "a" => game_match.name_a,
@@ -133,10 +123,9 @@ pub async fn get_bet_handler(
         predicted_team,
         prediction: prediction.to_string(),
     }
-    .render()
-    .unwrap();
+    .render()?;
 
-    (StatusCode::OK, Html(template).into_response())
+    Ok(Html(template))
 }
 
 async fn create_new_odds(
@@ -144,15 +133,14 @@ async fn create_new_odds(
     prediction: String,
     _bet_amount: i32,
     mut odds_repository: OddsRepository,
-) -> Odds {
-    let match_uuid = Uuid::parse_str(&match_id).unwrap();
+) -> Result<Odds, AppError> {
+    let match_uuid = Uuid::parse_str(&match_id)?;
 
     let current_odds = odds_repository
         .get_latest(&OddsGetByGameMatchId {
             game_match_id: match_uuid,
         })
-        .await
-        .unwrap();
+        .await?;
 
     // mocking updating odds
     let (mut new_odds_a, mut new_odds_b) = match prediction.as_str() {
@@ -166,17 +154,17 @@ async fn create_new_odds(
         ),
     };
 
-    new_odds_a = format!("{:.3}", new_odds_a).parse::<f64>().unwrap();
-    new_odds_b = format!("{:.3}", new_odds_b).parse::<f64>().unwrap();
+    new_odds_a = format!("{:.3}", new_odds_a).parse::<f64>()?;
+    new_odds_b = format!("{:.3}", new_odds_b).parse::<f64>()?;
 
-    odds_repository
+    let odds = odds_repository
         .create(&OddsCreate {
             game_match_id: match_uuid,
             odds_a: new_odds_a,
             odds_b: new_odds_b,
         })
-        .await
-        .unwrap()
+        .await?;
+    Ok(odds)
 }
 
 pub async fn get_active_bets_by_user_id(
@@ -184,11 +172,10 @@ pub async fn get_active_bets_by_user_id(
     mut match_repository: GameMatchRepository,
     mut game_repository: GameRepository,
     user_id: Uuid,
-) -> Vec<Bet> {
+) -> Result<Vec<Bet>, AppError> {
     let active_user_bets = bet_repository
         .read_many(&BetGetByUserId { user_id })
-        .await
-        .unwrap();
+        .await?;
 
     let mut active_bets = Vec::new();
 
@@ -197,8 +184,7 @@ pub async fn get_active_bets_by_user_id(
             .read_one(&GameMatchGetById {
                 id: bet.game_match_id,
             })
-            .await
-            .unwrap();
+            .await?;
 
         if game_match.status != GameMatchStatus::Live {
             continue;
@@ -215,8 +201,7 @@ pub async fn get_active_bets_by_user_id(
             .read_one(&GameGetById {
                 id: game_match.game_id,
             })
-            .await
-            .unwrap();
+            .await?;
 
         active_bets.push(Bet {
             game_name: game.name,
@@ -229,7 +214,7 @@ pub async fn get_active_bets_by_user_id(
         });
     }
 
-    active_bets
+    Ok(active_bets)
 }
 
 pub async fn get_active_bets_handler(
@@ -237,10 +222,8 @@ pub async fn get_active_bets_handler(
     Extension(match_repo): Extension<GameMatchRepository>,
     Extension(bet_repo): Extension<BetRepository>,
     Extension(game_repo): Extension<GameRepository>,
-) -> impl IntoResponse {
-    let Some(user) = auth_session.user else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+) -> Result<Html<String>, AppError> {
+    let user = auth::is_logged_in(auth_session)?;
 
     let bets = get_active_bets_by_user_id(
         bet_repo.clone(),
@@ -248,9 +231,9 @@ pub async fn get_active_bets_handler(
         game_repo.clone(),
         user.id,
     )
-    .await;
+    .await?;
 
-    let active_bets_template = ActiveBets { bets }.render().unwrap();
+    let active_bets_template = ActiveBets { bets }.render()?;
 
-    (StatusCode::OK, Html(active_bets_template)).into_response()
+    Ok(Html(active_bets_template))
 }

@@ -239,7 +239,7 @@ impl From<askama::Error> for AppError {
 }
 
 impl From<DbError> for AppError {
-    fn from(err: DbError) -> Self {
+    fn from(_: DbError) -> Self {
         Self::InternalServerError
     }
 }
@@ -279,7 +279,7 @@ impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Something went wrong: "),
+            // format!("Something went wrong: "),
         )
             .into_response()
     }
