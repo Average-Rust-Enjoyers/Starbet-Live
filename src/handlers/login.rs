@@ -12,13 +12,22 @@ use axum::{
 use std::str::FromStr;
 
 pub mod get {
+    use crate::templates::TextField;
+
     use super::*;
 
     pub async fn login(auth_session: AuthSession) -> impl IntoResponse {
         if auth_session.user.is_some() {
             return HxRedirect(Uri::from_static("/dashboard")).into_response();
         }
-        Html(LoginPage {}.render().unwrap()).into_response()
+        Html(
+            LoginPage {
+                email: TextField::new("email"),
+            }
+            .render()
+            .unwrap(),
+        )
+        .into_response()
     }
 
     pub async fn logout(mut auth_session: AuthSession) -> impl IntoResponse {
@@ -30,6 +39,8 @@ pub mod get {
 }
 
 pub mod post {
+    use crate::templates::TextField;
+
     use super::*;
 
     pub async fn login(
@@ -61,7 +72,19 @@ pub mod post {
                                 }
                             }
                             None => {
-                                return HxRedirect(Uri::from_static(LOGIN_URL)).into_response();
+                                return Html(
+                                    LoginPage {
+                                        email: TextField {
+                                            name: "email",
+                                            value: creds.email,
+                                            error_message: "User not found or password incorrect"
+                                                .to_string(),
+                                        },
+                                    }
+                                    .render()
+                                    .unwrap(),
+                                )
+                                .into_response();
                             }
                         }
                     }

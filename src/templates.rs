@@ -31,7 +31,9 @@ pub struct ServerErrorPage {}
 
 #[derive(Template)]
 #[template(path = "login.html")]
-pub struct LoginPage {}
+pub struct LoginPage<'a> {
+    pub email: TextField<'a>,
+}
 
 #[derive(Template)]
 #[template(path = "register.html")]

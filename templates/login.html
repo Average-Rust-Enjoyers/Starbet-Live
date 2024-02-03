@@ -6,15 +6,7 @@
     <h2 class="mb-4 text-4xl font-bold">Login</h2>
     <p class="text-secondary-darkest mb-8 text-lg">Login to your account</p>
     <form hx-post="login" hx-target="body">
-        <div class="mb-4">
-            <input
-                type="text"
-                id="email"
-                name="email"
-                placeholder="Email"
-                class="border-secondary bg-primary w-full rounded border-2 p-2 focus:outline-none"
-            />
-        </div>
+        {{ email|safe }}
         <div class="mb-4">
             <input
                 type="password"
