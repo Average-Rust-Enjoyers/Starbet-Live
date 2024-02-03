@@ -12,6 +12,45 @@ use crate::{
     repositories::{bet::BetRepository, odds::OddsRepository, user::UserRepository},
 };
 
+pub async fn refund_match<'a>(
+    game_match: &GameMatch,
+    tx: &mut Transaction<'a, Postgres>,
+) -> Result<(), DbError> {
+    let bets = BetRepository::get_bets_for_game(
+        BetGetByMatchId {
+            match_id: game_match.id,
+        },
+        tx,
+    )
+    .await?;
+
+    for bet in bets {
+        if bet.status != BetStatus::Pending {
+            continue;
+        }
+
+        UserRepository::update_user_balance(
+            UserUpdateBalance {
+                id: bet.app_user_id,
+                delta: bet.amount,
+            },
+            tx,
+        )
+        .await?;
+
+        BetRepository::update_bet(
+            BetUpdate {
+                id: bet.id,
+                status: BetStatus::Canceled,
+            },
+            tx,
+        )
+        .await?;
+    }
+
+    Ok(())
+}
+
 pub async fn pay_out_match<'a>(
     game_match: &GameMatch,
     tx: &mut Transaction<'a, Postgres>,

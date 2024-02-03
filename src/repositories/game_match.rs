@@ -9,7 +9,7 @@ use crate::{
             BusinessLogicErrorKind::{GameMatchDeleted, GameMatchDoesNotExist},
             DbResultMultiple, DbResultSingle,
         },
-        logic::pay_out_match,
+        logic::{pay_out_match, refund_match},
         DbCreate, DbCreateOrUpdate, DbDelete, DbPoolHandler, DbReadAll, DbReadByForeignKey,
         DbReadOne, DbRepository, DbUpdateOne, PoolHandler,
     },
@@ -192,15 +192,19 @@ impl DbUpdateOne<GameMatchUpdate, GameMatch> for GameMatchRepository {
         .fetch_one(&mut *tx)
         .await?;
 
-        // TODO: check that status + outcome is valid?
-        // TODO: disallow changing cancelled/finished matches?
-        // TODO: refund users if new status is cancelled
-
-        if let Some(status) = &data.status {
-            if data.outcome.is_some() && *status == GameMatchStatus::Finished {
-                pay_out_match(&game_match, &mut tx).await?;
+        match &data.status {
+            Some(GameMatchStatus::Finished) => {
+                if data.outcome.is_some() {
+                    pay_out_match(&game_match, &mut tx).await?;
+                }
             }
-        }
+
+            Some(GameMatchStatus::Canceled) => {
+                refund_match(&game_match, &mut tx).await?;
+            }
+
+            _ => {}
+        };
 
         tx.commit().await?;
 
