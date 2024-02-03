@@ -28,19 +28,24 @@ pub async fn admin_handler(
     Extension(mut game_repo): Extension<GameRepository>,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
 ) -> impl IntoResponse {
-    let games = game_repo
+    let Ok(games) = game_repo
         .read_many(&GameFilter {
             name: None,
             genre: None,
         })
         .await
-        .unwrap();
-    let matches = game_match_repo.read_all().await.unwrap();
+    else {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
+
+    let Ok(matches) = game_match_repo.read_all().await else {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
 
     let template = AdminPanel { games, matches };
 
     let reply_html = template.render().unwrap();
-    (StatusCode::OK, Html(reply_html).into_response())
+    (StatusCode::OK, Html(reply_html)).into_response()
 }
 
 pub async fn new_gamematch_handler(
