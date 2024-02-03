@@ -1,0 +1,8 @@
+<ul
+    class="bg-primary-lighter flex w-1/5 flex-col gap-4 rounded p-4 text-center"
+>
+    {% for item in menu %} {{ item|safe }} {% endfor %}
+</ul>
+<div class="flex-grow overflow-y-auto">
+    {% for bet in bets %} {{ bet|safe }} {% endfor %}
+</div>

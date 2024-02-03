@@ -1,0 +1,57 @@
+<!-- prettier-ignore -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-secondary bg-primary flex min-h-screen flex-col">
+    <header class="flex items-center justify-between px-6 py-4">
+        <a hx-boost="true" href="/profile" class="flex items-center space-x-4">
+            {% include "logo.html" %}
+            <h1 class="text-2xl font-bold">Starbet-Live: User Profile</h1>
+        </a>
+        <nav hx-boost="true" class="space-x-4">
+            <a
+                class="hover:text-secondary text-secondary-darkest"
+                href="/dashboard"
+                >Games</a
+            ><a
+                class="hover:text-secondary text-secondary-darkest"
+                href="/logout"
+                >Logout</a
+            >
+        </nav>
+    </header>
+    <main
+        class="h-screen-minus-navbar mt-auto flex flex-grow justify-between px-6 pb-4"
+    >
+        <div id="main-content" class="flex flex-grow">
+            <ul
+                class="bg-primary-lighter flex w-1/5 flex-col gap-4 rounded p-4 text-center"
+            >
+                {% for item in menu %} {{ item|safe }} {% endfor %}
+            </ul>
+            <p
+                class="text-secondary-darkest flex flex-grow items-center justify-center overflow-y-auto text-lg"
+            >
+                See your bet history, edit information or perform transactions
+            </p>
+        </div>
+        <div
+            class="bg-primary-lighter flex w-1/5 flex-col items-center justify-center gap-6 rounded"
+        >
+            <p id="username-profile" class="font-bold">{{ username }}</p>
+            <img
+                src="{{ profile_picture }}"
+                alt="profile-picture"
+                width="200"
+                height="200"
+            />
+            <div class="text-lg">
+                <p id="first-name-profile" class="inline">{{ first_name }}</p>
+                <p id="last-name-profile" class="inline">{{ last_name }}</p>
+            </div>
+            <p id="email-profile" class="text-secondary-darkest">{{ email }}</p>
+            <p id="balance">Current Balance: {{ balance }} SBT</p>
+        </div>
+    </main>
+</div>
+{% endblock %}

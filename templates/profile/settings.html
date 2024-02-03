@@ -1,0 +1,18 @@
+<ul
+    class="bg-primary-lighter flex w-1/5 flex-col gap-4 rounded p-4 text-center"
+>
+    {% for item in menu %} {{ item|safe }} {% endfor %}
+</ul>
+<div class="flex flex-grow flex-col items-center justify-center gap-6">
+    <p class="text-secondary-darkest text-lg">
+        Perform dangerous operations here
+    </p>
+    <button
+        class="bg-error hover:bg-error-darker text-secondary border-secondary rounded border px-4 py-2"
+        hx-confirm="Are you sure you want to delete your account?"
+        hx-delete="/user"
+        hx-swap="none"
+    >
+        Delete Account
+    </button>
+</div>
