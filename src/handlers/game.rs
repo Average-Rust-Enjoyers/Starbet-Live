@@ -1,4 +1,5 @@
 use crate::{
+    auth::AuthSession,
     common::{
         helpers::{format_date_time_string_without_seconds, generate_error_message_template},
         DbGetLatest, DbReadByForeignKey,
@@ -30,12 +31,17 @@ pub struct GameId {
 }
 
 pub async fn game_handler(
+    auth_session: AuthSession,
     Extension(error_web_socket): Extension<ExtensionWebSocketError>,
     Extension(mut game_repository): Extension<GameRepository>,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Extension(mut odds_repo): Extension<OddsRepository>,
     Path(GameId { game_id }): Path<GameId>,
 ) -> impl IntoResponse {
+    let Some(user) = auth_session.user else {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
+
     let Ok(game) = game_repository
         .read_one(&GameGetById {
             id: Uuid::parse_str(&game_id.clone()).unwrap(),
@@ -44,7 +50,10 @@ pub async fn game_handler(
     else {
         error_web_socket
             .tx
-            .send_async(generate_error_message_template("Failed to get game"))
+            .send_async(generate_error_message_template(
+                "Failed to get game",
+                user.id,
+            ))
             .await
             .unwrap();
 
@@ -54,7 +63,10 @@ pub async fn game_handler(
     let Ok(matches) = game_match_repo.get_by_foreign_key(&game.id).await else {
         error_web_socket
             .tx
-            .send_async(generate_error_message_template("Failed to get matches"))
+            .send_async(generate_error_message_template(
+                "Failed to get matches",
+                user.id,
+            ))
             .await
             .unwrap();
 
@@ -75,7 +87,10 @@ pub async fn game_handler(
                 else {
                     error_web_socket
                         .tx
-                        .send_async(generate_error_message_template("Failed to get odds"))
+                        .send_async(generate_error_message_template(
+                            "Failed to get odds",
+                            user.id,
+                        ))
                         .await
                         .unwrap();
 
@@ -108,7 +123,10 @@ pub async fn game_handler(
     let Ok(menu_items) = game_repository.read_all().await else {
         error_web_socket
             .tx
-            .send_async(generate_error_message_template("Failed to get games"))
+            .send_async(generate_error_message_template(
+                "Failed to get games",
+                user.id,
+            ))
             .await
             .unwrap();
 

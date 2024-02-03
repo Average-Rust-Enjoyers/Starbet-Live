@@ -32,7 +32,10 @@ pub async fn dashboard_handler(
     let Ok(games) = game_repository.read_all().await else {
         error_web_socket
             .tx
-            .send_async(generate_error_message_template("Failed to get games"))
+            .send_async(generate_error_message_template(
+                "Failed to get games",
+                user_id,
+            ))
             .await
             .unwrap();
 
@@ -49,7 +52,10 @@ pub async fn dashboard_handler(
     else {
         error_web_socket
             .tx
-            .send_async(generate_error_message_template("Failed to get active bets"))
+            .send_async(generate_error_message_template(
+                "Failed to get active bets",
+                user_id,
+            ))
             .await
             .unwrap();
 

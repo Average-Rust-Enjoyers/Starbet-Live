@@ -1,4 +1,5 @@
 pub mod bet;
+pub mod error;
 pub mod extension_web_socket;
 pub mod game;
 pub mod game_match;
