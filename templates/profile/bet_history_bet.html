@@ -1,0 +1,33 @@
+<!-- prettier-ignore -->
+{% let color %}
+{% if won %}
+    {% let color = "success" %}
+{% else %}
+    {% let color = "error" %}
+{% endif %}
+
+<div
+    class="bg-primary-lighter border-{{ color }} mx-4 mb-4 flex justify-between rounded border-2 py-2 px-4"
+>
+    <div class="flex flex-col">
+        <span class="mb-2 text-lg"> {{ game_name }} </span>
+        <span> {{ team_a }} vs. {{ team_b }} </span>
+        <span> Bet placed: {{ date }} </span>
+    </div>
+    <div class="flex flex-col justify-end">
+        <div>
+            <span> Your Prediction: </span>
+            <span class="font-bold"> {{ predicted_team }} </span>
+        </div>
+        <span> Amount Bet: {{ bet_amount }} </span>
+        <span> Multiplier: {{ multiplier }} </span>
+    </div>
+    <div class="flex flex-col justify-center items-center text-{{ color }}">
+        {% if won %}
+        <span class="text-xl"> WON </span>
+        <span> Won amount: {{ won_amount }} SBT </span>
+        {% else %}
+        <span class="text-xl"> LOST </span>
+        {% endif %}
+    </div>
+</div>

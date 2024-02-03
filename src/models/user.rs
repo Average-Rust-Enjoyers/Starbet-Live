@@ -9,7 +9,6 @@ use crate::handlers::validation::RegisterFormData;
 
 /// User structure which is serialized from the database, containing full information
 /// about the user. Only obtainable when you have the right email and the right password hash
-/// (auth is not the scope of this iteration, this would be done way differently if it was).
 #[derive(sqlx::FromRow, Debug, Clone, PartialEq, Eq)]
 pub struct User {
     pub id: Uuid,
@@ -21,6 +20,7 @@ pub struct User {
     pub profile_picture: String,
     pub password_hash: String,
     pub balance: i32,
+    pub is_admin: bool,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
@@ -103,7 +103,7 @@ impl Credentials {
 }
 
 /// Structure passed to the repository when trying to update a user
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct UserUpdate {
     pub id: Uuid,
     pub username: Option<String>,
@@ -142,6 +142,19 @@ impl UserUpdate {
             profile_picture: profile_picture.and_then(change_to_owned),
             password_hash: password_hash.and_then(change_to_owned),
             balance,
+        }
+    }
+
+    pub fn default(id: &Uuid) -> Self {
+        Self {
+            id: *id,
+            username: None,
+            email: None,
+            name: None,
+            surname: None,
+            profile_picture: None,
+            password_hash: None,
+            balance: None,
         }
     }
 

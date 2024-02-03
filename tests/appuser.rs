@@ -29,6 +29,7 @@ pub mod appuser_tests {
             email: "lsherar0@pagesperso-orange.fr".to_string(),
             name: "Leslie".to_string(),
             surname: "Sherar".to_string(),
+            is_admin: false,
             profile_picture: "https://robohash.org/exvelitperspiciatis.png?size=150x150&set=set1"
                 .to_string(),
             password_hash:

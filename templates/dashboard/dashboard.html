@@ -4,7 +4,7 @@
 {% block content %}
 <div class="flex h-screen flex-col">
     <div class="flex-none">{{ user_nav|safe }}</div>
-    <div class="flex grow flex-row">
+    <div class="flex grow">
         <div id="content" class="flex grow flex-row">
             <!-- prettier-ignore -->
             {{ menu|safe }} 
@@ -12,7 +12,7 @@
         </div>
         <div
             id="right_side_panel"
-            class="bg-primary text-secondary flex flex-col items-center min-w-60"
+            class="bg-primary text-secondary flex min-w-60 flex-col items-center"
         >
             {{ active_bets|safe }}
         </div>

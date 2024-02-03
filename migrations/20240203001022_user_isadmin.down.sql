@@ -1,0 +1,2 @@
+ALTER TABLE AppUser
+DROP COLUMN is_admin;

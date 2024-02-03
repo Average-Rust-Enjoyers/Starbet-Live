@@ -1,7 +1,7 @@
 use axum::{
     http::{HeaderValue, StatusCode, Uri},
     response::{IntoResponse, Response},
-    routing::{get, patch, post},
+    routing::{delete, get, patch, post},
     Router,
 };
 
@@ -15,6 +15,11 @@ use crate::handlers::{
     dashboard::dashboard_handler,
     game::game_handler,
     index::index_handler,
+    profile::{
+        bet_history_handler, delete_profile_handler, deposit_handler, deposit_withdrawal_handler,
+        get_edit_profile_handler, post_edit_profile_handler, profile_handler, settings_handler,
+        withdrawal_handler,
+    },
     register::register_submission_handler,
     user::user_balance_handler,
     ws::ws_handler,
@@ -46,11 +51,15 @@ pub fn protected_router() -> Router<()> {
         .route("/bet/:match_id/:prediction", get(get_bet_handler))
         .route("/bet/active", get(get_active_bets_handler))
         .route("/user/balance", get(user_balance_handler))
-}
-
-pub fn public_router() -> Router<()> {
-    Router::new()
-        .route("/", get(index_handler))
+        .route("/user/bet-history", get(bet_history_handler))
+        .route("/user/edit-profile", get(get_edit_profile_handler))
+        .route("/user/edit-profile", post(post_edit_profile_handler))
+        .route("/user/deposit-withdrawal", get(deposit_withdrawal_handler))
+        .route("/user/deposit", post(deposit_handler))
+        .route("/user/withdrawal", post(withdrawal_handler))
+        .route("/user/settings", get(settings_handler))
+        .route("/user", delete(delete_profile_handler))
+        .route("/profile", get(profile_handler))
         .route("/admin", get(admin_handler))
         .route("/admin/match", post(new_gamematch_handler))
         .route("/admin/match/:id", patch(gamematch_update_handler))
@@ -58,6 +67,10 @@ pub fn public_router() -> Router<()> {
             "/admin/match/:id/odds",
             patch(gamematch_random_odds_handler),
         )
+}
+
+pub fn public_router() -> Router<()> {
+    Router::new().route("/", get(index_handler))
 }
 
 /// Redirect using the `HX-Redirect` header.
