@@ -1,33 +1,27 @@
 use crate::{
-    auth::AuthSession,
+    auth::{self, AuthSession},
     common::DbReadAll,
+    error::AppError,
     repositories::{bet::BetRepository, game::GameRepository, game_match::GameMatchRepository},
     templates::{ActiveBets, Dashboard, Menu, MenuItem, UserBalance, UserNav, UserSend},
 };
 use askama::Template;
-use axum::{
-    http::StatusCode,
-    response::{Html, IntoResponse},
-    Extension,
-};
+use axum::{response::Html, Extension};
 
 use super::bet::get_active_bets_by_user_id;
 
-/// # Panics
 pub async fn dashboard_handler(
     auth_session: AuthSession,
     Extension(mut game_repository): Extension<GameRepository>,
     Extension(match_repository): Extension<GameMatchRepository>,
     Extension(bet_repository): Extension<BetRepository>,
-) -> impl IntoResponse {
-    let Some(user) = auth_session.user else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+) -> Result<Html<String>, AppError> {
+    let user = auth::is_logged_in(auth_session)?;
 
     let user_id = user.id;
     let user_send = UserSend::from(&user);
 
-    let games = game_repository.read_all().await.unwrap();
+    let games = game_repository.read_all().await?;
 
     let active_user_bets = get_active_bets_by_user_id(
         bet_repository.clone(),
@@ -35,7 +29,7 @@ pub async fn dashboard_handler(
         game_repository.clone(),
         user_id,
     )
-    .await;
+    .await?;
 
     let menu_items: Vec<MenuItem> = games
         .iter()
@@ -68,6 +62,6 @@ pub async fn dashboard_handler(
         user_nav,
     };
 
-    let reply_html = template.render().unwrap();
-    (StatusCode::OK, Html(reply_html)).into_response()
+    let reply_html = template.render()?;
+    Ok(Html(reply_html))
 }

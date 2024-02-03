@@ -1,7 +1,8 @@
 use crate::{
-    auth::AuthSession,
+    auth::{self, AuthSession},
     common::{DbGetLatest, DbReadAll, DbUpdateOne},
     config::DEFAULT_ODDS_VALUE,
+    error::{AppError, BusinessLogicErrorKind},
     models::{
         extension_web_socket::ExtensionWebSocket,
         game::GameFilter,
@@ -18,7 +19,7 @@ use askama::Template;
 use axum::{
     extract::Path,
     http::{StatusCode, Uri},
-    response::{Html, IntoResponse},
+    response::Html,
     Extension, Form,
 };
 use rand::Rng;
@@ -29,59 +30,52 @@ pub async fn admin_handler(
     auth_session: AuthSession,
     Extension(mut game_repo): Extension<GameRepository>,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
-) -> impl IntoResponse {
-    let Some(user) = auth_session.user else {
-        return StatusCode::FORBIDDEN.into_response();
-    };
+) -> Result<Html<String>, AppError> {
+    let user = auth::is_logged_in(auth_session)?;
 
     if !user.is_admin {
-        return StatusCode::FORBIDDEN.into_response();
+        return Err(AppError::StatusCode(StatusCode::FORBIDDEN));
     }
 
-    let Ok(games) = game_repo
+    let games = game_repo
         .read_many(&GameFilter {
             name: None,
             genre: None,
         })
-        .await
-    else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+        .await?;
 
-    let Ok(matches) = game_match_repo.read_all().await else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+    let matches = game_match_repo.read_all().await?;
 
     let template = AdminPanel { games, matches };
 
-    let reply_html = template.render().unwrap();
-    (StatusCode::OK, Html(reply_html)).into_response()
+    let reply_html = template.render()?;
+    Ok(Html(reply_html))
 }
 
 pub async fn new_gamematch_handler(
     auth_session: AuthSession,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Form(mut payload): Form<GameMatchCreate>,
-) -> impl IntoResponse {
-    let Some(user) = auth_session.user else {
-        return StatusCode::FORBIDDEN.into_response();
-    };
+) -> Result<HxRedirect, AppError> {
+    let user = auth::is_logged_in(auth_session)?;
 
     if !user.is_admin {
-        return StatusCode::FORBIDDEN.into_response();
+        return Err(AppError::StatusCode(StatusCode::FORBIDDEN));
     }
 
     payload.cloudbet_id = None;
 
     if payload.ends_at < payload.starts_at {
-        return (StatusCode::BAD_REQUEST, "match end cannot be before start").into_response();
+        return Err(AppError::BusinessLogicError(
+            BusinessLogicErrorKind::GameMatchStartsAfterEnds,
+        ));
     }
 
     if game_match_repo.create(&payload).await.is_err() {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        return Err(AppError::InternalServerError);
     }
 
-    HxRedirect(Uri::from_static("/admin")).into_response()
+    Ok(HxRedirect(Uri::from_static("/admin")))
 }
 
 #[derive(Deserialize, Copy, Clone)]
@@ -126,13 +120,11 @@ pub async fn gamematch_random_odds_handler(
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Extension(mut odds_repo): Extension<OddsRepository>,
     Extension(web_socket): Extension<ExtensionWebSocket>,
-) -> impl IntoResponse {
-    let Some(user) = auth_session.user else {
-        return StatusCode::FORBIDDEN.into_response();
-    };
+) -> Result<Html<String>, AppError> {
+    let user = auth::is_logged_in(auth_session)?;
 
     if !user.is_admin {
-        return StatusCode::FORBIDDEN.into_response();
+        return Err(AppError::StatusCode(StatusCode::FORBIDDEN));
     }
 
     let game_match = game_match_repo
@@ -140,11 +132,11 @@ pub async fn gamematch_random_odds_handler(
         .await;
 
     let Ok(game_match) = game_match else {
-        return StatusCode::NOT_FOUND.into_response();
+        return Err(AppError::StatusCode(StatusCode::NOT_FOUND));
     };
 
     if game_match.status != GameMatchStatus::Live {
-        return StatusCode::BAD_REQUEST.into_response();
+        return Err(AppError::StatusCode(StatusCode::BAD_REQUEST));
     }
 
     let odds = odds_repo
@@ -178,16 +170,13 @@ pub async fn gamematch_random_odds_handler(
         odds_b += rng;
     }
 
-    let Ok(new_odds) = odds_repo
+    let new_odds = odds_repo
         .create(&OddsCreate {
             game_match_id: game_match.id,
             odds_a,
             odds_b,
         })
-        .await
-    else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+        .await?;
 
     let match_send = Match {
         match_id: game_match.id,
@@ -195,15 +184,14 @@ pub async fn gamematch_random_odds_handler(
         team_b: game_match.name_b.clone(),
         current_odds: new_odds.clone(),
     }
-    .render()
-    .unwrap();
+    .render()?;
 
-    let _ = web_socket.tx.send_async(match_send).await;
+    let _ = web_socket.tx.send_async(match_send).await; // TODO: ignore error or not?
 
     let template = AdminPanelMatch { game_match };
 
-    let reply_html = template.render().unwrap();
-    (StatusCode::OK, Html(reply_html)).into_response()
+    let reply_html = template.render()?;
+    Ok(Html(reply_html))
 }
 
 pub async fn gamematch_update_handler(
@@ -211,22 +199,16 @@ pub async fn gamematch_update_handler(
     Path(match_id): Path<Uuid>,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Form(GameMatchUpdateData { action }): Form<GameMatchUpdateData>,
-) -> impl IntoResponse {
-    let Some(user) = auth_session.user else {
-        return StatusCode::FORBIDDEN.into_response();
-    };
+) -> Result<Html<String>, AppError> {
+    let user = auth::is_logged_in(auth_session)?;
 
     if !user.is_admin {
-        return StatusCode::FORBIDDEN.into_response();
+        return Err(AppError::StatusCode(StatusCode::FORBIDDEN));
     }
 
     let game_match = game_match_repo
         .read_one(&GameMatchGetById { id: match_id })
-        .await;
-
-    let Ok(game_match) = game_match else {
-        return StatusCode::NOT_FOUND.into_response();
-    };
+        .await?;
 
     let valid_action = matches!(
         (game_match.status, action),
@@ -238,10 +220,10 @@ pub async fn gamematch_update_handler(
     );
 
     if !valid_action {
-        return StatusCode::BAD_REQUEST.into_response();
+        return Err(AppError::StatusCode(StatusCode::BAD_REQUEST));
     }
 
-    let Ok(game_match) = game_match_repo
+    let game_match = game_match_repo
         .update(&game_match::GameMatchUpdate {
             id: game_match.id,
             name_a: None,
@@ -251,13 +233,10 @@ pub async fn gamematch_update_handler(
             outcome: action.into(),
             status: action.into(),
         })
-        .await
-    else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+        .await?;
 
     let template = AdminPanelMatch { game_match };
 
-    let reply_html = template.render().unwrap();
-    (StatusCode::OK, Html(reply_html)).into_response()
+    let reply_html = template.render()?;
+    Ok(Html(reply_html))
 }

@@ -12,13 +12,15 @@ use axum::{
 use std::str::FromStr;
 
 pub mod get {
+    use crate::error::AppError;
+
     use super::*;
 
-    pub async fn login(auth_session: AuthSession) -> impl IntoResponse {
+    pub async fn login(auth_session: AuthSession) -> Result<impl IntoResponse, AppError> {
         if auth_session.user.is_some() {
-            return HxRedirect(Uri::from_static("/dashboard")).into_response();
+            return Ok(HxRedirect(Uri::from_static("/dashboard")).into_response());
         }
-        Html(LoginPage {}.render().unwrap()).into_response()
+        Ok(Html(LoginPage {}.render()?).into_response())
     }
 
     pub async fn logout(mut auth_session: AuthSession) -> impl IntoResponse {
@@ -39,7 +41,7 @@ pub mod post {
         let user = match auth_session.authenticate(creds.clone()).await {
             Ok(Some(user)) => user,
             Ok(None) => {
-                return StatusCode::INTERNAL_SERVER_ERROR.into_response(); // authenticate always returns Some
+                return StatusCode::UNAUTHORIZED.into_response(); // authenticate always returns Some
             }
             Err(e) => {
                 match e {
@@ -56,7 +58,7 @@ pub mod post {
                                         return HxRedirect(uri).into_response();
                                     }
                                     Err(_) => {
-                                        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+                                        return StatusCode::UNAUTHORIZED.into_response();
                                     }
                                 }
                             }
