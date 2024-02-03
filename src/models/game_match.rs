@@ -63,20 +63,6 @@ impl From<GameMatch> for GameMatchCreate {
     }
 }
 
-// impl From<GameMatch> for GameMatchUpdateByCloudbetKey {
-//     fn from(game_match: GameMatch) -> Result<Self, Error> {
-//         GameMatchUpdateByCloudbetKey {
-//             cloudbet_key: game_match.cloudbet_key,
-//             name_a: Some(game_match.name_a),
-//             name_b: Some(game_match.name_b),
-//             starts_at: Some(game_match.starts_at),
-//             ends_at: Some(game_match.ends_at),
-//             status: Some(game_match.status),
-//             outcome: game_match.outcome,
-//         }
-//     }
-// }
-
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize)]
 pub struct GameMatchCreate {
     pub game_id: Uuid,
@@ -204,11 +190,3 @@ impl From<&GameMatchDelete> for GameMatchGetById {
         }
     }
 }
-
-// impl From<&GameMatchUpdate> for GameMatchGetById {
-//     fn from(game_match_update: &GameMatchUpdate) -> Self {
-//         Self {
-//             id: game_match_update.id,
-//         }
-//     }
-// }
