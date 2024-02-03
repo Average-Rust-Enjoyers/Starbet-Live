@@ -65,8 +65,6 @@ pub async fn bet_history_handler(
             continue;
         }
 
-        let won = bet.status == BetStatus::Won;
-
         let game_match = match_repo
             .read_one(&game_match::GameMatchGetById {
                 id: bet.game_match_id,
@@ -103,7 +101,11 @@ pub async fn bet_history_handler(
         };
 
         #[allow(clippy::cast_possible_truncation)]
-        let won_amount = if won { won_amount as i32 } else { 0 };
+        let won_amount = if bet.status == BetStatus::Won {
+            won_amount as i32
+        } else {
+            0
+        };
 
         let bet_history_bet = BetHistoryBet {
             game_name,
@@ -113,7 +115,7 @@ pub async fn bet_history_handler(
             bet_amount: bet.amount,
             multiplier,
             won_amount,
-            won,
+            bet_status: bet.status.clone(),
             date,
         };
 
