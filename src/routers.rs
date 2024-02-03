@@ -56,8 +56,7 @@ pub fn protected_router() -> Router<()> {
 }
 
 pub fn public_router() -> Router<()> {
-    Router::new()
-        .route("/", get(index_handler))
+    Router::new().route("/", get(index_handler))
 }
 
 /// Redirect using the `HX-Redirect` header.
