@@ -1,5 +1,10 @@
 use std::fmt::{Debug, Display, Formatter};
 
+use axum::{
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
+
 #[derive(Debug)]
 pub enum BusinessLogicErrorKind {
     // User errors
@@ -209,5 +214,73 @@ impl From<DbError> for ExternalApiError {
 impl From<Vec<cynic::GraphQlError>> for ExternalApiError {
     fn from(err: Vec<cynic::GraphQlError>) -> Self {
         Self::GraphQl(err)
+    }
+}
+
+pub enum AppError {
+    InternalServerError,
+    StatusCode(StatusCode),
+    BusinessLogicError(BusinessLogicErrorKind),
+}
+
+impl From<StatusCode> for AppError {
+    fn from(status_code: StatusCode) -> Self {
+        match status_code {
+            StatusCode::INTERNAL_SERVER_ERROR => Self::InternalServerError,
+            _ => Self::InternalServerError,
+        }
+    }
+}
+
+impl From<askama::Error> for AppError {
+    fn from(_: askama::Error) -> Self {
+        Self::InternalServerError
+    }
+}
+
+impl From<DbError> for AppError {
+    fn from(err: DbError) -> Self {
+        Self::InternalServerError
+    }
+}
+
+impl From<uuid::Error> for AppError {
+    fn from(_: uuid::Error) -> Self {
+        Self::InternalServerError
+    }
+}
+
+impl From<std::num::ParseIntError> for AppError {
+    fn from(_: std::num::ParseIntError) -> Self {
+        Self::InternalServerError
+    }
+}
+
+impl From<std::num::ParseFloatError> for AppError {
+    fn from(_: std::num::ParseFloatError) -> Self {
+        Self::InternalServerError
+    }
+}
+
+impl From<barrage::SendError<std::string::String>> for AppError {
+    fn from(_: barrage::SendError<std::string::String>) -> Self {
+        Self::InternalServerError
+    }
+}
+
+impl From<axum_login::Error<crate::auth::Auth>> for AppError {
+    fn from(_: axum_login::Error<crate::auth::Auth>) -> Self {
+        Self::InternalServerError
+    }
+}
+
+// Tell axum how to convert `AppError` into a response.
+impl IntoResponse for AppError {
+    fn into_response(self) -> Response {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Something went wrong: "),
+        )
+            .into_response()
     }
 }
