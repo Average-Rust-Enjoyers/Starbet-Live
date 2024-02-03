@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::{
     models::game_match::GameMatchStatus,
-    models::{odds::Odds, user::User},
+    models::{bet::BetStatus, odds::Odds, user::User},
 };
 
 use crate::models;
@@ -105,7 +105,7 @@ pub struct BetHistoryBet {
     pub bet_amount: i32,
     pub multiplier: f64,
     pub won_amount: i32,
-    pub won: bool,
+    pub bet_status: BetStatus,
     pub date: String,
 }
 
