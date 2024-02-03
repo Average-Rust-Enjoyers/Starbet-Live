@@ -1,5 +1,7 @@
 [package]
 name = "starbet-live"
+description = "live betting platform for esports"
+authors = ["Ondřej Hložek", "Filip Kováč", "Adam Valt", "Ján Václav"]
 version = "0.1.2"
 edition = "2021"
 build = "build.rs"
@@ -8,6 +10,15 @@ build = "build.rs"
 
 [dependencies]
 axum = { version = "0.7.0", features = ["macros", "ws"] }
+async-trait = "0.1.74"
+tokio = { version = "1.33.0", features = [
+    "rt-multi-thread",
+    "time",
+    "macros",
+    "net",
+] }
+
+# Database connection
 sqlx = { version = "0.7.3", features = [
     "runtime-tokio",
     "tls-native-tls",
@@ -15,32 +26,34 @@ sqlx = { version = "0.7.3", features = [
     "uuid",
     "chrono",
 ] }
-tokio = { version = "1.33.0", features = ["full"] }
-dotenvy = "0.15.7"
-anyhow = "1.0.75"
-async-trait = "0.1.74"
+bb8 = "0.8.1"
+bb8-redis = "0.14.0"
+
+# Graphql Api connection
+reqwest = "0.11.23"
+cynic = { version = "3.4.3", features = ["http-reqwest"] }
+
+# Authentication
+# older versions required, can't manage to get it to work with latest
+argon2 = "0.5.2"
+axum-login = "0.12.0"
+tower-sessions = { version = "0.9.1", features = ["redis-store"] }
+
+# Other
 chrono = { version = "0.4.31", features = ["serde"] }
+time = "0.3.31"
 serde = "1.0.193"
 serde_json = "1.0.112"
 rmp-serde = "1.1.2"
+dotenvy = "0.15.7"
+anyhow = "1.0.75"
 uuid = "1.6.1"
-bb8 = "0.8.1"
-bb8-redis = "0.14.0"
 askama = "0.12.1"
 float-cmp = "0.9.0"
 regex = "1.5.4"
-argon2 = "0.5.2"
-time = "0.3.31"
-barrage = "0.2.3"
-reqwest = "0.11.23"
-futures = "0.3.30"
 rand = "0.8.5"
-cynic = { version = "3.4.3", features = ["http-reqwest"] }
-cynic-codegen = { version = "3.4.3" }
-
-# older versions required, can't manage to get it to work with latest
-tower-sessions = { version = "0.9.1", features = ["redis-store"] }
-axum-login = "0.12.0"
+barrage = "0.2.3"
+futures = "0.3.30"
 
 [build-dependencies]
-cynic-codegen = { version = "3.4.3" }
+cynic-codegen = "3.4.3"
