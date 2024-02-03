@@ -48,27 +48,25 @@ pub async fn game_handler(
         })
         .await
     else {
-        error_web_socket
+        let _ = error_web_socket
             .tx
             .send_async(generate_error_message_template(
                 "Failed to get game",
                 user.id,
             ))
-            .await
-            .unwrap();
+            .await;
 
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
 
     let Ok(matches) = game_match_repo.get_by_foreign_key(&game.id).await else {
-        error_web_socket
+        let _ = error_web_socket
             .tx
             .send_async(generate_error_message_template(
                 "Failed to get matches",
                 user.id,
             ))
-            .await
-            .unwrap();
+            .await;
 
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
@@ -85,14 +83,13 @@ pub async fn game_handler(
                     })
                     .await
                 else {
-                    error_web_socket
+                    let _ = error_web_socket
                         .tx
                         .send_async(generate_error_message_template(
                             "Failed to get odds",
                             user.id,
                         ))
-                        .await
-                        .unwrap();
+                        .await;
 
                     return StatusCode::INTERNAL_SERVER_ERROR.into_response();
                 };
@@ -121,14 +118,13 @@ pub async fn game_handler(
     };
 
     let Ok(menu_items) = game_repository.read_all().await else {
-        error_web_socket
+        let _ = error_web_socket
             .tx
             .send_async(generate_error_message_template(
                 "Failed to get games",
                 user.id,
             ))
-            .await
-            .unwrap();
+            .await;
 
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };

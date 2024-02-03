@@ -53,14 +53,14 @@ pub async fn place_bet_handler(
     };
 
     if user.balance < bet_amount || bet_amount < 1 {
-        error_web_socket
+        let _ = error_web_socket
             .tx
             .send_async(generate_error_message_template(
                 "Insufficient funds",
                 user.id,
             ))
-            .await
-            .unwrap();
+            .await;
+
         return StatusCode::PRECONDITION_FAILED.into_response();
     }
 
@@ -72,14 +72,13 @@ pub async fn place_bet_handler(
     )
     .await
     else {
-        error_web_socket
+        let _ = error_web_socket
             .tx
             .send_async(generate_error_message_template(
                 "Failed to create new odds",
                 user.id,
             ))
-            .await
-            .unwrap();
+            .await;
 
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
@@ -90,11 +89,11 @@ pub async fn place_bet_handler(
         })
         .await
     else {
-        error_web_socket
+        let _ = error_web_socket
             .tx
             .send_async(generate_error_message_template("Match not found", user.id))
-            .await
-            .unwrap();
+            .await;
+
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
 
@@ -127,14 +126,14 @@ pub async fn place_bet_handler(
         })
         .await
     else {
-        error_web_socket
+        let _ = error_web_socket
             .tx
             .send_async(generate_error_message_template(
                 "Failed to place bet",
                 user.id,
             ))
-            .await
-            .unwrap();
+            .await;
+
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
 
@@ -146,14 +145,13 @@ pub async fn place_bet_handler(
     )
     .await
     else {
-        error_web_socket
+        let _ = error_web_socket
             .tx
             .send_async(generate_error_message_template(
                 "Failed to get active bets",
                 user.id,
             ))
-            .await
-            .unwrap();
+            .await;
 
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
@@ -179,11 +177,10 @@ pub async fn get_bet_handler(
         .read_one(&GameMatchGetById { id: match_id })
         .await
     else {
-        error_web_socket
+        let _ = error_web_socket
             .tx
             .send_async(generate_error_message_template("Match not found", user.id))
-            .await
-            .unwrap();
+            .await;
 
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
@@ -325,14 +322,13 @@ pub async fn get_active_bets_handler(
     )
     .await
     else {
-        error_web_socket
+        let _ = error_web_socket
             .tx
             .send_async(generate_error_message_template(
                 "Failed to get active bets",
                 user.id,
             ))
-            .await
-            .unwrap();
+            .await;
 
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };

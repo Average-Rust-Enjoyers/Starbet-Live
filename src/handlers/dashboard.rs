@@ -30,14 +30,13 @@ pub async fn dashboard_handler(
     let user_send = UserSend::from(&user);
 
     let Ok(games) = game_repository.read_all().await else {
-        error_web_socket
+        let _ = error_web_socket
             .tx
             .send_async(generate_error_message_template(
                 "Failed to get games",
                 user_id,
             ))
-            .await
-            .unwrap();
+            .await;
 
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
@@ -50,14 +49,13 @@ pub async fn dashboard_handler(
     )
     .await
     else {
-        error_web_socket
+        let _ = error_web_socket
             .tx
             .send_async(generate_error_message_template(
                 "Failed to get active bets",
                 user_id,
             ))
-            .await
-            .unwrap();
+            .await;
 
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
