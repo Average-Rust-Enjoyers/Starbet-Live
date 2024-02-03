@@ -1,7 +1,7 @@
 use crate::{
     auth::{self, AuthSession},
     common::{helpers::format_date_time_string_with_seconds, DbUpdateOne},
-    error::AppError,
+    error::{AppError, AppResult},
     models::{
         bet::{BetGetByUserId, BetStatus},
         game::GameGetById,
@@ -31,10 +31,8 @@ use serde::Deserialize;
 
 use super::validation::{validate_and_build, RegisterFormData};
 
-pub async fn profile_handler(auth_session: auth::AuthSession) -> Result<Html<String>, AppError> {
-    let Some(user) = auth_session.user else {
-        return Err(AppError::InternalServerError);
-    };
+pub async fn profile_handler(auth_session: auth::AuthSession) -> AppResult<Html<String>> {
+    let user = auth::is_logged_in(auth_session)?;
 
     Ok(Html(ProfilePage::from(user).render()?))
 }
@@ -45,10 +43,8 @@ pub async fn bet_history_handler(
     Extension(mut match_repo): Extension<GameMatchRepository>,
     Extension(mut game_repo): Extension<GameRepository>,
     Extension(mut odds_repo): Extension<OddsRepository>,
-) -> Result<Html<String>, AppError> {
-    let Some(user) = auth_session.user else {
-        return Err(AppError::InternalServerError);
-    };
+) -> AppResult<Html<String>> {
+    let user = auth::is_logged_in(auth_session)?;
 
     let user_bets = bet_repo
         .read_many(&BetGetByUserId { user_id: user.id })
@@ -116,10 +112,8 @@ pub async fn bet_history_handler(
     Ok(Html(BetHistory::new(bet_history).render()?))
 }
 
-pub async fn get_edit_profile_handler(auth_session: AuthSession) -> Result<Html<String>, AppError> {
-    if auth_session.user.is_none() {
-        return Err(AppError::InternalServerError);
-    };
+pub async fn get_edit_profile_handler(auth_session: AuthSession) -> AppResult<Html<String>> {
+    auth::is_logged_in(auth_session)?;
 
     Ok(Html(EditProfilePage::new().render()?))
 }
@@ -130,10 +124,8 @@ pub async fn post_edit_profile_handler(
     auth_session: AuthSession,
     Extension(mut user_repository): Extension<UserRepository>,
     Form(payload): Form<RegisterFormData>,
-) -> Result<Html<String>, AppError> {
-    let Some(user) = auth_session.user else {
-        return Err(AppError::InternalServerError);
-    };
+) -> AppResult<Html<String>> {
+    let user = auth::is_logged_in(auth_session)?;
 
     let mut user_update = UserUpdate::new(
         &user.id,
@@ -172,15 +164,13 @@ pub async fn post_edit_profile_handler(
     }
 
     if !user_update.update_fields_none() && (user_repository.update(&user_update).await).is_err() {
-        return Err(AppError::InternalServerError);
+        return Err(AppError::StatusCode(StatusCode::INTERNAL_SERVER_ERROR));
     }
 
     Ok(Html(response))
 }
 
-pub async fn deposit_withdrawal_handler(
-    auth_session: AuthSession,
-) -> Result<Html<String>, AppError> {
+pub async fn deposit_withdrawal_handler(auth_session: AuthSession) -> AppResult<Html<String>> {
     auth::is_logged_in(auth_session)?;
 
     Ok(Html(DepositWithdrawalPage::new().render()?))
@@ -196,7 +186,7 @@ pub async fn handle_transaction<F>(
     Extension(mut user_repository): Extension<UserRepository>,
     Form(payload): Form<DepositWithdrawalForm>,
     transaction: F,
-) -> Result<Html<String>, AppError>
+) -> AppResult<Html<String>>
 where
     F: Fn(i32, i32) -> Result<i32, StatusCode>,
 {
@@ -204,17 +194,13 @@ where
 
     let new_balance = transaction(user.balance, payload.amount)?;
 
-    if user_repository
+    user_repository
         .update(&UserUpdate {
             id: user.id,
             balance: Some(new_balance),
             ..Default::default()
         })
-        .await
-        .is_err()
-    {
-        return Err(AppError::InternalServerError);
-    }
+        .await?;
 
     Ok(Html(
         ProfileBalanceFragment {
@@ -254,7 +240,7 @@ pub async fn withdrawal_handler(
     .await
 }
 
-pub async fn settings_handler(auth_session: AuthSession) -> Result<Html<String>, AppError> {
+pub async fn settings_handler(auth_session: AuthSession) -> AppResult<Html<String>> {
     auth::is_logged_in(auth_session)?;
 
     Ok(Html(SettingsPage::new().render()?))
@@ -263,7 +249,7 @@ pub async fn settings_handler(auth_session: AuthSession) -> Result<Html<String>,
 pub async fn delete_profile_handler(
     auth_session: AuthSession,
     Extension(mut user_repository): Extension<UserRepository>,
-) -> Result<HxRedirect, AppError> {
+) -> AppResult<HxRedirect> {
     let user = auth::is_logged_in(auth_session)?;
 
     user_repository.delete(&UserDelete::new(&user.id)).await?;

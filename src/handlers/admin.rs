@@ -2,7 +2,7 @@ use crate::{
     auth::{self, AuthSession},
     common::{DbGetLatest, DbReadAll, DbUpdateOne},
     config::DEFAULT_ODDS_VALUE,
-    error::{AppError, BusinessLogicErrorKind},
+    error::{AppError, AppResult, BusinessLogicErrorKind},
     models::{
         extension_web_socket::ExtensionWebSocket,
         game::GameFilter,
@@ -30,7 +30,7 @@ pub async fn admin_handler(
     auth_session: AuthSession,
     Extension(mut game_repo): Extension<GameRepository>,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
-) -> Result<Html<String>, AppError> {
+) -> AppResult<Html<String>> {
     let user = auth::is_logged_in(auth_session)?;
 
     if !user.is_admin {
@@ -56,12 +56,8 @@ pub async fn new_gamematch_handler(
     auth_session: AuthSession,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Form(mut payload): Form<GameMatchCreate>,
-) -> Result<HxRedirect, AppError> {
-    let user = auth::is_logged_in(auth_session)?;
-
-    if !user.is_admin {
-        return Err(AppError::StatusCode(StatusCode::FORBIDDEN));
-    }
+) -> AppResult<HxRedirect> {
+    auth::is_logged_admin(auth_session)?;
 
     payload.cloudbet_id = None;
 
@@ -71,9 +67,7 @@ pub async fn new_gamematch_handler(
         ));
     }
 
-    if game_match_repo.create(&payload).await.is_err() {
-        return Err(AppError::InternalServerError);
-    }
+    game_match_repo.create(&payload).await?;
 
     Ok(HxRedirect(Uri::from_static("/admin")))
 }
@@ -120,20 +114,12 @@ pub async fn gamematch_random_odds_handler(
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Extension(mut odds_repo): Extension<OddsRepository>,
     Extension(web_socket): Extension<ExtensionWebSocket>,
-) -> Result<Html<String>, AppError> {
-    let user = auth::is_logged_in(auth_session)?;
-
-    if !user.is_admin {
-        return Err(AppError::StatusCode(StatusCode::FORBIDDEN));
-    }
+) -> AppResult<Html<String>> {
+    auth::is_logged_admin(auth_session)?;
 
     let game_match = game_match_repo
         .read_one(&GameMatchGetById { id: match_id })
-        .await;
-
-    let Ok(game_match) = game_match else {
-        return Err(AppError::StatusCode(StatusCode::NOT_FOUND));
-    };
+        .await?;
 
     if game_match.status != GameMatchStatus::Live {
         return Err(AppError::StatusCode(StatusCode::BAD_REQUEST));
@@ -199,12 +185,8 @@ pub async fn gamematch_update_handler(
     Path(match_id): Path<Uuid>,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Form(GameMatchUpdateData { action }): Form<GameMatchUpdateData>,
-) -> Result<Html<String>, AppError> {
-    let user = auth::is_logged_in(auth_session)?;
-
-    if !user.is_admin {
-        return Err(AppError::StatusCode(StatusCode::FORBIDDEN));
-    }
+) -> AppResult<Html<String>> {
+    auth::is_logged_admin(auth_session)?;
 
     let game_match = game_match_repo
         .read_one(&GameMatchGetById { id: match_id })

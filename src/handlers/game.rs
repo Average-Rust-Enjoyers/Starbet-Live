@@ -1,6 +1,6 @@
 use crate::{
     common::{helpers::format_date_time_string_without_seconds, DbGetLatest, DbReadByForeignKey},
-    error::AppError,
+    error::AppResult,
     models::{game::GameGetById, game_match::GameMatchStatus, odds::OddsGetByGameMatchId},
     repositories::{game::GameRepository, game_match::GameMatchRepository, odds::OddsRepository},
     templates::{Game, Match, Menu, MenuItem, UpcomingMatch},
@@ -23,7 +23,7 @@ pub async fn game_handler(
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Extension(mut odds_repo): Extension<OddsRepository>,
     Path(GameId { game_id }): Path<GameId>,
-) -> Result<Html<String>, AppError> {
+) -> AppResult<Html<String>> {
     let game = game_repository
         .read_one(&GameGetById {
             id: Uuid::parse_str(&game_id.clone())?,

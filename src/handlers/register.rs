@@ -9,7 +9,7 @@ use super::validation::{validate_and_build, RegisterFormData};
 use crate::{
     auth::AuthSession,
     common::repository::DbCreate,
-    error::AppError,
+    error::AppResult,
     models::user::Credentials,
     repositories::user::UserRepository,
     routers::HxRedirect,
@@ -25,7 +25,7 @@ const FIELDS: [&str; 6] = [
     "confirm-password",
 ];
 
-pub async fn register_page_handler() -> Result<Html<String>, AppError> {
+pub async fn register_page_handler() -> AppResult<Html<String>> {
     let form = RegisterPage {
         username: TextField::new(FIELDS[0]),
         first_name: TextField::new(FIELDS[1]),
@@ -42,7 +42,7 @@ pub async fn register_submission_handler(
     mut auth_session: AuthSession,
     Extension(mut user_repository): Extension<UserRepository>,
     Form(payload): Form<RegisterFormData>,
-) -> Result<impl IntoResponse, AppError> {
+) -> AppResult<impl IntoResponse> {
     let (mut all_valid, mut form_fields) = (true, Vec::new());
 
     for field in &FIELDS {

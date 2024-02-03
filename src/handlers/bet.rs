@@ -1,7 +1,7 @@
 use crate::{
     auth::{self, AuthSession},
     common::helpers::format_date_time_string_with_seconds,
-    error::AppError,
+    error::{AppError, AppResult},
     models::{
         bet::{BetCreate, BetGetByUserId},
         extension_web_socket::ExtensionWebSocket,
@@ -44,7 +44,7 @@ pub async fn place_bet_handler(
     Extension(game_repo): Extension<GameRepository>,
     Path((match_id, prediction)): Path<(String, String)>,
     Json(bet_amount): Json<BetAmount>,
-) -> Result<Html<String>, AppError> {
+) -> AppResult<Html<String>> {
     let bet_amount = bet_amount.bet_amount.parse::<i32>()?;
 
     let user = auth::is_logged_in(auth_session)?;
@@ -107,7 +107,7 @@ pub async fn place_bet_handler(
 pub async fn get_bet_handler(
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Path((match_id, prediction)): Path<(String, String)>,
-) -> Result<Html<String>, AppError> {
+) -> AppResult<Html<String>> {
     let match_id = Uuid::parse_str(&match_id)?;
     let game_match = game_match_repo
         .read_one(&GameMatchGetById { id: match_id })
@@ -133,7 +133,7 @@ async fn create_new_odds(
     prediction: String,
     _bet_amount: i32,
     mut odds_repository: OddsRepository,
-) -> Result<Odds, AppError> {
+) -> AppResult<Odds> {
     let match_uuid = Uuid::parse_str(&match_id)?;
 
     let current_odds = odds_repository
@@ -172,7 +172,7 @@ pub async fn get_active_bets_by_user_id(
     mut match_repository: GameMatchRepository,
     mut game_repository: GameRepository,
     user_id: Uuid,
-) -> Result<Vec<Bet>, AppError> {
+) -> AppResult<Vec<Bet>> {
     let active_user_bets = bet_repository
         .read_many(&BetGetByUserId { user_id })
         .await?;
@@ -222,7 +222,7 @@ pub async fn get_active_bets_handler(
     Extension(match_repo): Extension<GameMatchRepository>,
     Extension(bet_repo): Extension<BetRepository>,
     Extension(game_repo): Extension<GameRepository>,
-) -> Result<Html<String>, AppError> {
+) -> AppResult<Html<String>> {
     let user = auth::is_logged_in(auth_session)?;
 
     let bets = get_active_bets_by_user_id(

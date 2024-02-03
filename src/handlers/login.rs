@@ -1,4 +1,5 @@
 use crate::auth::AuthSession;
+use crate::error::AppResult;
 use crate::models::user::Credentials;
 use crate::routers::HxRedirect;
 use crate::templates::LoginPage;
@@ -12,11 +13,10 @@ use axum::{
 use std::str::FromStr;
 
 pub mod get {
-    use crate::error::AppError;
 
     use super::*;
 
-    pub async fn login(auth_session: AuthSession) -> Result<impl IntoResponse, AppError> {
+    pub async fn login(auth_session: AuthSession) -> AppResult<impl IntoResponse> {
         if auth_session.user.is_some() {
             return Ok(HxRedirect(Uri::from_static("/dashboard")).into_response());
         }

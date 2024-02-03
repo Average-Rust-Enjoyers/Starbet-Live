@@ -1,7 +1,7 @@
 use crate::{
     auth::{self, AuthSession},
     common::DbReadAll,
-    error::AppError,
+    error::AppResult,
     repositories::{bet::BetRepository, game::GameRepository, game_match::GameMatchRepository},
     templates::{ActiveBets, Dashboard, Menu, MenuItem, UserBalance, UserNav, UserSend},
 };
@@ -15,7 +15,7 @@ pub async fn dashboard_handler(
     Extension(mut game_repository): Extension<GameRepository>,
     Extension(match_repository): Extension<GameMatchRepository>,
     Extension(bet_repository): Extension<BetRepository>,
-) -> Result<Html<String>, AppError> {
+) -> AppResult<Html<String>> {
     let user = auth::is_logged_in(auth_session)?;
 
     let user_id = user.id;

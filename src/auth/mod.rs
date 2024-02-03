@@ -4,7 +4,7 @@ use sqlx::{Postgres, Transaction};
 
 use crate::common::repository::DbReadOne;
 use crate::common::PoolHandler;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::models::user::User;
 use crate::repositories::user::UserRepository;
 use crate::{
@@ -54,10 +54,16 @@ impl AuthnBackend for Auth {
     }
 }
 
-pub fn is_logged_in(auth_session: AuthSession) -> Result<User, AppError> {
-    if let Some(user) = auth_session.user {
-        Ok(user)
-    } else {
-        Err(AppError::InternalServerError)
+pub fn is_logged_in(auth_session: AuthSession) -> AppResult<User> {
+    match auth_session.user {
+        Some(user) => Ok(user),
+        None => Err(AppError::ForbiddenError),
+    }
+}
+pub fn is_logged_admin(auth_session: AuthSession) -> AppResult<User> {
+    let user = is_logged_in(auth_session)?;
+    match user.is_admin {
+        true => Ok(user),
+        false => Err(AppError::ForbiddenError),
     }
 }

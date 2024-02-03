@@ -1,12 +1,12 @@
 use crate::{
     auth::{self, AuthSession},
-    error::AppError,
+    error::AppResult,
     templates::UserBalance,
 };
 use askama::Template;
 use axum::response::Html;
 
-pub async fn user_balance_handler(auth_session: AuthSession) -> Result<Html<String>, AppError> {
+pub async fn user_balance_handler(auth_session: AuthSession) -> AppResult<Html<String>> {
     let user = auth::is_logged_in(auth_session)?;
 
     let balance = user.balance;
