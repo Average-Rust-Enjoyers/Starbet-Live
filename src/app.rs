@@ -16,7 +16,7 @@ use crate::{
 use axum_login::{login_required, AuthManagerLayerBuilder};
 use bb8_redis::RedisConnectionManager;
 use sqlx::postgres::PgPoolOptions;
-use std::{net::SocketAddr, sync::Arc};
+use std::{io, net::SocketAddr, sync::Arc};
 use time::Duration;
 
 use tower_sessions::{Expiry, SessionManagerLayer};
@@ -64,7 +64,7 @@ impl App {
         self,
         address: SocketAddr,
         session_expiration: Duration,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), io::Error> {
         let session_store = RedisStore::new(self.redis_pool.clone());
         let session_layer = SessionManagerLayer::new(session_store)
             .with_secure(false)
