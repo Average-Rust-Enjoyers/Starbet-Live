@@ -21,6 +21,7 @@ pub struct User {
     pub profile_picture: String,
     pub password_hash: String,
     pub balance: i32,
+    pub is_admin: bool,
     pub created_at: DateTime<Utc>,
     pub edited_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
