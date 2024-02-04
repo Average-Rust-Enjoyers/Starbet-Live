@@ -1,6 +1,9 @@
 use crate::{
-    auth::AuthSession,
-    common::helpers::{format_date_time_string_with_seconds, generate_error_message_template},
+    auth::{self, AuthSession},
+    common::helpers::{
+        format_date_time_string_with_seconds, generate_error_message_template, show_popup_error,
+    },
+    error::{AppError, AppResult},
     models::{
         bet::{BetCreate, BetGetByUserId},
         extension_web_socket::{ExtensionWebSocketError, ExtensionWebSocketMatch},
@@ -21,7 +24,7 @@ use askama::Template;
 use axum::{
     extract::{Json, Path},
     http::StatusCode,
-    response::{Html, IntoResponse},
+    response::Html,
     Extension,
 };
 
@@ -44,13 +47,10 @@ pub async fn place_bet_handler(
     Extension(game_repo): Extension<GameRepository>,
     Path((match_id, prediction)): Path<(String, String)>,
     Json(bet_amount): Json<BetAmount>,
-) -> impl IntoResponse {
-    let bet_amount = bet_amount.bet_amount.parse::<i32>().unwrap();
+) -> AppResult<Html<String>> {
+    let bet_amount = bet_amount.bet_amount.parse::<i32>()?;
 
-    let user = match auth_session.user {
-        Some(user) => user,
-        None => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-    };
+    let user = auth::is_logged_in(auth_session)?;
 
     if user.balance < bet_amount || bet_amount < 1 {
         let _ = error_web_socket
@@ -61,41 +61,31 @@ pub async fn place_bet_handler(
             ))
             .await;
 
-        return StatusCode::PRECONDITION_FAILED.into_response();
+        return Err(AppError::StatusCode(StatusCode::PRECONDITION_FAILED));
     }
 
-    let Some(new_odds) = create_new_odds(
+    let new_odds = create_new_odds(
         match_id.clone(),
         prediction.clone(),
         bet_amount,
         odds_repo.clone(),
     )
     .await
-    else {
-        let _ = error_web_socket
-            .tx
-            .send_async(generate_error_message_template(
-                "Failed to create new odds",
-                user.id,
-            ))
-            .await;
+    .or_else(|e| {
+        show_popup_error(
+            "Failed to create new odds",
+            e,
+            user.id,
+            error_web_socket.clone(),
+        )
+    })?;
 
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
-
-    let Ok(game_match) = match_repo
+    let game_match = match_repo
         .read_one(&GameMatchGetById {
-            id: Uuid::parse_str(&match_id).unwrap(),
+            id: Uuid::parse_str(&match_id)?,
         })
         .await
-    else {
-        let _ = error_web_socket
-            .tx
-            .send_async(generate_error_message_template("Match not found", user.id))
-            .await;
-
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+        .or_else(|e| show_popup_error("Match not found", e, user.id, error_web_socket.clone()))?;
 
     let updated_match_template = Match {
         match_id: new_odds.game_match_id,
@@ -103,16 +93,11 @@ pub async fn place_bet_handler(
         team_b: game_match.name_b,
         current_odds: new_odds.clone(),
     }
-    .render()
-    .unwrap();
+    .render()?;
 
-    web_socket
-        .tx
-        .send_async(updated_match_template)
-        .await
-        .unwrap();
+    web_socket.tx.send_async(updated_match_template).await?; // TODO: ignore error or not?
 
-    let Ok(_) = bet_repo
+    bet_repo
         .create(&BetCreate {
             id: Uuid::new_v4(),
             app_user_id: user.id,
@@ -125,65 +110,39 @@ pub async fn place_bet_handler(
             odds_id: new_odds.id,
         })
         .await
-    else {
-        let _ = error_web_socket
-            .tx
-            .send_async(generate_error_message_template(
-                "Failed to place bet",
-                user.id,
-            ))
-            .await;
+        .or_else(|e| {
+            show_popup_error("Failed to place bet", e, user.id, error_web_socket.clone())
+        })?;
 
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
-
-    let Some(bets) = get_active_bets_by_user_id(
+    let bets = get_active_bets_by_user_id(
         bet_repo.clone(),
         match_repo.clone(),
         game_repo.clone(),
         user.id,
     )
     .await
-    else {
-        let _ = error_web_socket
-            .tx
-            .send_async(generate_error_message_template(
-                "Failed to get active bets",
-                user.id,
-            ))
-            .await;
+    .or_else(|e| {
+        show_popup_error(
+            "Failed to get active bets",
+            e,
+            user.id,
+            error_web_socket.clone(),
+        )
+    })?;
 
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+    let bets_history_template = ActiveBets { bets }.render()?;
 
-    let bets_history_template = ActiveBets { bets }.render().unwrap();
-
-    (StatusCode::OK, Html(bets_history_template)).into_response()
+    Ok(Html(bets_history_template))
 }
 
 pub async fn get_bet_handler(
-    auth_session: AuthSession,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
-    Extension(error_web_socket): Extension<ExtensionWebSocketError>,
     Path((match_id, prediction)): Path<(String, String)>,
-) -> impl IntoResponse {
-    let user = match auth_session.user {
-        Some(user) => user,
-        None => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-    };
-
-    let match_id = Uuid::parse_str(&match_id).unwrap();
-    let Ok(game_match) = game_match_repo
+) -> AppResult<Html<String>> {
+    let match_id = Uuid::parse_str(&match_id)?;
+    let game_match = game_match_repo
         .read_one(&GameMatchGetById { id: match_id })
-        .await
-    else {
-        let _ = error_web_socket
-            .tx
-            .send_async(generate_error_message_template("Match not found", user.id))
-            .await;
-
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+        .await?;
 
     let predicted_team = match prediction.as_str() {
         "a" => game_match.name_a,
@@ -195,10 +154,9 @@ pub async fn get_bet_handler(
         predicted_team,
         prediction: prediction.to_string(),
     }
-    .render()
-    .unwrap();
+    .render()?;
 
-    (StatusCode::OK, Html(template)).into_response()
+    Ok(Html(template))
 }
 
 async fn create_new_odds(
@@ -206,17 +164,14 @@ async fn create_new_odds(
     prediction: String,
     _bet_amount: i32,
     mut odds_repository: OddsRepository,
-) -> Option<Odds> {
-    let match_uuid = Uuid::parse_str(&match_id).unwrap();
+) -> AppResult<Odds> {
+    let match_uuid = Uuid::parse_str(&match_id)?;
 
-    let Ok(current_odds) = odds_repository
+    let current_odds = odds_repository
         .get_latest(&OddsGetByGameMatchId {
             game_match_id: match_uuid,
         })
-        .await
-    else {
-        return None;
-    };
+        .await?;
 
     // mocking updating odds
     let (mut new_odds_a, mut new_odds_b) = match prediction.as_str() {
@@ -230,21 +185,17 @@ async fn create_new_odds(
         ),
     };
 
-    new_odds_a = format!("{:.3}", new_odds_a).parse::<f64>().unwrap();
-    new_odds_b = format!("{:.3}", new_odds_b).parse::<f64>().unwrap();
+    new_odds_a = format!("{:.3}", new_odds_a).parse::<f64>()?;
+    new_odds_b = format!("{:.3}", new_odds_b).parse::<f64>()?;
 
-    let Ok(new_odds) = odds_repository
+    let odds = odds_repository
         .create(&OddsCreate {
             game_match_id: match_uuid,
             odds_a: new_odds_a,
             odds_b: new_odds_b,
         })
-        .await
-    else {
-        return None;
-    };
-
-    Some(new_odds)
+        .await?;
+    Ok(odds)
 }
 
 pub async fn get_active_bets_by_user_id(
@@ -252,10 +203,10 @@ pub async fn get_active_bets_by_user_id(
     mut match_repository: GameMatchRepository,
     mut game_repository: GameRepository,
     user_id: Uuid,
-) -> Option<Vec<Bet>> {
-    let Ok(active_user_bets) = bet_repository.read_many(&BetGetByUserId { user_id }).await else {
-        return None;
-    };
+) -> AppResult<Vec<Bet>> {
+    let active_user_bets = bet_repository
+        .read_many(&BetGetByUserId { user_id })
+        .await?;
 
     let mut active_bets = Vec::new();
 
@@ -300,7 +251,7 @@ pub async fn get_active_bets_by_user_id(
         });
     }
 
-    Some(active_bets)
+    Ok(active_bets)
 }
 
 pub async fn get_active_bets_handler(
@@ -309,31 +260,26 @@ pub async fn get_active_bets_handler(
     Extension(match_repo): Extension<GameMatchRepository>,
     Extension(bet_repo): Extension<BetRepository>,
     Extension(game_repo): Extension<GameRepository>,
-) -> impl IntoResponse {
-    let Some(user) = auth_session.user else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+) -> AppResult<Html<String>> {
+    let user = auth::is_logged_in(auth_session)?;
 
-    let Some(bets) = get_active_bets_by_user_id(
+    let bets = get_active_bets_by_user_id(
         bet_repo.clone(),
         match_repo.clone(),
         game_repo.clone(),
         user.id,
     )
     .await
-    else {
-        let _ = error_web_socket
-            .tx
-            .send_async(generate_error_message_template(
-                "Failed to get active bets",
-                user.id,
-            ))
-            .await;
+    .or_else(|e| {
+        show_popup_error(
+            "Failed to get active bets",
+            e,
+            user.id,
+            error_web_socket.clone(),
+        )
+    })?;
 
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+    let active_bets_template = ActiveBets { bets }.render()?;
 
-    let active_bets_template = ActiveBets { bets }.render().unwrap();
-
-    (StatusCode::OK, Html(active_bets_template)).into_response()
+    Ok(Html(active_bets_template))
 }

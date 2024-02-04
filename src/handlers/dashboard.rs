@@ -1,64 +1,47 @@
 use crate::{
-    auth::AuthSession,
-    common::{helpers::generate_error_message_template, DbReadAll},
+    auth::{self, AuthSession},
+    common::{helpers::show_popup_error, DbReadAll},
+    error::AppResult,
     models::extension_web_socket::ExtensionWebSocketError,
     repositories::{bet::BetRepository, game::GameRepository, game_match::GameMatchRepository},
     templates::{ActiveBets, Dashboard, Menu, MenuItem, UserBalance, UserNav, UserSend},
 };
 use askama::Template;
-use axum::{
-    http::StatusCode,
-    response::{Html, IntoResponse},
-    Extension,
-};
+use axum::{response::Html, Extension};
 
 use super::bet::get_active_bets_by_user_id;
 
-/// # Panics
 pub async fn dashboard_handler(
     auth_session: AuthSession,
     Extension(error_web_socket): Extension<ExtensionWebSocketError>,
     Extension(mut game_repository): Extension<GameRepository>,
     Extension(match_repository): Extension<GameMatchRepository>,
     Extension(bet_repository): Extension<BetRepository>,
-) -> impl IntoResponse {
-    let Some(user) = auth_session.user else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+) -> AppResult<Html<String>> {
+    let user = auth::is_logged_in(auth_session)?;
 
     let user_id = user.id;
     let user_send = UserSend::from(&user);
 
-    let Ok(games) = game_repository.read_all().await else {
-        let _ = error_web_socket
-            .tx
-            .send_async(generate_error_message_template(
-                "Failed to get games",
-                user_id,
-            ))
-            .await;
+    let games = game_repository.read_all().await.or_else(|e| {
+        show_popup_error("Failed to get games", e, user.id, error_web_socket.clone())
+    })?;
 
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
-
-    let Some(active_user_bets) = get_active_bets_by_user_id(
+    let active_user_bets = get_active_bets_by_user_id(
         bet_repository.clone(),
         match_repository.clone(),
         game_repository.clone(),
         user_id,
     )
     .await
-    else {
-        let _ = error_web_socket
-            .tx
-            .send_async(generate_error_message_template(
-                "Failed to get active bets",
-                user_id,
-            ))
-            .await;
-
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+    .or_else(|e| {
+        show_popup_error(
+            "Failed to get user bets",
+            e,
+            user.id,
+            error_web_socket.clone(),
+        )
+    })?;
 
     let menu_items: Vec<MenuItem> = games
         .iter()
@@ -91,6 +74,6 @@ pub async fn dashboard_handler(
         user_nav,
     };
 
-    let reply_html = template.render().unwrap();
-    (StatusCode::OK, Html(reply_html)).into_response()
+    let reply_html = template.render()?;
+    Ok(Html(reply_html))
 }

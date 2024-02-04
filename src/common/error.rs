@@ -1,5 +1,10 @@
 use std::fmt::{Debug, Display, Formatter};
 
+use axum::{
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
+
 #[derive(Debug)]
 pub enum BusinessLogicErrorKind {
     // User errors
@@ -209,5 +214,55 @@ impl From<DbError> for ExternalApiError {
 impl From<Vec<cynic::GraphQlError>> for ExternalApiError {
     fn from(err: Vec<cynic::GraphQlError>) -> Self {
         Self::GraphQl(err)
+    }
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum AppError {
+    #[error("Status code: {0:?}")]
+    StatusCode(StatusCode),
+    #[error("Logic error: {0:?}")]
+    BusinessLogicError(BusinessLogicErrorKind),
+    #[error("Parsing error")]
+    UuidError(#[from] uuid::Error),
+    #[error("Parsing error")]
+    ParseIntError(#[from] std::num::ParseIntError),
+    #[error("Parsing error")]
+    ParseFloatError(#[from] std::num::ParseFloatError),
+    #[error("Auth error")]
+    AuthenticationError(#[from] axum_login::Error<crate::auth::Auth>),
+    #[error("Websocket fail")]
+    WebSocketError(barrage::SendError<std::string::String>),
+    #[error("Forbidden error")]
+    ForbiddenError,
+    #[error("Database error")]
+    DbError(#[from] DbError),
+    #[error("Invalid request")]
+    TemplatingError(#[from] askama::Error),
+}
+
+impl From<barrage::SendError<std::string::String>> for AppError {
+    fn from(err: barrage::SendError<std::string::String>) -> Self {
+        Self::WebSocketError(err)
+    }
+}
+
+impl From<StatusCode> for AppError {
+    fn from(err: StatusCode) -> Self {
+        Self::StatusCode(err)
+    }
+}
+
+pub type AppResult<T> = Result<T, AppError>;
+
+impl IntoResponse for AppError {
+    fn into_response(self) -> Response {
+        let status_code = match self {
+            AppError::StatusCode(status_code) => status_code,
+            AppError::AuthenticationError(_) => StatusCode::UNAUTHORIZED,
+            AppError::ForbiddenError => StatusCode::FORBIDDEN,
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
+        };
+        (status_code, self.to_string()).into_response()
     }
 }

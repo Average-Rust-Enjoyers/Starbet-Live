@@ -1,6 +1,7 @@
 use crate::{
     auth::{self, AuthSession},
     common::{helpers::format_date_time_string_with_seconds, DbUpdateOne},
+    error::{AppError, AppResult},
     models::{
         bet::{BetGetByUserId, BetStatus},
         game::GameGetById,
@@ -30,16 +31,10 @@ use serde::Deserialize;
 
 use super::validation::{validate_and_build, RegisterFormData};
 
-pub async fn profile_handler(auth_session: auth::AuthSession) -> impl IntoResponse {
-    let Some(user) = auth_session.user else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+pub async fn profile_handler(auth_session: auth::AuthSession) -> AppResult<Html<String>> {
+    let user = auth::is_logged_in(auth_session)?;
 
-    (
-        StatusCode::OK,
-        Html(ProfilePage::from(user).render().unwrap()),
-    )
-        .into_response()
+    Ok(Html(ProfilePage::from(user).render()?))
 }
 
 pub async fn bet_history_handler(
@@ -48,15 +43,12 @@ pub async fn bet_history_handler(
     Extension(mut match_repo): Extension<GameMatchRepository>,
     Extension(mut game_repo): Extension<GameRepository>,
     Extension(mut odds_repo): Extension<OddsRepository>,
-) -> impl IntoResponse {
-    let Some(user) = auth_session.user else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+) -> AppResult<Html<String>> {
+    let user = auth::is_logged_in(auth_session)?;
 
     let user_bets = bet_repo
         .read_many(&BetGetByUserId { user_id: user.id })
-        .await
-        .unwrap();
+        .await?;
 
     let mut bet_history = Vec::new();
 
@@ -69,8 +61,7 @@ pub async fn bet_history_handler(
             .read_one(&game_match::GameMatchGetById {
                 id: bet.game_match_id,
             })
-            .await
-            .unwrap();
+            .await?;
 
         let date = format_date_time_string_with_seconds(&bet.created_at);
 
@@ -78,14 +69,12 @@ pub async fn bet_history_handler(
             .read_one(&GameGetById {
                 id: game_match.game_id,
             })
-            .await
-            .unwrap()
+            .await?
             .name;
 
         let odds = odds_repo
             .read_one(&odds::OddsGetById { id: bet.odds_id })
-            .await
-            .unwrap();
+            .await?;
 
         let (predicted_team, multiplier, won_amount) = match bet.expected_outcome {
             GameMatchOutcome::WinA => (
@@ -122,23 +111,13 @@ pub async fn bet_history_handler(
         bet_history.push(bet_history_bet);
     }
 
-    (
-        StatusCode::OK,
-        Html(BetHistory::new(bet_history).render().unwrap()),
-    )
-        .into_response()
+    Ok(Html(BetHistory::new(bet_history).render()?))
 }
 
-pub async fn get_edit_profile_handler(auth_session: AuthSession) -> impl IntoResponse {
-    let Some(_) = auth_session.user else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+pub async fn get_edit_profile_handler(auth_session: AuthSession) -> AppResult<Html<String>> {
+    auth::is_logged_in(auth_session)?;
 
-    (
-        StatusCode::OK,
-        Html(EditProfilePage::new().render().unwrap()),
-    )
-        .into_response()
+    Ok(Html(EditProfilePage::new().render()?))
 }
 
 const FIELDS: [&str; 4] = ["username", "first-name", "last-name", "email"];
@@ -147,10 +126,8 @@ pub async fn post_edit_profile_handler(
     auth_session: AuthSession,
     Extension(mut user_repository): Extension<UserRepository>,
     Form(payload): Form<RegisterFormData>,
-) -> impl IntoResponse {
-    let Some(user) = auth_session.user else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+) -> AppResult<Html<String>> {
+    let user = auth::is_logged_in(auth_session)?;
 
     let mut user_update = UserUpdate::new(
         &user.id,
@@ -184,28 +161,21 @@ pub async fn post_edit_profile_handler(
                 name: (*field).to_string(),
                 value: textfield.value,
             }
-            .render()
-            .unwrap(),
+            .render()?,
         );
     }
 
     if !user_update.update_fields_none() && (user_repository.update(&user_update).await).is_err() {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        return Err(AppError::StatusCode(StatusCode::INTERNAL_SERVER_ERROR));
     }
 
-    (StatusCode::OK, Html(response)).into_response()
+    Ok(Html(response))
 }
 
-pub async fn deposit_withdrawal_handler(auth_session: AuthSession) -> impl IntoResponse {
-    let Some(_) = auth_session.user else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+pub async fn deposit_withdrawal_handler(auth_session: AuthSession) -> AppResult<Html<String>> {
+    auth::is_logged_in(auth_session)?;
 
-    (
-        StatusCode::OK,
-        Html(DepositWithdrawalPage::new().render().unwrap()),
-    )
-        .into_response()
+    Ok(Html(DepositWithdrawalPage::new().render()?))
 }
 
 #[derive(Deserialize)]
@@ -218,49 +188,35 @@ pub async fn handle_transaction<F>(
     Extension(mut user_repository): Extension<UserRepository>,
     Form(payload): Form<DepositWithdrawalForm>,
     transaction: F,
-) -> impl IntoResponse
+) -> AppResult<Html<String>>
 where
     F: Fn(i32, i32) -> Result<i32, StatusCode>,
 {
-    let Some(user) = auth_session.user else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+    let user = auth::is_logged_in(auth_session)?;
 
-    let new_balance = match transaction(user.balance, payload.amount) {
-        Ok(balance) => balance,
-        Err(status) => return status.into_response(),
-    };
+    let new_balance = transaction(user.balance, payload.amount)?;
 
-    if user_repository
+    user_repository
         .update(&UserUpdate {
             id: user.id,
             balance: Some(new_balance),
             ..Default::default()
         })
-        .await
-        .is_err()
-    {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    }
+        .await?;
 
-    (
-        StatusCode::OK,
-        Html(
-            ProfileBalanceFragment {
-                balance: new_balance,
-            }
-            .render()
-            .unwrap(),
-        ),
-    )
-        .into_response()
+    Ok(Html(
+        ProfileBalanceFragment {
+            balance: new_balance,
+        }
+        .render()?,
+    ))
 }
 
 pub async fn deposit_handler(
     auth_session: AuthSession,
     user_repository: Extension<UserRepository>,
     form: Form<DepositWithdrawalForm>,
-) -> impl IntoResponse {
+) -> AppResult<impl IntoResponse> {
     handle_transaction(auth_session, user_repository, form, |balance, amount| {
         if amount <= 0 {
             Err(StatusCode::BAD_REQUEST)
@@ -275,7 +231,7 @@ pub async fn withdrawal_handler(
     auth_session: AuthSession,
     user_repository: Extension<UserRepository>,
     form: Form<DepositWithdrawalForm>,
-) -> impl IntoResponse {
+) -> AppResult<impl IntoResponse> {
     handle_transaction(auth_session, user_repository, form, |balance, amount| {
         if amount <= 0 || amount * 100 > balance {
             Err(StatusCode::BAD_REQUEST)
@@ -286,29 +242,19 @@ pub async fn withdrawal_handler(
     .await
 }
 
-pub async fn settings_handler(auth_session: AuthSession) -> impl IntoResponse {
-    let Some(_) = auth_session.user else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+pub async fn settings_handler(auth_session: AuthSession) -> AppResult<Html<String>> {
+    auth::is_logged_in(auth_session)?;
 
-    (StatusCode::OK, Html(SettingsPage::new().render().unwrap())).into_response()
+    Ok(Html(SettingsPage::new().render()?))
 }
 
 pub async fn delete_profile_handler(
     auth_session: AuthSession,
     Extension(mut user_repository): Extension<UserRepository>,
-) -> impl IntoResponse {
-    let Some(user) = auth_session.user else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+) -> AppResult<HxRedirect> {
+    let user = auth::is_logged_in(auth_session)?;
 
-    if user_repository
-        .delete(&UserDelete::new(&user.id))
-        .await
-        .is_err()
-    {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    }
+    user_repository.delete(&UserDelete::new(&user.id)).await?;
 
-    HxRedirect(Uri::from_static("/logout")).into_response()
+    Ok(HxRedirect(Uri::from_static("/logout")))
 }

@@ -1,12 +1,9 @@
-use crate::templates::Index;
+use crate::{error::AppResult, templates::Index};
 use askama::Template;
-use axum::{
-    http::StatusCode,
-    response::{Html, IntoResponse},
-};
+use axum::response::Html;
 
-pub async fn index_handler() -> impl IntoResponse {
+pub async fn index_handler() -> AppResult<Html<String>> {
     let template = Index {};
-    let reply_html = template.render().unwrap();
-    (StatusCode::OK, Html(reply_html).into_response())
+    let reply_html = template.render()?;
+    Ok(Html(reply_html))
 }

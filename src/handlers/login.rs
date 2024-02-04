@@ -1,7 +1,7 @@
 use crate::auth::AuthSession;
 use crate::models::user::Credentials;
 use crate::routers::HxRedirect;
-use crate::templates::LoginPage;
+use crate::{error::AppError, error::AppResult, templates::LoginPage, templates::TextField};
 use askama::Template;
 use axum::{
     http::StatusCode,
@@ -12,22 +12,20 @@ use axum::{
 use std::str::FromStr;
 
 pub mod get {
-    use crate::templates::TextField;
 
     use super::*;
 
-    pub async fn login(auth_session: AuthSession) -> impl IntoResponse {
+    pub async fn login(auth_session: AuthSession) -> AppResult<impl IntoResponse> {
         if auth_session.user.is_some() {
-            return HxRedirect(Uri::from_static("/dashboard")).into_response();
+            return Ok(HxRedirect(Uri::from_static("/dashboard")).into_response());
         }
-        Html(
+        Ok(Html(
             LoginPage {
                 email: TextField::new("email"),
             }
-            .render()
-            .unwrap(),
+            .render()?,
         )
-        .into_response()
+        .into_response())
     }
 
     pub async fn logout(mut auth_session: AuthSession) -> impl IntoResponse {
@@ -39,23 +37,22 @@ pub mod get {
 }
 
 pub mod post {
-    use crate::templates::TextField;
 
     use super::*;
 
     pub async fn login(
         mut auth_session: AuthSession,
         Form(creds): Form<Credentials>,
-    ) -> impl IntoResponse {
+    ) -> AppResult<impl IntoResponse> {
         let user = match auth_session.authenticate(creds.clone()).await {
             Ok(Some(user)) => user,
             Ok(None) => {
-                return StatusCode::INTERNAL_SERVER_ERROR.into_response(); // authenticate always returns Some
+                return Err(AppError::StatusCode(StatusCode::UNAUTHORIZED)); // authenticate always returns Some
             }
             Err(e) => {
                 match e {
                     axum_login::Error::Session(_) => {
-                        return StatusCode::INTERNAL_SERVER_ERROR.into_response()
+                        return Err(AppError::StatusCode(StatusCode::INTERNAL_SERVER_ERROR));
                     }
                     axum_login::Error::Backend(_error_info) => {
                         const LOGIN_URL: &str = "/login";
@@ -64,15 +61,15 @@ pub mod post {
                                 let l: &str = &format!("{}?next={}", LOGIN_URL, next.clone());
                                 match Uri::from_str(l) {
                                     Ok(uri) => {
-                                        return HxRedirect(uri).into_response();
+                                        return Ok(HxRedirect(uri).into_response());
                                     }
                                     Err(_) => {
-                                        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+                                        return Err(AppError::StatusCode(StatusCode::UNAUTHORIZED));
                                     }
                                 }
                             }
                             None => {
-                                return Html(
+                                return Ok(Html(
                                     LoginPage {
                                         email: TextField {
                                             name: "email",
@@ -81,10 +78,9 @@ pub mod post {
                                                 .to_string(),
                                         },
                                     }
-                                    .render()
-                                    .unwrap(),
+                                    .render()?,
                                 )
-                                .into_response();
+                                .into_response())
                             }
                         }
                     }
@@ -92,10 +88,8 @@ pub mod post {
             }
         };
 
-        if auth_session.login(&user).await.is_err() {
-            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-        }
+        auth_session.login(&user).await?;
 
-        HxRedirect(Uri::from_static("/dashboard")).into_response()
+        Ok(HxRedirect(Uri::from_static("/dashboard")).into_response())
     }
 }
