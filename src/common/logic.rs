@@ -102,8 +102,6 @@ pub async fn pay_out_match<'a>(
                 tx,
             )
             .await?;
-
-            // TODO: notify websocket regardless of outcome
         }
     }
 

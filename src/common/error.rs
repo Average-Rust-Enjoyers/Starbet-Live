@@ -191,7 +191,6 @@ pub type DbResultSingle<T> = DbResult<T>;
 /// Syntax sugar type denoting multiple results from the database
 pub type DbResultMultiple<T> = DbResult<Vec<T>>;
 
-// TODO: make it generic, graphql is now hardcoded for cloudbet
 #[derive(Debug)]
 pub enum ExternalApiError {
     DbError(DbError),

@@ -35,7 +35,6 @@ impl ApiConnector {
         F: ExternalApiIntegration<T> + Clone + std::fmt::Debug,
     {
         let games = self.clone().game_repo.read_all().await?;
-        // TODO - use actual async for loop
         for game in games {
             let game_matches: Vec<T> = api.clone().fetch_game_matches(&game).await?;
 
