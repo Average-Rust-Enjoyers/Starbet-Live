@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::{
     models::game_match::GameMatchStatus,
-    models::{odds::Odds, user::User},
+    models::{bet::BetStatus, odds::Odds, user::User},
 };
 
 use crate::models;
@@ -31,7 +31,9 @@ pub struct ServerErrorPage {}
 
 #[derive(Template)]
 #[template(path = "login.html")]
-pub struct LoginPage {}
+pub struct LoginPage<'a> {
+    pub email: TextField<'a>,
+}
 
 #[derive(Template)]
 #[template(path = "register.html")]
@@ -103,7 +105,7 @@ pub struct BetHistoryBet {
     pub bet_amount: i32,
     pub multiplier: f64,
     pub won_amount: i32,
-    pub won: bool,
+    pub bet_status: BetStatus,
     pub date: String,
 }
 
@@ -372,4 +374,10 @@ pub mod filters {
             .collect::<Vec<String>>()
             .join(" "))
     }
+}
+
+#[derive(Template)]
+#[template(path = "error/error_message.html")]
+pub struct ErrorMessage {
+    pub message: String,
 }

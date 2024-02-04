@@ -1,8 +1,7 @@
 use crate::auth::AuthSession;
-use crate::error::AppResult;
 use crate::models::user::Credentials;
 use crate::routers::HxRedirect;
-use crate::templates::LoginPage;
+use crate::{error::AppError, error::AppResult, templates::LoginPage, templates::TextField};
 use askama::Template;
 use axum::{
     http::StatusCode,
@@ -20,7 +19,13 @@ pub mod get {
         if auth_session.user.is_some() {
             return Ok(HxRedirect(Uri::from_static("/dashboard")).into_response());
         }
-        Ok(Html(LoginPage {}.render()?).into_response())
+        Ok(Html(
+            LoginPage {
+                email: TextField::new("email"),
+            }
+            .render()?,
+        )
+        .into_response())
     }
 
     pub async fn logout(mut auth_session: AuthSession) -> impl IntoResponse {
@@ -32,21 +37,22 @@ pub mod get {
 }
 
 pub mod post {
+
     use super::*;
 
     pub async fn login(
         mut auth_session: AuthSession,
         Form(creds): Form<Credentials>,
-    ) -> impl IntoResponse {
+    ) -> AppResult<impl IntoResponse> {
         let user = match auth_session.authenticate(creds.clone()).await {
             Ok(Some(user)) => user,
             Ok(None) => {
-                return StatusCode::UNAUTHORIZED.into_response(); // authenticate always returns Some
+                return Err(AppError::StatusCode(StatusCode::UNAUTHORIZED)); // authenticate always returns Some
             }
             Err(e) => {
                 match e {
                     axum_login::Error::Session(_) => {
-                        return StatusCode::INTERNAL_SERVER_ERROR.into_response()
+                        return Err(AppError::StatusCode(StatusCode::INTERNAL_SERVER_ERROR));
                     }
                     axum_login::Error::Backend(_error_info) => {
                         const LOGIN_URL: &str = "/login";
@@ -55,15 +61,26 @@ pub mod post {
                                 let l: &str = &format!("{}?next={}", LOGIN_URL, next.clone());
                                 match Uri::from_str(l) {
                                     Ok(uri) => {
-                                        return HxRedirect(uri).into_response();
+                                        return Ok(HxRedirect(uri).into_response());
                                     }
                                     Err(_) => {
-                                        return StatusCode::UNAUTHORIZED.into_response();
+                                        return Err(AppError::StatusCode(StatusCode::UNAUTHORIZED));
                                     }
                                 }
                             }
                             None => {
-                                return HxRedirect(Uri::from_static(LOGIN_URL)).into_response();
+                                return Ok(Html(
+                                    LoginPage {
+                                        email: TextField {
+                                            name: "email",
+                                            value: creds.email,
+                                            error_message: "User not found or password incorrect"
+                                                .to_string(),
+                                        },
+                                    }
+                                    .render()?,
+                                )
+                                .into_response())
                             }
                         }
                     }
@@ -71,10 +88,8 @@ pub mod post {
             }
         };
 
-        if auth_session.login(&user).await.is_err() {
-            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-        }
+        auth_session.login(&user).await?;
 
-        HxRedirect(Uri::from_static("/dashboard")).into_response()
+        Ok(HxRedirect(Uri::from_static("/dashboard")).into_response())
     }
 }

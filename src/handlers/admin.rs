@@ -4,7 +4,7 @@ use crate::{
     config::DEFAULT_ODDS_VALUE,
     error::{AppError, AppResult, BusinessLogicErrorKind},
     models::{
-        extension_web_socket::ExtensionWebSocket,
+        extension_web_socket::ExtensionWebSocketMatch,
         game::GameFilter,
         game_match::{self, GameMatchCreate, GameMatchGetById, GameMatchStatus},
         game_match_outcome::GameMatchOutcome,
@@ -113,7 +113,7 @@ pub async fn gamematch_random_odds_handler(
     Path(match_id): Path<Uuid>,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Extension(mut odds_repo): Extension<OddsRepository>,
-    Extension(web_socket): Extension<ExtensionWebSocket>,
+    Extension(web_socket): Extension<ExtensionWebSocketMatch>,
 ) -> AppResult<Html<String>> {
     auth::is_logged_admin(auth_session)?;
 

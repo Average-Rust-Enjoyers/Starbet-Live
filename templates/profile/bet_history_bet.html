@@ -1,6 +1,6 @@
 <!-- prettier-ignore -->
 {% let color %}
-{% if won %}
+{% if bet_status == BetStatus::Won %}
     {% let color = "success" %}
 {% else %}
     {% let color = "error" %}
@@ -23,9 +23,11 @@
         <span> Multiplier: {{ multiplier }} </span>
     </div>
     <div class="flex flex-col justify-center items-center text-{{ color }}">
-        {% if won %}
+        {% if bet_status == BetStatus::Won %}
         <span class="text-xl"> WON </span>
         <span> Won amount: {{ won_amount }} SBT </span>
+        {% else if bet_status == BetStatus::Canceled %}
+        <span class="text-xl"> CANCELED </span>
         {% else %}
         <span class="text-xl"> LOST </span>
         {% endif %}

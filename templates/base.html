@@ -17,11 +17,15 @@
             integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
             crossorigin="anonymous"
         ></script>
+
         <!-- https://htmx.org/extensions/json-enc/ -->
         <script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/json-enc.js"></script>
 
         <!-- HTMX WebSockets -->
         <script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/ws.js"></script>
+
+        <!-- HTMX Removable html tags after some time -->
+        <script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/remove-me.js"></script>
     </head>
     <style>
         .htmx-indicator {
@@ -48,5 +52,10 @@
         <!-- prettier-ignore -->
         {% block content %}{% endblock %} 
         {% include "indicator.html" %}
+        <div hx-ext="remove-me">
+            <div hx-ext="ws" ws-connect="/ws/error">
+                <div id="notification"></div>
+            </div>
+        </div>
     </body>
 </html>
