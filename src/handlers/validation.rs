@@ -1,13 +1,13 @@
 use askama::Template;
 use axum::{
     extract::Path,
-    http::StatusCode,
     response::{Html, IntoResponse},
     Extension, Form,
 };
 use serde::Deserialize;
 
 use crate::{
+    error::AppResult,
     repositories::user::UserRepository,
     templates::TextField,
     validators::{
@@ -38,12 +38,9 @@ pub async fn validation_handler(
     Extension(mut user_repository): Extension<UserRepository>,
     Path(Params { field }): Path<Params>,
     Form(payload): Form<RegisterFormData>,
-) -> impl IntoResponse {
+) -> AppResult<impl IntoResponse> {
     let (_, textfield) = validate_and_build(&field, &payload, &mut user_repository).await;
-    (
-        StatusCode::OK,
-        Html(textfield.render().unwrap()).into_response(),
-    )
+    Ok(Html(textfield.render()?))
 }
 
 pub async fn validate_and_build<'a>(

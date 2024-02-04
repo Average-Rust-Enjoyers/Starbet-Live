@@ -2,7 +2,10 @@ use askama::Template;
 use chrono::{DateTime, Datelike, Timelike, Utc};
 use uuid::Uuid;
 
-use crate::{models::error::ErrorMessageWS, templates::ErrorMessage};
+use crate::{
+    models::{error::ErrorMessageWS, extension_web_socket::ExtensionWebSocketError},
+    templates::ErrorMessage,
+};
 
 pub fn format_date_time_string_with_seconds(date_time: &DateTime<Utc>) -> String {
     format!(
@@ -36,4 +39,16 @@ pub fn generate_error_message_template(message: &str, user_id: Uuid) -> ErrorMes
         .render()
         .unwrap(),
     }
+}
+
+pub fn show_popup_error<T, E>(
+    message: &str,
+    error: E,
+    id: Uuid,
+    error_web_socket: ExtensionWebSocketError,
+) -> Result<T, E> {
+    let _ = error_web_socket
+        .tx
+        .send(generate_error_message_template(message, id)); // TODO: async ?
+    Err(error)
 }

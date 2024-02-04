@@ -1,14 +1,8 @@
 use crate::{
     auth::{self, AuthSession},
-    common::{
-        helpers::{format_date_time_string_without_seconds, generate_error_message_template},
-        DbGetLatest, DbReadByForeignKey,
-    },
+    common::{helpers::format_date_time_string_without_seconds, DbGetLatest, DbReadByForeignKey},
     error::AppResult,
-    models::{
-        extension_web_socket::ExtensionWebSocketError, game::GameGetById,
-        game_match::GameMatchStatus, odds::OddsGetByGameMatchId,
-    },
+    models::{game::GameGetById, game_match::GameMatchStatus, odds::OddsGetByGameMatchId},
     repositories::{game::GameRepository, game_match::GameMatchRepository, odds::OddsRepository},
     templates::{Game, Match, Menu, MenuItem, UpcomingMatch},
 };
@@ -28,7 +22,6 @@ pub struct GameId {
 
 pub async fn game_handler(
     auth_session: AuthSession,
-    Extension(error_web_socket): Extension<ExtensionWebSocketError>,
     Extension(mut game_repository): Extension<GameRepository>,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
     Extension(mut odds_repo): Extension<OddsRepository>,
@@ -42,30 +35,7 @@ pub async fn game_handler(
         })
         .await?;
 
-    // else {
-    //     let _ = error_web_socket
-    //         .tx
-    //         .send_async(generate_error_message_template(
-    //             "Failed to get game",
-    //             user.id,
-    //         ))
-    //         .await;
-
-    //     return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    // };
-
     let matches = game_match_repo.get_by_foreign_key(&game.id).await?;
-
-    //     let _ = error_web_socket
-    //         .tx
-    //         .send_async(generate_error_message_template(
-    //             "Failed to get matches",
-    //             user.id,
-    //         ))
-    //         .await;
-
-    //     return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    // };
 
     let mut matches_to_render = Vec::new();
     let mut upcoming_matches_to_render = Vec::new();
@@ -78,18 +48,6 @@ pub async fn game_handler(
                         game_match_id: game_match.id,
                     })
                     .await?;
-                // .await
-                // else {
-                //     let _ = error_web_socket
-                //         .tx
-                //         .send_async(generate_error_message_template(
-                //             "Failed to get odds",
-                //             user.id,
-                //         ))
-                //         .await;
-
-                //     return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-                // };
 
                 matches_to_render.push(Match {
                     match_id: game_match.id,
@@ -115,17 +73,6 @@ pub async fn game_handler(
     };
 
     let menu_items = game_repository.read_all().await?;
-    // let Ok(menu_items) = game_repository.read_all().await else {
-    //     let _ = error_web_socket
-    //         .tx
-    //         .send_async(generate_error_message_template(
-    //             "Failed to get games",
-    //             user.id,
-    //         ))
-    //         .await;
-
-    //     return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    // };
 
     let menu_items = menu_items
         .iter()

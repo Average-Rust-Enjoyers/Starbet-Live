@@ -31,11 +31,7 @@ pub async fn admin_handler(
     Extension(mut game_repo): Extension<GameRepository>,
     Extension(mut game_match_repo): Extension<GameMatchRepository>,
 ) -> AppResult<Html<String>> {
-    let user = auth::is_logged_in(auth_session)?;
-
-    if !user.is_admin {
-        return Err(AppError::StatusCode(StatusCode::FORBIDDEN));
-    }
+    auth::is_logged_admin(auth_session)?;
 
     let games = game_repo
         .read_many(&GameFilter {

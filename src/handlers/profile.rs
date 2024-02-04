@@ -216,7 +216,7 @@ pub async fn deposit_handler(
     auth_session: AuthSession,
     user_repository: Extension<UserRepository>,
     form: Form<DepositWithdrawalForm>,
-) -> impl IntoResponse {
+) -> AppResult<impl IntoResponse> {
     handle_transaction(auth_session, user_repository, form, |balance, amount| {
         if amount <= 0 {
             Err(StatusCode::BAD_REQUEST)
@@ -231,7 +231,7 @@ pub async fn withdrawal_handler(
     auth_session: AuthSession,
     user_repository: Extension<UserRepository>,
     form: Form<DepositWithdrawalForm>,
-) -> impl IntoResponse {
+) -> AppResult<impl IntoResponse> {
     handle_transaction(auth_session, user_repository, form, |balance, amount| {
         if amount <= 0 || amount * 100 > balance {
             Err(StatusCode::BAD_REQUEST)

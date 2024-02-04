@@ -1,6 +1,6 @@
 use crate::{
     auth::{self, AuthSession},
-    common::{helpers::generate_error_message_template, DbReadAll},
+    common::{helpers::show_popup_error, DbReadAll},
     error::AppResult,
     models::extension_web_socket::ExtensionWebSocketError,
     repositories::{bet::BetRepository, game::GameRepository, game_match::GameMatchRepository},
@@ -23,16 +23,9 @@ pub async fn dashboard_handler(
     let user_id = user.id;
     let user_send = UserSend::from(&user);
 
-    let games = game_repository.read_all().await?;
-    // =======
-    //         let _ = error_web_socket
-    //             .tx
-    //             .send_async(generate_error_message_template(
-    //                 "Failed to get games",
-    //                 user_id,
-    //             ))
-    //             .await;
-    // >>>>>>> main
+    let games = game_repository.read_all().await.or_else(|e| {
+        show_popup_error("Failed to get games", e, user.id, error_web_socket.clone())
+    })?;
 
     let active_user_bets = get_active_bets_by_user_id(
         bet_repository.clone(),
@@ -40,18 +33,15 @@ pub async fn dashboard_handler(
         game_repository.clone(),
         user_id,
     )
-    .await?;
-    // else {
-    //     let _ = error_web_socket
-    //         .tx
-    //         .send_async(generate_error_message_template(
-    //             "Failed to get active bets",
-    //             user_id,
-    //         ))
-    //         .await;
-
-    //     return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    // };
+    .await
+    .or_else(|e| {
+        show_popup_error(
+            "Failed to get user bets",
+            e,
+            user.id,
+            error_web_socket.clone(),
+        )
+    })?;
 
     let menu_items: Vec<MenuItem> = games
         .iter()

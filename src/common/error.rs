@@ -229,15 +229,15 @@ pub enum AppError {
     ParseIntError(#[from] std::num::ParseIntError),
     #[error("Parsing error")]
     ParseFloatError(#[from] std::num::ParseFloatError),
-    #[error("Auth error: {0:?}")]
+    #[error("Auth error")]
     AuthenticationError(#[from] axum_login::Error<crate::auth::Auth>),
-    #[error("Invalid request: {0:?}")]
+    #[error("Websocket fail")]
     WebSocketError(barrage::SendError<std::string::String>),
-    #[error("Invalid request")]
+    #[error("Forbidden error")]
     ForbiddenError,
-    #[error("Database error: {0:?}")]
+    #[error("Database error")]
     DbError(#[from] DbError),
-    #[error("Invalid request: {0:?}")]
+    #[error("Invalid request")]
     TemplatingError(#[from] askama::Error),
 }
 
@@ -257,36 +257,12 @@ pub type AppResult<T> = Result<T, AppError>;
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        // TODO: add error logging in the future
-        match self {
-            AppError::StatusCode(_) => todo!(),
-            AppError::BusinessLogicError(_) => todo!(),
-            AppError::AuthenticationError(_) => {
-                (StatusCode::UNAUTHORIZED, "authentication error".to_string())
-            }
-            AppError::WebSocketError(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "websocket error".to_string(),
-            ),
-            AppError::ForbiddenError => (StatusCode::FORBIDDEN, "forbidden error".to_string()),
-            AppError::DbError(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
-            AppError::TemplatingError(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "templating error".to_string(),
-            ),
-            AppError::UuidError(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "uuid parsing error".to_string(),
-            ),
-            AppError::ParseIntError(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "int parsing error".to_string(),
-            ),
-            AppError::ParseFloatError(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "float parsing error".to_string(),
-            ),
-        }
-        .into_response()
+        let status_code = match self {
+            AppError::StatusCode(status_code) => status_code,
+            AppError::AuthenticationError(_) => StatusCode::UNAUTHORIZED,
+            AppError::ForbiddenError => StatusCode::FORBIDDEN,
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
+        };
+        (status_code, self.to_string()).into_response()
     }
 }

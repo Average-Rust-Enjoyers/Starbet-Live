@@ -1,10 +1,11 @@
 use anyhow::Error;
-use axum::Extension;
+use axum::{error_handling::HandleErrorLayer, Extension};
+use tower::ServiceBuilder;
 
 use crate::{
     auth::{session_store::RedisStore, Auth},
     common::{DbPoolHandler, PoolHandler},
-    handlers::error::handler_404,
+    handlers::error::{handle_timeout_error, handler_404},
     models::extension_web_socket::{ExtensionWebSocketError, ExtensionWebSocketMatch},
     repositories::{
         bet::BetRepository, game::GameRepository, game_match::GameMatchRepository,
@@ -95,16 +96,21 @@ impl App {
             .route_layer(login_required!(Auth, login_url = "/login"))
             .merge(auth_router())
             .merge(public_router())
-            .fallback(handler_404)
-            .layer(auth_layer)
             .layer(Extension(user_repo))
             .layer(Extension(bets_repo))
             .layer(Extension(game_match_repo))
             .layer(Extension(game_repo))
             .layer(Extension(odds_repo))
             .layer(Extension(web_socket_match))
-            .layer(Extension(web_socket_error))
-            .layer(Extension(self.redis_pool));
+            .layer(Extension(web_socket_error.clone()))
+            .layer(Extension(self.redis_pool))
+            .layer(
+                ServiceBuilder::new()
+                    .layer(HandleErrorLayer::new(handle_timeout_error))
+                    .timeout(std::time::Duration::from_secs(30)),
+            )
+            .layer(auth_layer)
+            .fallback(handler_404);
 
         let listener = tokio::net::TcpListener::bind(address).await?;
         axum::serve(listener, app).await?;
