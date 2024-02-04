@@ -30,6 +30,9 @@ The goal is to create a betting system for esports. Esports have different cater
 
 4. **Mock data**: Optionally, you can also load example data by running the `./load-mock-data.sh` script on UN*X, or `./load-mock-data.bat` script on Windows machines.
 
+    Note: You must have `sqlx` and Postgres command line tools installed.
+    You can install SQLX with `cargo install sqlx-cli`, and Postgres CLI from your package manager (the package is usually called `postgresql-client`). On Windows, you need to install it from [here](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads).
+
 ### Hosted instance
 Or alternatively you can connect to deployed instance at: `http://130.61.53.56:6969/` (there is no guarantee that it will work)
 
