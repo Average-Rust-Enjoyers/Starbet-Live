@@ -8,5 +8,5 @@ if not defined DATABASE_URL (
     exit /b 1
 )
 
-sqlx migrate run
+sqlx database setup
 psql "%DATABASE_URL%" < .\docs\mock-data.sql
